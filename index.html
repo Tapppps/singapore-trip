@@ -1,0 +1,383 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,maximum-scale=1,user-scalable=no">
+<meta name="theme-color" content="#fafafa">
+<title>Singapore Trip</title>
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+<style>
+:root{
+  --bg:#fafafa;--panel:#fff;--text:#1f2328;--muted:#73777d;--line:#e7e9ec;
+  --blue:#1677ff;--blueSoft:#edf5ff;--shadow:0 7px 24px rgba(0,0,0,.11)
+}
+*{box-sizing:border-box}
+html,body{margin:0;height:100%;overflow:hidden;background:var(--bg);color:var(--text);font-family:Inter,Roboto,"Segoe UI",Arial,sans-serif;font-weight:400}
+button,input,select,textarea{font:inherit;font-weight:400}
+button{cursor:pointer}
+#app{height:100dvh;display:grid;grid-template-rows:54px 1fr 64px}
+header{display:flex;align-items:center;gap:10px;padding:7px 10px;background:#fff;border-bottom:1px solid var(--line);z-index:20}
+.title{flex:1;min-width:0}
+.title h1{font-size:17px;line-height:1.15;margin:0;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.title div{font-size:11px;color:var(--muted);margin-top:3px}
+.ibtn{width:40px;height:40px;border:0;border-radius:14px;background:#f4f5f7;display:grid;place-items:center}
+.ico{width:21px;height:21px;fill:none;stroke:currentColor;stroke-width:1.65;stroke-linecap:round;stroke-linejoin:round}
+main{position:relative;overflow:hidden;background:#e9eaec}
+#map{position:absolute;inset:0}
+.leaflet-control-attribution{font-size:9px!important}
+.tools{position:absolute;top:10px;left:10px;right:10px;z-index:500;display:flex;gap:8px;overflow-x:auto;scrollbar-width:none}
+.tools::-webkit-scrollbar{display:none}
+.chip{height:42px;white-space:nowrap;border:1px solid #dedfe2;background:rgba(255,255,255,.97);border-radius:18px;padding:0 13px;display:flex;align-items:center;gap:8px;box-shadow:0 2px 9px rgba(0,0,0,.07);font-size:12px}
+.chip .ico{width:18px;height:18px}
+.routefloat{position:absolute;left:10px;right:10px;bottom:10px;z-index:500;background:rgba(255,255,255,.985);border:1px solid var(--line);border-radius:22px;padding:12px;box-shadow:var(--shadow)}
+.routehead{display:flex;align-items:center;gap:10px}
+.routehead .name{flex:1;font-size:15px;font-weight:500}
+.routehead .stats{font-size:11px;color:var(--muted)}
+.routehead button{border:1px solid var(--line);background:#fff;border-radius:12px;padding:8px 10px;font-size:12px}
+.next{display:grid;grid-template-columns:1fr auto;gap:10px;align-items:center;margin-top:10px;padding:10px 11px;background:#f7f8fa;border-radius:16px}
+.next h2{margin:0 0 4px;font-size:15px;font-weight:500}
+.next p{margin:0;color:var(--muted);font-size:11px}
+.actions{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:9px}
+.actions button{border:0;border-radius:14px;height:44px;font-size:13px}
+.actions .go{background:var(--blue);color:#fff}
+.actions .skip{background:#f1f2f4;color:#27292c}
+nav{display:grid;grid-template-columns:repeat(5,1fr);background:#fff;border-top:1px solid var(--line);padding:4px 4px calc(4px + env(safe-area-inset-bottom));z-index:20}
+.nav{border:0;background:transparent;color:#72757a;font-size:10px;display:grid;place-items:center;gap:2px;padding:3px 0}
+.nav .ico{width:22px;height:22px}.nav.active{color:var(--blue)}
+.sheetbg{position:fixed;inset:0;background:rgba(0,0,0,.34);z-index:1000;display:none;align-items:flex-end}
+.sheetbg.open{display:flex}
+.sheet{width:100%;max-width:760px;margin:auto;background:var(--bg);border-radius:25px 25px 0 0;max-height:88dvh;overflow:auto;padding:8px 12px 18px}
+.handle{width:40px;height:4px;border-radius:99px;background:#c8c9cc;margin:0 auto 8px}
+.shead{position:sticky;top:0;background:var(--bg);z-index:2;display:flex;align-items:center;gap:8px;padding:4px 0 9px}
+.shead h2{font-size:18px;font-weight:500;margin:0;flex:1}
+.close{border:0;background:#eceef1;border-radius:50%;width:34px;height:34px;display:grid;place-items:center}
+.card{background:#fff;border:1px solid var(--line);border-radius:18px;padding:12px;margin:8px 0}
+.place{padding:11px 0;border-bottom:1px solid var(--line);display:grid;grid-template-columns:1fr auto;gap:10px;align-items:center}
+.place:last-child{border-bottom:0}
+.place h3{font-size:14px;font-weight:400;margin:0 0 4px}
+.place p{font-size:11px;color:var(--muted);margin:0;line-height:1.45}
+.sbtn{border:1px solid var(--line);background:#fff;border-radius:12px;padding:8px 10px;font-size:12px}
+.primary{border:0;background:var(--blue);color:#fff;border-radius:13px;padding:11px 12px}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+input,select,textarea{width:100%;border:1px solid var(--line);background:#fff;border-radius:13px;padding:11px 12px}
+.full{grid-column:1/-1}
+.warning{border:1px solid #efd4a5;background:#fff8ea;border-radius:15px;padding:11px;font-size:12px;line-height:1.45}
+.good{border:1px solid #cbe7d0;background:#f1fbf3;border-radius:15px;padding:11px;font-size:12px;line-height:1.45}
+.money{font-size:28px;font-weight:500}
+.muted{color:var(--muted);font-size:11px}
+.segment{display:grid;grid-template-columns:1fr 1fr;border:1px solid var(--line);border-radius:14px;overflow:hidden}
+.segment button{border:0;background:#fff;padding:10px}.segment button.on{background:var(--blueSoft);color:var(--blue)}
+.leg{padding:10px 0;border-bottom:1px solid var(--line)}
+.leg:last-child{border-bottom:0}
+.legtitle{font-size:13px;margin-bottom:3px}
+.legmeta{font-size:11px;color:var(--muted)}
+.status{font-size:11px;padding:5px 8px;border-radius:99px;background:#f0f2f4}
+.status.blue{background:var(--blueSoft);color:var(--blue)}
+@media(min-width:700px){.routefloat{width:390px;left:18px;right:auto}.tools{left:18px;right:auto;max-width:650px}}
+</style>
+</head>
+<body>
+<div id="app">
+<header>
+  <button class="ibtn" onclick="locateMe()" aria-label="Locate me">
+    <svg class="ico" viewBox="0 0 24 24"><circle cx="12" cy="12" r="4"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3"/></svg>
+  </button>
+  <div class="title"><h1 id="dayTitle">Singapore Trip</h1><div id="daySub">15–18 Oct 2026</div></div>
+  <button class="ibtn" onclick="openSheet('weatherSheet')" aria-label="Weather">
+    <svg class="ico" viewBox="0 0 24 24"><path d="M7 18h10a4 4 0 0 0 .4-8A6 6 0 0 0 6 9.5 4.3 4.3 0 0 0 7 18Z"/></svg>
+  </button>
+  <button class="ibtn" onclick="openSheet('photoSheet')" aria-label="Camera">
+    <svg class="ico" viewBox="0 0 24 24"><path d="M4 7h4l1.5-2h5L16 7h4v12H4Z"/><circle cx="12" cy="13" r="4"/></svg>
+  </button>
+</header>
+
+<main>
+  <div id="map"></div>
+
+  <div class="tools">
+    <button class="chip" onclick="openSheet('addSheet')"><svg class="ico" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>Add stop</button>
+    <button class="chip" onclick="tooHot()"><svg class="ico" viewBox="0 0 24 24"><path d="M12 3v3M4.2 6.2l2.1 2.1M3 14h3M20.8 6.2l-2.1 2.1M21 14h-3"/><path d="M8 17a4 4 0 1 1 8 0"/></svg>Too hot</button>
+    <button class="chip" onclick="openSheet('coolSheet')"><svg class="ico" viewBox="0 0 24 24"><path d="M12 2v20M4 7l16 10M20 7 4 17M8 4l4 3 4-3M8 20l4-3 4 3"/></svg>Cool nearby</button>
+    <button class="chip" onclick="openSheet('smokeSheet')"><svg class="ico" viewBox="0 0 24 24"><path d="M3 15h13v4H3zM18 15v4M21 15v4"/><path d="M15 8c2 0 3-1 3-3M18 11c2 0 3-1 3-3"/></svg>Smoking</button>
+    <button class="chip" onclick="toggleWet()"><svg class="ico" viewBox="0 0 24 24"><path d="M7 18h10a4 4 0 0 0 .4-8A6 6 0 0 0 6 9.5 4.3 4.3 0 0 0 7 18Z"/><path d="M8 21l1-2M12 21l1-2M16 21l1-2"/></svg><span id="weatherMode">Dry plan</span></button>
+  </div>
+
+  <div class="routefloat">
+    <div class="routehead"><div class="name">Route now</div><div class="stats" id="routeStats">—</div><button onclick="openSheet('routeSheet')">View route</button></div>
+    <div class="next" id="nextCard"></div>
+    <div class="actions"><button class="go" onclick="followRoute()">Follow route</button><button class="skip" onclick="skipNext()">Skip</button></div>
+  </div>
+</main>
+
+<nav>
+  <button class="nav active" onclick="openSheet('daysSheet')"><svg class="ico" viewBox="0 0 24 24"><rect x="4" y="5" width="16" height="15" rx="2"/><path d="M8 3v4M16 3v4M4 9h16"/></svg>Day</button>
+  <button class="nav" onclick="openSheet('routeSheet')"><svg class="ico" viewBox="0 0 24 24"><path d="M5 19c0-4 5-4 5-8s-5-4-5-8M19 5c0 4-5 4-5 8s5 4 5 8"/><circle cx="5" cy="19" r="2"/><circle cx="19" cy="5" r="2"/></svg>Route</button>
+  <button class="nav" onclick="openSheet('addSheet')"><svg class="ico" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>Add</button>
+  <button class="nav" onclick="openSheet('spendSheet')"><svg class="ico" viewBox="0 0 24 24"><path d="M4 7h16v12H4zM4 10h16"/><circle cx="16" cy="15" r="1.5"/></svg>Spend</button>
+  <button class="nav" onclick="openSheet('moreSheet')"><svg class="ico" viewBox="0 0 24 24"><path d="M5 7h14M5 12h14M5 17h14"/></svg>Menu</button>
+</nav>
+</div>
+
+<div class="sheetbg" id="daysSheet"><div class="sheet"><div class="handle"></div><div class="shead"><h2>Choose day</h2><button class="close" onclick="closeSheet('daysSheet')">×</button></div><div id="daysList"></div></div></div>
+
+<div class="sheetbg" id="routeSheet"><div class="sheet"><div class="handle"></div><div class="shead"><h2>Today's route</h2><button class="close" onclick="closeSheet('routeSheet')">×</button></div>
+<div class="card"><div class="segment"><button id="smartBtn" class="on" onclick="setRouteMode('smart')">Smart</button><button id="walkBtn" onclick="setRouteMode('walk')">Walk only</button></div></div>
+<div id="routeList"></div>
+<div class="card"><div class="row"><span class="status blue">Walking routes use mapped footpaths</span><button class="sbtn" onclick="rebuildRoute()">Refresh</button></div></div>
+<div class="card"><h3 style="font-size:15px;font-weight:500;margin:0 0 6px">Missed / later</h3><div id="missedList"></div></div>
+</div></div>
+
+<div class="sheetbg" id="addSheet"><div class="sheet"><div class="handle"></div><div class="shead"><h2>Add somewhere now</h2><button class="close" onclick="closeSheet('addSheet')">×</button></div>
+<div class="card"><input id="searchPlaces" placeholder="Search saved places" oninput="renderAddList()"></div><div id="addList"></div>
+</div></div>
+
+<div class="sheetbg" id="spendSheet"><div class="sheet"><div class="handle"></div><div class="shead"><h2>Trip spend</h2><button class="close" onclick="closeSheet('spendSheet')">×</button></div>
+<div class="card"><div class="money" id="spendTotal">S$0.00</div><div class="muted" id="spendFx">≈ £0.00 · C$0.00</div></div>
+<div class="card"><div class="grid2"><input class="full" id="expDesc" placeholder="What was it?"><input id="expAmount" type="number" step="0.01" placeholder="S$ amount"><select id="expCat"><option>Food</option><option>Drinks</option><option>Transport</option><option>Attraction</option><option>Shopping</option><option>SIM</option><option>Hotel</option><option>Other</option></select><select id="expWho"><option>For both</option><option>Me</option><option>Other person</option></select><select id="expPay"><option>Google Wallet / Card</option><option>Cash</option></select></div><button class="primary" style="width:100%;margin-top:8px" onclick="saveExpense()">Save expense</button></div><div id="expenseList"></div>
+</div></div>
+
+<div class="sheetbg" id="photoSheet"><div class="sheet"><div class="handle"></div><div class="shead"><h2>Photo check</h2><button class="close" onclick="closeSheet('photoSheet')">×</button></div>
+<div class="card"><p style="font-size:13px;line-height:1.5;margin-top:0">Take a photo of the place. The app can store it with the stop. Automatic AI crowd/price analysis will be connected when the app is hosted.</p><input id="photoInput" type="file" accept="image/*" capture="environment" onchange="previewPhoto(event)"><img id="photoPreview" style="width:100%;max-height:320px;object-fit:cover;border-radius:16px;display:none;margin-top:8px"></div>
+</div></div>
+
+<div class="sheetbg" id="weatherSheet"><div class="sheet"><div class="handle"></div><div class="shead"><h2>Weather</h2><button class="close" onclick="closeSheet('weatherSheet')">×</button></div><div id="weatherBody"></div></div></div>
+
+<div class="sheetbg" id="coolSheet"><div class="sheet"><div class="handle"></div><div class="shead"><h2>Cool nearby</h2><button class="close" onclick="closeSheet('coolSheet')">×</button></div><div id="coolList"></div></div></div>
+
+<div class="sheetbg" id="smokeSheet"><div class="sheet"><div class="handle"></div><div class="shead"><h2>Smoking nearby</h2><button class="close" onclick="closeSheet('smokeSheet')">×</button></div>
+<div class="warning">Use only places clearly permitted on site. Singapore has many smoke-free areas; signs at the location take priority.</div>
+<div id="smokeList"></div>
+</div></div>
+
+<div class="sheetbg" id="moreSheet"><div class="sheet"><div class="handle"></div><div class="shead"><h2>Menu</h2><button class="close" onclick="closeSheet('moreSheet')">×</button></div>
+<div class="card"><button class="sbtn" style="width:100%;text-align:left" onclick="closeSheet('moreSheet');openSheet('photoSheet')">Photo check</button></div>
+<div class="card"><button class="sbtn" style="width:100%;text-align:left" onclick="closeSheet('moreSheet');openSheet('weatherSheet')">Weather</button></div>
+<div class="card"><button class="sbtn" style="width:100%;text-align:left" onclick="closeSheet('moreSheet');openSheet('spendSheet')">Trip spend</button></div>
+</div></div>
+
+<div class="sheetbg" id="detourSheet"><div class="sheet"><div class="handle"></div><div class="shead"><h2>Add this stop?</h2><button class="close" onclick="closeSheet('detourSheet')">×</button></div><div id="detourBody"></div></div></div>
+
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script>
+const days=[
+ {date:"2026-10-15",label:"Thu 15",title:"Arrival + Marina Bay lights"},
+ {date:"2026-10-16",label:"Fri 16",title:"Kampong Glam · Bugis · Little India"},
+ {date:"2026-10-17",label:"Sat 17",title:"Fort Canning · River · Chinatown"},
+ {date:"2026-10-18",label:"Sun 18",title:"Changi · Jewel · T4"}
+];
+const stops=[
+{id:"hotel",name:"Hotel Boss",lat:1.3057,lng:103.8603,day:0,type:"Indoor",priority:"Must See"},
+{id:"merlion",name:"Merlion Park",lat:1.2868,lng:103.8545,day:0,type:"Outdoor",priority:"Would Like"},
+{id:"helix",name:"Helix Bridge",lat:1.2875,lng:103.8601,day:0,type:"Outdoor",priority:"Would Like"},
+{id:"mbs",name:"Marina Bay Sands promenade",lat:1.2834,lng:103.8607,day:0,type:"Outdoor",priority:"Must See"},
+{id:"spectra",name:"Spectra light & water show",lat:1.2848,lng:103.8600,day:0,type:"Outdoor",priority:"Must See"},
+{id:"gardens",name:"Gardens by the Bay / Supertree",lat:1.2816,lng:103.8636,day:0,type:"Outdoor",priority:"Would Like"},
+{id:"f1",name:"Singapore F1 street-circuit walk",lat:1.2892,lng:103.8632,day:0,type:"Outdoor",priority:"Optional"},
+{id:"sultan",name:"Sultan Mosque",lat:1.3023,lng:103.8590,day:1,type:"Outdoor",priority:"Must See"},
+{id:"haji",name:"Haji Lane",lat:1.3008,lng:103.8592,day:1,type:"Outdoor",priority:"Must See"},
+{id:"arab",name:"Arab Street",lat:1.3021,lng:103.8586,day:1,type:"Outdoor",priority:"Would Like"},
+{id:"bugis",name:"Bugis Street",lat:1.3008,lng:103.8552,day:1,type:"Indoor",priority:"Must See"},
+{id:"littleindia",name:"Little India Arcade",lat:1.3068,lng:103.8518,day:1,type:"Indoor",priority:"Must See"},
+{id:"tekka",name:"Tekka Centre",lat:1.3062,lng:103.8504,day:1,type:"Indoor",priority:"Would Like"},
+{id:"fort",name:"Fort Canning Park",lat:1.2955,lng:103.8450,day:2,type:"Outdoor",priority:"Must See"},
+{id:"clarke",name:"Clarke Quay",lat:1.2906,lng:103.8465,day:2,type:"Mixed",priority:"Would Like"},
+{id:"boat",name:"Boat Quay",lat:1.2875,lng:103.8498,day:2,type:"Outdoor",priority:"Would Like"},
+{id:"chinatown",name:"Chinatown Street Market",lat:1.2838,lng:103.8435,day:2,type:"Mixed",priority:"Must See"},
+{id:"laupasat",name:"Lau Pa Sat",lat:1.2806,lng:103.8504,day:2,type:"Indoor",priority:"Would Like"},
+{id:"jewel",name:"Jewel Changi Airport",lat:1.3603,lng:103.9898,day:3,type:"Indoor",priority:"Must See"},
+{id:"t4",name:"Changi Terminal 4",lat:1.3384,lng:103.9832,day:3,type:"Indoor",priority:"Must See"}
+];
+const mrt=[
+{name:"Lavender",code:"EW11",lat:1.3074,lng:103.8628},
+{name:"Bugis",code:"EW12/DT14",lat:1.3007,lng:103.8560},
+{name:"Bayfront",code:"CE1/DT16",lat:1.2819,lng:103.8592},
+{name:"Little India",code:"NE7/DT12",lat:1.3072,lng:103.8497},
+{name:"Fort Canning",code:"DT20",lat:1.2924,lng:103.8443},
+{name:"Chinatown",code:"NE4/DT19",lat:1.2844,lng:103.8436},
+{name:"Raffles Place",code:"EW14/NS26",lat:1.2840,lng:103.8513},
+{name:"Changi Airport",code:"CG2",lat:1.3572,lng:103.9880},
+{name:"Tanah Merah",code:"EW4",lat:1.3272,lng:103.9464}
+];
+let state=JSON.parse(localStorage.getItem("sgTripV5")||"null")||{
+ day:0,routes:days.map((_,i)=>stops.filter(s=>s.day===i).map(s=>s.id)),missed:[],expenses:[],custom:[],mode:"Dry",routeMode:"smart",fx:{gbp:.58,cad:.96}
+};
+let map, routeLayer=null, userPos=null,userMarker=null,markers=[],pendingAdd=null,lastRoute=null;
+function save(){localStorage.setItem("sgTripV5",JSON.stringify(state))}
+function allStops(){return [...stops,...state.custom]}
+function byId(id){return allStops().find(s=>s.id===id)}
+function routeObjs(){return state.routes[state.day].map(byId).filter(Boolean)}
+function hav(a,b){const R=6371,p=Math.PI/180,dLat=(b.lat-a.lat)*p,dLon=(b.lng-a.lng)*p,la1=a.lat*p,la2=b.lat*p,x=Math.sin(dLat/2)**2+Math.cos(la1)*Math.cos(la2)*Math.sin(dLon/2)**2;return 2*R*Math.asin(Math.sqrt(x))}
+function walkMins(km){return Math.round(km/4.7*60)}
+function nearestMRT(p){return mrt.slice().sort((a,b)=>hav(p,a)-hav(p,b))[0]}
+function openSheet(id){document.getElementById(id).classList.add("open");if(id==="routeSheet"){renderRouteSheet();renderMissed()}if(id==="addSheet")renderAddList();if(id==="spendSheet")renderSpend();if(id==="coolSheet")renderCool();if(id==="weatherSheet")loadWeather();if(id==="smokeSheet")renderSmoking()}
+function closeSheet(id){document.getElementById(id).classList.remove("open")}
+function initMap(){
+ map=L.map("map",{zoomControl:false}).setView([1.297,103.856],14);
+ const tiles=L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",{
+      maxZoom:19,
+      attribution:'© OpenStreetMap contributors'
+    }).addTo(map);
+    let tilesLoaded=false;
+    tiles.on("load",()=>{tilesLoaded=true;const n=document.getElementById("mapNotice");if(n)n.remove()});
+    setTimeout(()=>{
+      if(!tilesLoaded && !document.getElementById("mapNotice")){
+        const n=document.createElement("div");
+        n.id="mapNotice";
+        n.style.cssText="position:absolute;z-index:450;left:12px;right:12px;top:62px;background:rgba(255,255,255,.96);border:1px solid #e2e4e7;border-radius:14px;padding:10px 12px;font-size:12px;color:#555;box-shadow:0 3px 12px rgba(0,0,0,.08)";
+        n.innerHTML="Map tiles have not loaded yet. This preview needs an internet connection. When hosted on HTTPS the map, GPS and camera work normally.";
+        document.querySelector("main").appendChild(n);
+      }
+    },3500);
+}
+function renderHeader(){dayTitle.textContent=days[state.day].title;daySub.textContent=`${days[state.day].label} · ${state.mode} plan`;weatherMode.textContent=state.mode+" plan"}
+function renderDays(){daysList.innerHTML=days.map((d,i)=>`<div class="place"><div><h3>${d.label}</h3><p>${d.title}</p></div><button class="sbtn" onclick="setDay(${i})">${i===state.day?"Current":"Open"}</button></div>`).join("")}
+function setDay(i){state.day=i;save();closeSheet("daysSheet");renderAll();rebuildRoute()}
+function renderNext(){
+ const r=routeObjs(),n=r[0];
+ if(!n){nextCard.innerHTML='<div><h2>Finished for today</h2><p>No stops remaining.</p></div>';routeStats.textContent="";return}
+ const d=userPos?hav(userPos,n):null;
+ nextCard.innerHTML=`<div><h2>${n.name}</h2><p>${d!==null?`${d.toFixed(1)} km from you · `:""}${n.type}</p></div><button class="sbtn" onclick="focusStop('${n.id}')">Map</button>`;
+}
+function renderMarkers(){
+ markers.forEach(m=>map.removeLayer(m));markers=[];
+ const r=routeObjs();
+ r.forEach((s,i)=>{const m=L.marker([s.lat,s.lng],{title:s.name}).addTo(map).bindPopup(`<b>${i+1}. ${s.name}</b><br>${s.type}`);markers.push(m)});
+}
+async function footRoute(points){
+ if(points.length<2)return null;
+ const coords=points.map(p=>`${p.lng},${p.lat}`).join(";");
+ const url=`https://routing.openstreetmap.de/routed-foot/route/v1/driving/${coords}?overview=full&geometries=geojson&steps=true`;
+ const res=await fetch(url);
+ if(!res.ok)throw new Error("route");
+ const j=await res.json();
+ if(j.code!=="Ok"||!j.routes?.length)throw new Error("route");
+ return j.routes[0];
+}
+async function rebuildRoute(){
+ renderMarkers();
+ if(routeLayer){map.removeLayer(routeLayer);routeLayer=null}
+ const r=routeObjs();
+ if(r.length<2){renderNext();return}
+ routeStats.textContent="Routing…";
+ try{
+   const route=await footRoute(r);
+   lastRoute=route;
+   routeLayer=L.geoJSON(route.geometry,{style:{color:"#1677ff",weight:5,opacity:.8}}).addTo(map);
+   map.fitBounds(routeLayer.getBounds().pad(.12));
+   routeStats.textContent=`${(route.distance/1000).toFixed(1)} km · ${Math.round(route.duration/60)} min`;
+ }catch(e){
+   routeStats.textContent="Route unavailable";
+   if(markers.length)map.fitBounds(L.featureGroup(markers).getBounds().pad(.15));
+ }
+ renderNext();
+ if(document.getElementById("routeSheet").classList.contains("open"))renderRouteSheet();
+}
+function smartTransportHint(a,b){
+ const km=hav(a,b);
+ if(state.routeMode==="walk"||km<2.3)return {mode:"Walk",text:"Walking route"};
+ const s1=nearestMRT(a),s2=nearestMRT(b);
+ return {mode:"MRT",text:`Walk to ${s1.name} ${s1.code} → MRT toward ${s2.name} ${s2.code} → walk to destination`};
+}
+function renderRouteSheet(){
+ const r=routeObjs();
+ let legs="";
+ for(let i=0;i<r.length;i++){
+   const s=r[i];
+   let extra="";
+   if(i<r.length-1){const h=smartTransportHint(s,r[i+1]);extra=`<div class="leg"><div class="legtitle">${h.mode}: ${s.name} → ${r[i+1].name}</div><div class="legmeta">${h.text}</div></div>`}
+   legs+=`<div class="place"><div><h3>${i+1}. ${s.name}</h3><p>${s.type} · ${s.priority}</p></div><button class="sbtn" onclick="removeStop('${s.id}')">Remove</button></div>${extra}`;
+ }
+ routeList.innerHTML=`<div class="card">${legs}</div>`;
+ smartBtn.classList.toggle("on",state.routeMode==="smart");walkBtn.classList.toggle("on",state.routeMode==="walk");
+}
+function removeStop(id){state.routes[state.day]=state.routes[state.day].filter(x=>x!==id);if(!state.missed.some(m=>m.id===id))state.missed.push({id,reason:"Removed"});save();renderAll();renderRouteSheet();renderMissed();rebuildRoute()}
+function renderMissed(){missedList.innerHTML=state.missed.length?state.missed.map((m,i)=>{const s=byId(m.id);return `<div class="place"><div><h3>${s.name}</h3><p>${m.reason}</p></div><button class="sbtn" onclick="addBack(${i})">Add back</button></div>`}).join(""):'<p class="muted">Nothing saved.</p>'}
+function approxBestInsert(arr,s){
+ if(!arr.length)return {idx:0,cost:0};let best={idx:arr.length,cost:Infinity};
+ for(let i=0;i<=arr.length;i++){let c=0;if(i===0)c=hav(s,arr[0]);else if(i===arr.length)c=hav(arr[arr.length-1],s);else c=hav(arr[i-1],s)+hav(s,arr[i])-hav(arr[i-1],arr[i]);if(c<best.cost)best={idx:i,cost:c}}
+ return best;
+}
+async function addBack(i){
+ const m=state.missed.splice(i,1)[0],s=byId(m.id),arr=routeObjs(),ins=approxBestInsert(arr,s);
+ state.routes[state.day].splice(ins.idx,0,s.id);save();renderAll();renderRouteSheet();renderMissed();await rebuildRoute()
+}
+function renderAddList(){const q=(searchPlaces.value||"").toLowerCase(),current=new Set(state.routes[state.day]);addList.innerHTML='<div class="card">'+allStops().filter(s=>!current.has(s.id)&&s.name.toLowerCase().includes(q)).map(s=>`<div class="place"><div><h3>${s.name}</h3><p>${s.type} · ${s.priority}</p></div><button class="sbtn" onclick="checkAdd('${s.id}')">Add</button></div>`).join("")+'</div>'}
+function checkAdd(id){
+ const s=byId(id),arr=routeObjs(),ins=approxBestInsert(arr,s),extra=ins.cost;
+ pendingAdd={id,idx:ins.idx,extra};
+ const far=extra>3;
+ detourBody.innerHTML=`<div class="${far?"warning":"good"}">${far?`This is well off the current route. Rough extra distance is about ${extra.toFixed(1)} km before foot-route checking.`:`This fits reasonably well in the current route.`}</div><div class="card"><button class="primary" style="width:100%" onclick="confirmAdd('best')">Add in best position</button><button class="sbtn" style="width:100%;margin-top:8px" onclick="confirmAdd('later')">Save for later</button>${far?`<button class="sbtn" style="width:100%;margin-top:8px" onclick="confirmAdd('transit')">Add and use MRT where sensible</button>`:""}</div>`;
+ closeSheet("addSheet");openSheet("detourSheet")
+}
+function confirmAdd(mode){if(!pendingAdd)return;const p=pendingAdd;if(mode==="later")state.missed.push({id:p.id,reason:"Saved because it was off-route"});else{state.routes[state.day].splice(p.idx,0,p.id);if(mode==="transit")byId(p.id).transportHint="MRT preferred"}save();pendingAdd=null;closeSheet("detourSheet");renderAll();rebuildRoute()}
+function setRouteMode(m){state.routeMode=m;save();renderRouteSheet()}
+function tooHot(){const opts=routeObjs().filter(s=>s.priority==="Optional"&&s.type!=="Indoor");opts.forEach(s=>{state.routes[state.day]=state.routes[state.day].filter(x=>x!==s.id);state.missed.push({id:s.id,reason:"Too hot / tired"})});save();renderAll();rebuildRoute()}
+function toggleWet(){state.mode=state.mode==="Dry"?"Wet":"Dry";save();renderHeader()}
+function skipNext(){const id=state.routes[state.day].shift();if(id)state.missed.push({id,reason:"Skipped"});save();renderAll();rebuildRoute()}
+function locateMe(){if(!navigator.geolocation)return;navigator.geolocation.getCurrentPosition(p=>{userPos={lat:p.coords.latitude,lng:p.coords.longitude};if(userMarker)map.removeLayer(userMarker);userMarker=L.circleMarker([userPos.lat,userPos.lng],{radius:8,weight:3,fillOpacity:.9}).addTo(map).bindPopup("You are here");map.setView([userPos.lat,userPos.lng],16);renderNext()})}
+async function followRoute(){
+ if(!userPos){locateMe();setTimeout(followRoute,800);return}
+ const n=routeObjs()[0];if(!n)return;
+ try{
+  const route=await footRoute([userPos,n]);
+  if(routeLayer)map.removeLayer(routeLayer);
+  routeLayer=L.geoJSON(route.geometry,{style:{color:"#1677ff",weight:6,opacity:.9}}).addTo(map);
+  map.fitBounds(routeLayer.getBounds().pad(.16));
+  routeStats.textContent=`${(route.distance/1000).toFixed(1)} km · ${Math.round(route.duration/60)} min`;
+ }catch(e){routeStats.textContent="Walking route unavailable"}
+}
+function focusStop(id){const s=byId(id);map.setView([s.lat,s.lng],17)}
+function renderSpend(){const t=state.expenses.reduce((a,b)=>a+b.amount,0);spendTotal.textContent=`S$${t.toFixed(2)}`;spendFx.textContent=`≈ £${(t*state.fx.gbp).toFixed(2)} · C$${(t*state.fx.cad).toFixed(2)}`;expenseList.innerHTML=state.expenses.slice().reverse().map(e=>`<div class="card"><div style="display:flex;justify-content:space-between;gap:10px"><div><div>${e.desc}</div><div class="muted">${e.cat} · ${e.who}</div></div><div style="text-align:right">S$${e.amount.toFixed(2)}<div class="muted">£${(e.amount*state.fx.gbp).toFixed(2)} · C$${(e.amount*state.fx.cad).toFixed(2)}</div></div></div></div>`).join("")}
+function saveExpense(){const a=+expAmount.value;if(!a)return;state.expenses.push({desc:expDesc.value||expCat.value,amount:a,cat:expCat.value,who:expWho.value,pay:expPay.value,ts:new Date().toISOString()});expDesc.value=expAmount.value="";save();renderSpend()}
+function renderCool(){const p=[{name:"Bugis Junction",lat:1.2997,lng:103.8555,note:"Air-conditioned mall"},{name:"Raffles City",lat:1.2931,lng:103.8533,note:"Air-conditioned mall"},{name:"Clarke Quay Central",lat:1.2897,lng:103.8465,note:"Air-conditioned mall"},{name:"Marina Bay Sands Shoppes",lat:1.2839,lng:103.8591,note:"Air-conditioned mall"},{name:"Tekka Centre",lat:1.3062,lng:103.8504,note:"Covered food centre"}];if(userPos)p.sort((a,b)=>hav(userPos,a)-hav(userPos,b));coolList.innerHTML='<div class="card">'+p.map(x=>`<div class="place"><div><h3>${x.name}</h3><p>${x.note}${userPos?` · ${hav(userPos,x).toFixed(1)} km`:""}</p></div><button class="sbtn" onclick="map.setView([${x.lat},${x.lng}],17);closeSheet('coolSheet')">Map</button></div>`).join("")+'</div>'}
+async function loadWeather(){weatherBody.innerHTML='<div class="card">Loading forecast…</div>';try{const r=await fetch("https://api.open-meteo.com/v1/forecast?latitude=1.3521&longitude=103.8198&hourly=temperature_2m,precipitation_probability&timezone=Asia%2FSingapore&forecast_days=16"),j=await r.json(),date=days[state.day].date,arr=j.hourly.time.map((t,i)=>({t,temp:j.hourly.temperature_2m[i],rain:j.hourly.precipitation_probability[i]})).filter(x=>x.t.startsWith(date)&&+x.t.slice(11,13)>=7&&+x.t.slice(11,13)<=22);if(!arr.length)throw 0;weatherBody.innerHTML='<div class="card">'+arr.map(x=>`<div class="place"><div><h3>${x.t.slice(11,16)}</h3><p>${Math.round(x.temp)}°C · ${x.rain}% rain</p></div></div>`).join("")+'</div>'}catch(e){weatherBody.innerHTML='<div class="card">Exact hourly forecast is not available yet. Refresh nearer the trip.</div>'}}
+function previewPhoto(ev){const f=ev.target.files?.[0];if(!f)return;photoPreview.src=URL.createObjectURL(f);photoPreview.style.display="block"}
+
+const smokingPlaces=[
+ {name:"Changi T4 public kerbside smoking area",lat:1.3385,lng:103.9838,note:"Terminal 4 public-side vicinity. Follow the airport smoking-area signs when you arrive."},
+ {name:"Changi T4 transit smoking area – Gate G4 area",lat:1.3394,lng:103.9847,note:"Airside/transit vicinity. Only accessible after immigration/security."},
+ {name:"Changi T4 transit smoking area – Gate G16 area",lat:1.3374,lng:103.9849,note:"Airside/transit vicinity. Follow current terminal signage."}
+];
+
+function renderSmoking(){
+ const list=smokingPlaces.slice();
+ if(userPos) list.sort((a,b)=>hav(userPos,a)-hav(userPos,b));
+ smokeList.innerHTML='<div class="card">'+list.map((p,i)=>`
+   <div class="place">
+     <div>
+       <h3>${p.name}</h3>
+       <p>${p.note}${userPos?` · approx. ${hav(userPos,p).toFixed(1)} km from you`:""}</p>
+     </div>
+     <button class="sbtn" onclick="routeToSmoking(${smokingPlaces.indexOf(p)})">Route</button>
+   </div>`).join('')+
+   `<div class="place"><div><h3>Orchard Road</h3><p>No-smoking zone except marked Designated Smoking Areas. I will only route you to a DSA once we have a confirmed current location.</p></div></div>`+
+   '</div>';
+}
+
+async function routeToSmoking(i){
+ const p=smokingPlaces[i];
+ closeSheet("smokeSheet");
+ if(!userPos){
+   locateMe();
+   setTimeout(()=>routeToSmoking(i),900);
+   return;
+ }
+ try{
+   const route=await footRoute([userPos,p]);
+   if(routeLayer)map.removeLayer(routeLayer);
+   routeLayer=L.geoJSON(route.geometry,{style:{color:"#1677ff",weight:6,opacity:.9}}).addTo(map);
+   const marker=L.marker([p.lat,p.lng]).addTo(map).bindPopup(`<b>${p.name}</b><br>${p.note}`).openPopup();
+   markers.push(marker);
+   map.fitBounds(routeLayer.getBounds().pad(.18));
+   routeStats.textContent=`Smoking route · ${(route.distance/1000).toFixed(1)} km · ${Math.round(route.duration/60)} min`;
+ }catch(e){
+   map.setView([p.lat,p.lng],17);
+   routeStats.textContent="Smoking location shown · route unavailable";
+ }
+}
+
+function renderAll(){renderHeader();renderDays();renderNext();renderSpend();renderMarkers()}
+initMap();setTimeout(()=>map.invalidateSize(),250);window.addEventListener("resize",()=>map.invalidateSize());renderAll();rebuildRoute();
+</script>
+</body>
+</html>
