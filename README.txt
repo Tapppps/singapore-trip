@@ -1,12 +1,9 @@
-Singapore Trip App V5
+Singapore Trip App V7
 
-Fixes:
-- Switched the visual map tile layer to the standard OpenStreetMap tile server.
-- Added a visible message if map tiles cannot load in a local/preview environment.
-- Added map.invalidateSize handling for mobile/browser resizing.
-- Smoking locations now include a Route button.
-- Smoking Route uses the same real foot-routing engine from your GPS position.
-- Changi T4 smoking points are treated as terminal-area guidance; follow on-site signs.
-- Orchard Road is not given a fake pin because smoking is only allowed at marked DSAs.
-
-If the ChatGPT file preview still does not show map tiles, host the folder on HTTPS (for example your existing Render setup). GPS, camera, map tiles and routing are browser/network features and are more reliable when hosted.
+Route rule corrected:
+- Thursday ALWAYS starts at Hotel Boss and ends at Hotel Boss.
+- Friday ALWAYS starts at Hotel Boss and ends at Hotel Boss.
+- Saturday ALWAYS starts at Hotel Boss and ends at Hotel Boss.
+- Sunday starts at Hotel Boss, then follows the airport/Jewel plan and ends at Changi Terminal 4.
+- These required start/end points are locked and cannot be removed accidentally.
+- Added/returned locations remain inserted between the fixed start/end points.

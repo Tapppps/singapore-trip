@@ -73,6 +73,35 @@ input,select,textarea{width:100%;border:1px solid var(--line);background:#fff;bo
 .legmeta{font-size:11px;color:var(--muted)}
 .status{font-size:11px;padding:5px 8px;border-radius:99px;background:#f0f2f4}
 .status.blue{background:var(--blueSoft);color:var(--blue)}
+
+.map-label{
+  background:rgba(255,255,255,.94)!important;
+  border:1px solid #dfe3e7!important;
+  border-radius:7px!important;
+  box-shadow:0 1px 5px rgba(0,0,0,.08)!important;
+  color:#1f2328!important;
+  font-size:11px!important;
+  font-weight:400!important;
+  padding:2px 5px!important;
+}
+.map-label:before{display:none!important}
+.mrt-dot{
+  width:12px;height:12px;border-radius:50%;
+  background:#fff;border:3px solid #6b7280;box-shadow:0 1px 4px rgba(0,0,0,.18)
+}
+.mrt-label{font-size:10px;color:#4b5563;white-space:nowrap;background:rgba(255,255,255,.90);padding:1px 4px;border-radius:5px;border:1px solid #e3e5e8}
+.transport-switch{display:grid;grid-template-columns:1fr 1fr;gap:7px;margin-top:9px}
+.transport-switch button{height:40px;border:1px solid var(--line);border-radius:13px;background:#fff;font-size:12px}
+.transport-switch button.active{background:var(--blueSoft);color:var(--blue);border-color:#cfe2ff}
+.upcoming{display:none;margin-top:8px;border-top:1px solid var(--line);padding-top:8px}
+.upcoming.open{display:block}
+.upcoming-row{display:grid;grid-template-columns:1fr auto;gap:8px;align-items:center;padding:7px 0;border-bottom:1px solid var(--line)}
+.upcoming-row:last-child{border-bottom:0}
+.upcoming-row .u-name{font-size:12px}
+.upcoming-row .u-meta{font-size:10px;color:var(--muted);margin-top:2px}
+.weather-icon{width:34px;height:34px;border-radius:12px;background:#f3f5f7;display:grid;place-items:center}
+.wx-svg{width:22px;height:22px;fill:none;stroke:#30343a;stroke-width:1.6;stroke-linecap:round;stroke-linejoin:round}
+
 @media(min-width:700px){.routefloat{width:390px;left:18px;right:auto}.tools{left:18px;right:auto;max-width:650px}}
 </style>
 </head>
@@ -103,9 +132,18 @@ input,select,textarea{width:100%;border:1px solid var(--line);background:#fff;bo
   </div>
 
   <div class="routefloat">
-    <div class="routehead"><div class="name">Route now</div><div class="stats" id="routeStats">—</div><button onclick="openSheet('routeSheet')">View route</button></div>
+    <div class="routehead">
+      <div class="name">Route now</div>
+      <div class="stats" id="routeStats">—</div>
+      <button onclick="toggleUpcoming()" id="expandRouteBtn">Expand</button>
+    </div>
     <div class="next" id="nextCard"></div>
+    <div class="transport-switch">
+      <button id="nextWalkBtn" class="active" onclick="setNextMode('walk')">Walk</button>
+      <button id="nextTransitBtn" onclick="setNextMode('transit')">Public transport</button>
+    </div>
     <div class="actions"><button class="go" onclick="followRoute()">Follow route</button><button class="skip" onclick="skipNext()">Skip</button></div>
+    <div class="upcoming" id="upcomingList"></div>
   </div>
 </main>
 
@@ -137,7 +175,7 @@ input,select,textarea{width:100%;border:1px solid var(--line);background:#fff;bo
 </div></div>
 
 <div class="sheetbg" id="photoSheet"><div class="sheet"><div class="handle"></div><div class="shead"><h2>Photo check</h2><button class="close" onclick="closeSheet('photoSheet')">×</button></div>
-<div class="card"><p style="font-size:13px;line-height:1.5;margin-top:0">Take a photo of the place. The app can store it with the stop. Automatic AI crowd/price analysis will be connected when the app is hosted.</p><input id="photoInput" type="file" accept="image/*" capture="environment" onchange="previewPhoto(event)"><img id="photoPreview" style="width:100%;max-height:320px;object-fit:cover;border-radius:16px;display:none;margin-top:8px"></div>
+<div class="card"><p style="font-size:13px;line-height:1.5;margin-top:0">Tap below to open the phone camera. After taking the picture, tap <b>Use photo</b>.</p><input id="photoInput" type="file" accept="image/*" capture="environment" onchange="previewPhoto(event)"><img id="photoPreview" style="width:100%;max-height:320px;object-fit:cover;border-radius:16px;display:none;margin-top:8px"><button id="usePhotoBtn" class="primary" style="width:100%;margin-top:8px;display:none" onclick="usePhoto()">Use photo</button><div id="photoUsed" class="muted" style="margin-top:8px"></div></div>
 </div></div>
 
 <div class="sheetbg" id="weatherSheet"><div class="sheet"><div class="handle"></div><div class="shead"><h2>Weather</h2><button class="close" onclick="closeSheet('weatherSheet')">×</button></div><div id="weatherBody"></div></div></div>
@@ -188,21 +226,76 @@ const stops=[
 {id:"t4",name:"Changi Terminal 4",lat:1.3384,lng:103.9832,day:3,type:"Indoor",priority:"Must See"}
 ];
 const mrt=[
+{name:"Changi Airport",code:"CG2",lat:1.3572,lng:103.9880},
+{name:"Expo",code:"CG1/DT35",lat:1.3350,lng:103.9615},
+{name:"Tanah Merah",code:"EW4",lat:1.3272,lng:103.9464},
+{name:"Bedok",code:"EW5",lat:1.3239,lng:103.9299},
+{name:"Kembangan",code:"EW6",lat:1.3210,lng:103.9129},
+{name:"Eunos",code:"EW7",lat:1.3198,lng:103.9030},
+{name:"Paya Lebar",code:"EW8/CC9",lat:1.3175,lng:103.8923},
+{name:"Aljunied",code:"EW9",lat:1.3165,lng:103.8829},
+{name:"Kallang",code:"EW10",lat:1.3115,lng:103.8714},
 {name:"Lavender",code:"EW11",lat:1.3074,lng:103.8628},
 {name:"Bugis",code:"EW12/DT14",lat:1.3007,lng:103.8560},
-{name:"Bayfront",code:"CE1/DT16",lat:1.2819,lng:103.8592},
-{name:"Little India",code:"NE7/DT12",lat:1.3072,lng:103.8497},
-{name:"Fort Canning",code:"DT20",lat:1.2924,lng:103.8443},
-{name:"Chinatown",code:"NE4/DT19",lat:1.2844,lng:103.8436},
+{name:"City Hall",code:"EW13/NS25",lat:1.2931,lng:103.8521},
 {name:"Raffles Place",code:"EW14/NS26",lat:1.2840,lng:103.8513},
-{name:"Changi Airport",code:"CG2",lat:1.3572,lng:103.9880},
-{name:"Tanah Merah",code:"EW4",lat:1.3272,lng:103.9464}
+{name:"Tanjong Pagar",code:"EW15",lat:1.2765,lng:103.8457},
+{name:"Outram Park",code:"EW16/NE3/TE17",lat:1.2813,lng:103.8391},
+{name:"Tiong Bahru",code:"EW17",lat:1.2861,lng:103.8271},
+{name:"Redhill",code:"EW18",lat:1.2896,lng:103.8168},
+{name:"Queenstown",code:"EW19",lat:1.2946,lng:103.8060},
+{name:"Commonwealth",code:"EW20",lat:1.3025,lng:103.7983},
+{name:"Buona Vista",code:"EW21/CC22",lat:1.3073,lng:103.7904},
+{name:"Dhoby Ghaut",code:"NS24/NE6/CC1",lat:1.2991,lng:103.8458},
+{name:"Somerset",code:"NS23",lat:1.3003,lng:103.8390},
+{name:"Orchard",code:"NS22/TE14",lat:1.3043,lng:103.8318},
+{name:"Marina Bay",code:"NS27/CE2/TE20",lat:1.2762,lng:103.8548},
+{name:"Bayfront",code:"CE1/DT16",lat:1.2819,lng:103.8592},
+{name:"Promenade",code:"CC4/DT15",lat:1.2934,lng:103.8609},
+{name:"Esplanade",code:"CC3",lat:1.2933,lng:103.8556},
+{name:"Bras Basah",code:"CC2",lat:1.2969,lng:103.8507},
+{name:"Nicoll Highway",code:"CC5",lat:1.2998,lng:103.8636},
+{name:"Stadium",code:"CC6",lat:1.3029,lng:103.8753},
+{name:"Mountbatten",code:"CC7",lat:1.3062,lng:103.8826},
+{name:"Dakota",code:"CC8",lat:1.3083,lng:103.8896},
+{name:"Little India",code:"NE7/DT12",lat:1.3072,lng:103.8497},
+{name:"Farrer Park",code:"NE8",lat:1.3123,lng:103.8542},
+{name:"Boon Keng",code:"NE9",lat:1.3192,lng:103.8616},
+{name:"Clarke Quay",code:"NE5",lat:1.2887,lng:103.8466},
+{name:"Chinatown",code:"NE4/DT19",lat:1.2844,lng:103.8436},
+{name:"Fort Canning",code:"DT20",lat:1.2924,lng:103.8443},
+{name:"Bencoolen",code:"DT21",lat:1.2989,lng:103.8504},
+{name:"Jalan Besar",code:"DT22",lat:1.3052,lng:103.8554},
+{name:"Bendemeer",code:"DT23",lat:1.3138,lng:103.8627},
+{name:"Geylang Bahru",code:"DT24",lat:1.3213,lng:103.8717},
+{name:"Mattar",code:"DT25",lat:1.3269,lng:103.8832},
+{name:"MacPherson",code:"CC10/DT26",lat:1.3264,lng:103.8893},
+{name:"Telok Ayer",code:"DT18",lat:1.2823,lng:103.8483},
+{name:"Downtown",code:"DT17",lat:1.2795,lng:103.8528},
+{name:"Maxwell",code:"TE18",lat:1.2805,lng:103.8439},
+{name:"Shenton Way",code:"TE19",lat:1.2777,lng:103.8503},
+{name:"Gardens by the Bay",code:"TE22",lat:1.2795,lng:103.8675},
+{name:"Tanjong Rhu",code:"TE23",lat:1.2990,lng:103.8730}
 ];
-let state=JSON.parse(localStorage.getItem("sgTripV5")||"null")||{
+let state=JSON.parse(localStorage.getItem("sgTripV7")||"null")||{
  day:0,routes:days.map((_,i)=>stops.filter(s=>s.day===i).map(s=>s.id)),missed:[],expenses:[],custom:[],mode:"Dry",routeMode:"smart",fx:{gbp:.58,cad:.96}
 };
-let map, routeLayer=null, userPos=null,userMarker=null,markers=[],pendingAdd=null,lastRoute=null;
-function save(){localStorage.setItem("sgTripV5",JSON.stringify(state))}
+let map, routeLayer=null, userPos=null,userMarker=null,markers=[],pendingAdd=null,lastRoute=null,mrtMarkers=[],nextMode="walk";
+
+function ensureHotelReturn(){
+  // Thu / Fri / Sat: always Hotel Boss -> day's route -> Hotel Boss.
+  for(let d=0; d<3; d++){
+    const middle = state.routes[d].filter(id => id !== "hotel");
+    state.routes[d] = ["hotel", ...middle, "hotel"];
+  }
+
+  // Sunday: leave Hotel Boss in the morning and finish at Changi T4.
+  const sundayMiddle = state.routes[3].filter(id => id !== "hotel" && id !== "t4");
+  state.routes[3] = ["hotel", ...sundayMiddle, "t4"];
+}
+ensureHotelReturn();
+
+function save(){localStorage.setItem("sgTripV7",JSON.stringify(state))}
 function allStops(){return [...stops,...state.custom]}
 function byId(id){return allStops().find(s=>s.id===id)}
 function routeObjs(){return state.routes[state.day].map(byId).filter(Boolean)}
@@ -234,14 +327,29 @@ function renderDays(){daysList.innerHTML=days.map((d,i)=>`<div class="place"><di
 function setDay(i){state.day=i;save();closeSheet("daysSheet");renderAll();rebuildRoute()}
 function renderNext(){
  const r=routeObjs(),n=r[0];
- if(!n){nextCard.innerHTML='<div><h2>Finished for today</h2><p>No stops remaining.</p></div>';routeStats.textContent="";return}
+ if(!n){nextCard.innerHTML='<div><h2>Finished for today</h2><p>No stops remaining.</p></div>';routeStats.textContent="";upcomingList.innerHTML="";return}
  const d=userPos?hav(userPos,n):null;
  nextCard.innerHTML=`<div><h2>${n.name}</h2><p>${d!==null?`${d.toFixed(1)} km from you · `:""}${n.type}</p></div><button class="sbtn" onclick="focusStop('${n.id}')">Map</button>`;
+ renderUpcoming();
+ nextWalkBtn.classList.toggle("active",nextMode==="walk");
+ nextTransitBtn.classList.toggle("active",nextMode==="transit");
 }
 function renderMarkers(){
  markers.forEach(m=>map.removeLayer(m));markers=[];
+ mrtMarkers.forEach(m=>map.removeLayer(m));mrtMarkers=[];
  const r=routeObjs();
- r.forEach((s,i)=>{const m=L.marker([s.lat,s.lng],{title:s.name}).addTo(map).bindPopup(`<b>${i+1}. ${s.name}</b><br>${s.type}`);markers.push(m)});
+ r.forEach((s,i)=>{
+   const m=L.marker([s.lat,s.lng],{title:s.name}).addTo(map)
+     .bindTooltip(s.name,{permanent:true,direction:"top",offset:[0,-28],className:"map-label"})
+     .bindPopup(`<b>${i+1}. ${s.name}</b><br>${s.type}`);
+   markers.push(m)
+ });
+ mrt.forEach(st=>{
+   const icon=L.divIcon({className:"",html:`<div class="mrt-dot"></div>`,iconSize:[12,12],iconAnchor:[6,6]});
+   const m=L.marker([st.lat,st.lng],{icon,interactive:true,title:`${st.name} MRT`}).addTo(map)
+     .bindTooltip(`${st.name} ${st.code}`,{direction:"right",offset:[7,0],className:"mrt-label"});
+   mrtMarkers.push(m)
+ });
 }
 async function footRoute(points){
  if(points.length<2)return null;
@@ -274,23 +382,32 @@ async function rebuildRoute(){
 }
 function smartTransportHint(a,b){
  const km=hav(a,b);
- if(state.routeMode==="walk"||km<2.3)return {mode:"Walk",text:"Walking route"};
+ if(state.routeMode==="walk"||km<1.6)return {mode:"Walk",text:`Approx. ${km.toFixed(1)} km · ${walkMins(km)} min walking`,distance:km};
  const s1=nearestMRT(a),s2=nearestMRT(b);
- return {mode:"MRT",text:`Walk to ${s1.name} ${s1.code} → MRT toward ${s2.name} ${s2.code} → walk to destination`};
+ const access=hav(a,s1)+hav(b,s2);
+ return {mode:"MRT",text:`Walk ${hav(a,s1).toFixed(1)} km to ${s1.name} ${s1.code} → MRT → ${s2.name} ${s2.code} → walk ${hav(b,s2).toFixed(1)} km`,distance:km,access};
 }
 function renderRouteSheet(){
  const r=routeObjs();
- let legs="";
+ let legs="",total=0;
  for(let i=0;i<r.length;i++){
    const s=r[i];
    let extra="";
-   if(i<r.length-1){const h=smartTransportHint(s,r[i+1]);extra=`<div class="leg"><div class="legtitle">${h.mode}: ${s.name} → ${r[i+1].name}</div><div class="legmeta">${h.text}</div></div>`}
-   legs+=`<div class="place"><div><h3>${i+1}. ${s.name}</h3><p>${s.type} · ${s.priority}</p></div><button class="sbtn" onclick="removeStop('${s.id}')">Remove</button></div>${extra}`;
+   if(i<r.length-1){
+      const n=r[i+1],km=hav(s,n); total+=km; const h=smartTransportHint(s,n);
+      extra=`<div class="leg"><div class="legtitle">${h.mode}: ${s.name} → ${n.name}</div><div class="legmeta">${h.text}</div></div>`;
+   }
+   legs+=`<div class="place"><div><h3>${i+1}. ${s.name}</h3><p>${s.type} · ${s.priority}</p></div><button class="sbtn" onclick="removeStop('${s.id}')">${((state.day<3 && s.id==="hotel" && (i===0 || i===r.length-1)) || (state.day===3 && ((s.id==="hotel"&&i===0)||(s.id==="t4"&&i===r.length-1))))?"Fixed":"Remove"}</button></div>${extra}`;
  }
- routeList.innerHTML=`<div class="card">${legs}</div>`;
+ routeList.innerHTML=`<div class="card"><div class="muted" style="margin-bottom:6px">Approx. route distance: ${total.toFixed(1)} km</div>${legs}${r[r.length-1]?.id==="hotel"?'<button class="sbtn" style="width:100%;margin-top:8px" onclick="showReturnOptions()">Alternative routes back to Hotel Boss</button>':""}</div>`;
  smartBtn.classList.toggle("on",state.routeMode==="smart");walkBtn.classList.toggle("on",state.routeMode==="walk");
 }
-function removeStop(id){state.routes[state.day]=state.routes[state.day].filter(x=>x!==id);if(!state.missed.some(m=>m.id===id))state.missed.push({id,reason:"Removed"});save();renderAll();renderRouteSheet();renderMissed();rebuildRoute()}
+function removeStop(id){
+  const route = state.routes[state.day];
+  const idx = route.indexOf(id);
+  if(state.day < 3 && id==="hotel" && (idx===0 || idx===route.length-1)) return;
+  if(state.day===3 && ((id==="hotel" && idx===0) || (id==="t4" && idx===route.length-1))) return;
+  state.routes[state.day]=state.routes[state.day].filter(x=>x!==id);if(!state.missed.some(m=>m.id===id))state.missed.push({id,reason:"Removed"});save();renderAll();renderRouteSheet();renderMissed();rebuildRoute()}
 function renderMissed(){missedList.innerHTML=state.missed.length?state.missed.map((m,i)=>{const s=byId(m.id);return `<div class="place"><div><h3>${s.name}</h3><p>${m.reason}</p></div><button class="sbtn" onclick="addBack(${i})">Add back</button></div>`}).join(""):'<p class="muted">Nothing saved.</p>'}
 function approxBestInsert(arr,s){
  if(!arr.length)return {idx:0,cost:0};let best={idx:arr.length,cost:Infinity};
@@ -327,11 +444,58 @@ async function followRoute(){
  }catch(e){routeStats.textContent="Walking route unavailable"}
 }
 function focusStop(id){const s=byId(id);map.setView([s.lat,s.lng],17)}
+
+function toggleUpcoming(){
+ upcomingList.classList.toggle("open");
+ expandRouteBtn.textContent=upcomingList.classList.contains("open")?"Collapse":"Expand";
+}
+function setNextMode(mode){
+ nextMode=mode;
+ nextWalkBtn.classList.toggle("active",mode==="walk");
+ nextTransitBtn.classList.toggle("active",mode==="transit");
+ if(mode==="transit"){
+   const r=routeObjs(); if(r.length){
+     const a=userPos||r[0], b=r[0], s1=nearestMRT(a), s2=nearestMRT(b);
+     routeStats.textContent=`Transit option · ${s1.name} → ${s2.name}`;
+   }
+ } else rebuildRoute();
+}
+function renderUpcoming(){
+ const r=routeObjs();
+ let html="";
+ for(let i=0;i<r.length;i++){
+   const cur=r[i];
+   let meta=i===0?"Start of day":(i===r.length-1?"End of day":"");
+   if(i<r.length-1){
+      const nxt=r[i+1], km=hav(cur,nxt), hint=smartTransportHint(cur,nxt);
+      meta=`${km.toFixed(1)} km · ${hint.mode}`;
+   }
+   html+=`<div class="upcoming-row"><div><div class="u-name">${i+1}. ${cur.name}</div><div class="u-meta">${meta}</div></div>${cur.id==="hotel"&&i===r.length-1?'<button class="sbtn" onclick="showReturnOptions()">Return options</button>':""}</div>`;
+ }
+ upcomingList.innerHTML=html;
+}
+function showReturnOptions(){
+ const hotel=byId("hotel");
+ const r=routeObjs();
+ const from=(r.length>1?r[r.length-2]:(userPos||hotel));
+ const km=hav(from,hotel);
+ const s1=nearestMRT(from),s2=nearestMRT(hotel);
+ alert(`Back to Hotel Boss\n\nWalk: approx. ${km.toFixed(1)} km / ${walkMins(km)} min\n\nPublic transport: walk to ${s1.name} ${s1.code}, take MRT toward ${s2.name} ${s2.code}, then walk to Hotel Boss.`);
+}
+
 function renderSpend(){const t=state.expenses.reduce((a,b)=>a+b.amount,0);spendTotal.textContent=`S$${t.toFixed(2)}`;spendFx.textContent=`≈ £${(t*state.fx.gbp).toFixed(2)} · C$${(t*state.fx.cad).toFixed(2)}`;expenseList.innerHTML=state.expenses.slice().reverse().map(e=>`<div class="card"><div style="display:flex;justify-content:space-between;gap:10px"><div><div>${e.desc}</div><div class="muted">${e.cat} · ${e.who}</div></div><div style="text-align:right">S$${e.amount.toFixed(2)}<div class="muted">£${(e.amount*state.fx.gbp).toFixed(2)} · C$${(e.amount*state.fx.cad).toFixed(2)}</div></div></div></div>`).join("")}
 function saveExpense(){const a=+expAmount.value;if(!a)return;state.expenses.push({desc:expDesc.value||expCat.value,amount:a,cat:expCat.value,who:expWho.value,pay:expPay.value,ts:new Date().toISOString()});expDesc.value=expAmount.value="";save();renderSpend()}
 function renderCool(){const p=[{name:"Bugis Junction",lat:1.2997,lng:103.8555,note:"Air-conditioned mall"},{name:"Raffles City",lat:1.2931,lng:103.8533,note:"Air-conditioned mall"},{name:"Clarke Quay Central",lat:1.2897,lng:103.8465,note:"Air-conditioned mall"},{name:"Marina Bay Sands Shoppes",lat:1.2839,lng:103.8591,note:"Air-conditioned mall"},{name:"Tekka Centre",lat:1.3062,lng:103.8504,note:"Covered food centre"}];if(userPos)p.sort((a,b)=>hav(userPos,a)-hav(userPos,b));coolList.innerHTML='<div class="card">'+p.map(x=>`<div class="place"><div><h3>${x.name}</h3><p>${x.note}${userPos?` · ${hav(userPos,x).toFixed(1)} km`:""}</p></div><button class="sbtn" onclick="map.setView([${x.lat},${x.lng}],17);closeSheet('coolSheet')">Map</button></div>`).join("")+'</div>'}
-async function loadWeather(){weatherBody.innerHTML='<div class="card">Loading forecast…</div>';try{const r=await fetch("https://api.open-meteo.com/v1/forecast?latitude=1.3521&longitude=103.8198&hourly=temperature_2m,precipitation_probability&timezone=Asia%2FSingapore&forecast_days=16"),j=await r.json(),date=days[state.day].date,arr=j.hourly.time.map((t,i)=>({t,temp:j.hourly.temperature_2m[i],rain:j.hourly.precipitation_probability[i]})).filter(x=>x.t.startsWith(date)&&+x.t.slice(11,13)>=7&&+x.t.slice(11,13)<=22);if(!arr.length)throw 0;weatherBody.innerHTML='<div class="card">'+arr.map(x=>`<div class="place"><div><h3>${x.t.slice(11,16)}</h3><p>${Math.round(x.temp)}°C · ${x.rain}% rain</p></div></div>`).join("")+'</div>'}catch(e){weatherBody.innerHTML='<div class="card">Exact hourly forecast is not available yet. Refresh nearer the trip.</div>'}}
-function previewPhoto(ev){const f=ev.target.files?.[0];if(!f)return;photoPreview.src=URL.createObjectURL(f);photoPreview.style.display="block"}
+
+function wxIcon(rain,cloud=0){
+ if(rain>=55) return `<svg class="wx-svg" viewBox="0 0 24 24"><path d="M7 16h10a4 4 0 0 0 .4-8A6 6 0 0 0 6 7.5 4.3 4.3 0 0 0 7 16Z"/><path d="M8 20l1-2M12 20l1-2M16 20l1-2"/></svg>`;
+ if(rain>=25 || cloud>65) return `<svg class="wx-svg" viewBox="0 0 24 24"><path d="M7 17h10a4 4 0 0 0 .4-8A6 6 0 0 0 6 8.5 4.3 4.3 0 0 0 7 17Z"/></svg>`;
+ return `<svg class="wx-svg" viewBox="0 0 24 24"><circle cx="12" cy="12" r="4"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3M5 5l2 2M17 17l2 2M19 5l-2 2M7 17l-2 2"/></svg>`;
+}
+
+async function loadWeather(){weatherBody.innerHTML='<div class="card">Loading forecast…</div>';try{const r=await fetch("https://api.open-meteo.com/v1/forecast?latitude=1.3521&longitude=103.8198&hourly=temperature_2m,precipitation_probability,cloud_cover&timezone=Asia%2FSingapore&forecast_days=16"),j=await r.json(),date=days[state.day].date,arr=j.hourly.time.map((t,i)=>({t,temp:j.hourly.temperature_2m[i],rain:j.hourly.precipitation_probability[i],cloud:j.hourly.cloud_cover[i]})).filter(x=>x.t.startsWith(date)&&+x.t.slice(11,13)>=7&&+x.t.slice(11,13)<=22);if(!arr.length)throw 0;weatherBody.innerHTML='<div class="card">'+arr.map(x=>`<div class="place"><div style="display:flex;gap:10px;align-items:center"><div class="weather-icon">${wxIcon(x.rain,x.cloud)}</div><div><h3>${x.t.slice(11,16)}</h3><p>${Math.round(x.temp)}°C · ${x.rain}% rain · ${x.cloud}% cloud</p></div></div></div>`).join("")+'</div>'}catch(e){weatherBody.innerHTML='<div class="card">Exact hourly forecast is not available yet. Refresh nearer the trip.</div>'}}
+function previewPhoto(ev){const f=ev.target.files?.[0];if(!f)return;photoPreview.src=URL.createObjectURL(f);photoPreview.style.display="block";usePhotoBtn.style.display="block";photoUsed.textContent=""}
+function usePhoto(){const f=photoInput.files?.[0];if(!f)return;photoUsed.textContent="Photo selected and ready to use for this place.";usePhotoBtn.style.display="none"}
 
 const smokingPlaces=[
  {name:"Changi T4 public kerbside smoking area",lat:1.3385,lng:103.9838,note:"Terminal 4 public-side vicinity. Follow the airport smoking-area signs when you arrive."},
@@ -376,7 +540,7 @@ async function routeToSmoking(i){
  }
 }
 
-function renderAll(){renderHeader();renderDays();renderNext();renderSpend();renderMarkers()}
+function renderAll(){ensureHotelReturn();renderHeader();renderDays();renderNext();renderSpend();renderMarkers()}
 initMap();setTimeout(()=>map.invalidateSize(),250);window.addEventListener("resize",()=>map.invalidateSize());renderAll();rebuildRoute();
 </script>
 </body>
