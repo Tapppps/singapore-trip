@@ -1,9 +1,9 @@
-Singapore Trip App V14
+Singapore Trip App V15
 
-Critical fix:
-- Fixed JavaScript syntax errors in V13 that caused the map and all buttons to stop working.
-- Validated the inline JavaScript before packaging.
-- Added a visible error message if a future JavaScript error occurs instead of silently showing a blank app.
-- Updated the service worker so the main page prefers the newest network version and old caches are cleared on activation.
-
-All V13 route, photo, waypoint, Cool Nearby, Smoking, Dry/Wet, Too Hot, River Cruise, Flower Dome, Singapore Flyer, Sentosa and "Along the way" features remain.
+UI improvements:
+- Route Now now properly collapses/expands as one compact card.
+- Map/route actions collapse Route Now automatically so the map stays visible.
+- Buttons inside slide-up cards close the card after the action, except controls that need the card to remain open.
+- Detail text is larger and easier to read.
+- Route descriptions, along-the-way information, photo notes and map popup text are larger.
+- Mobile Route Now uses less screen space.

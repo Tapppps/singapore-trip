@@ -142,6 +142,44 @@ input,select,textarea{width:100%;border:1px solid var(--line);background:#fff;bo
 .pin-smoke{background:#676b72;color:#fff}
 
 @media(min-width:700px){.routefloat{width:390px;left:18px;right:auto}.tools{left:18px;right:auto;max-width:650px}}
+
+/* V15 card behaviour */
+.routefloat{
+  max-height:min(46vh,430px);
+  overflow:hidden;
+  transition:max-height .22s ease, padding .22s ease;
+}
+.routefloat.collapsed{
+  max-height:64px;
+}
+.routefloat.collapsed #planBanner,
+.routefloat.collapsed #routeTheme,
+.routefloat.collapsed #nextCard,
+.routefloat.collapsed .transport-switch,
+.routefloat.collapsed .actions,
+.routefloat.collapsed #upcomingList{
+  display:none!important;
+}
+.routefloat.collapsed .routehead{margin-bottom:0}
+.routefloat .next{max-height:170px;overflow:auto}
+.route-detail-line{font-size:14px!important;line-height:1.55!important}
+.upcoming-row .u-name{font-size:14px!important}
+.upcoming-row .u-meta{font-size:13px!important;line-height:1.45!important}
+.leg-name{font-size:15px!important;font-weight:600}
+.leg-detail{font-size:14px!important;line-height:1.55!important}
+.along-title{font-size:13px!important}
+.along-item{font-size:14px!important;line-height:1.5!important}
+.photo-badge{font-size:12px!important;padding:4px 7px!important}
+.sheet .muted,.sheet p,.sheet .place p{font-size:14px!important;line-height:1.5!important}
+.sheet .place h3,.sheet h3{font-size:16px!important}
+.sheet .sbtn,.sheet button{font-size:14px!important}
+.sheet{max-height:72vh!important}
+.sheet.compact{max-height:56vh!important}
+@media(max-width:699px){
+  .routefloat{left:8px!important;right:8px!important;bottom:76px!important;width:auto!important;max-height:43vh}
+  .routefloat.collapsed{max-height:58px}
+}
+
 </style>
 </head>
 <body>
@@ -174,7 +212,7 @@ input,select,textarea{width:100%;border:1px solid var(--line);background:#fff;bo
     <div class="routehead">
       <div class="name">Route now</div>
       <div class="stats" id="routeStats">—</div>
-      <button onclick="toggleUpcoming()" id="expandRouteBtn">Expand</button>
+      <button onclick="toggleUpcoming()" id="expandRouteBtn">Collapse</button>
     </div>
     <div id="planBanner" class="plan-banner">Dry plan · outdoor walking preferred</div><div class="route-detail-line" id="routeTheme">Routes use specific photogenic streets, bridges and viewpoints rather than simply passing through an area.</div><div class="next" id="nextCard"></div>
     <div class="transport-switch">
@@ -351,7 +389,7 @@ const mrt=[
 {name:"Gardens by the Bay",code:"TE22",lat:1.2795,lng:103.8675},
 {name:"Tanjong Rhu",code:"TE23",lat:1.2990,lng:103.8730}
 ];
-let state=JSON.parse(localStorage.getItem("sgTripV14")||"null")||{
+let state=JSON.parse(localStorage.getItem("sgTripV15")||"null")||{
  day:0,routes:days.map((_,i)=>stops.filter(s=>s.day===i).map(s=>s.id)),missed:[],expenses:[],custom:[],mode:"Dry",hot:false,routeMode:"smart",fx:{gbp:.58,cad:.96}
 };
 if(typeof state.hot==="undefined") state.hot=false;
@@ -388,13 +426,20 @@ function ensureHotelReturn(){
 }
 ensureHotelReturn();
 
-function save(){localStorage.setItem("sgTripV14",JSON.stringify(state))}
+function save(){localStorage.setItem("sgTripV15",JSON.stringify(state))}
 function allStops(){return [...stops,...state.custom]}
 function byId(id){return allStops().find(s=>s.id===id)}
 function routeObjs(){return state.routes[state.day].map(byId).filter(Boolean)}
 function hav(a,b){const R=6371,p=Math.PI/180,dLat=(b.lat-a.lat)*p,dLon=(b.lng-a.lng)*p,la1=a.lat*p,la2=b.lat*p,x=Math.sin(dLat/2)**2+Math.cos(la1)*Math.cos(la2)*Math.sin(dLon/2)**2;return 2*R*Math.asin(Math.sqrt(x))}
 function walkMins(km){return Math.round(km/4.7*60)}
 function nearestMRT(p){return mrt.slice().sort((a,b)=>hav(p,a)-hav(p,b))[0]}
+function closeParentSheet(el){
+ const bg=el?.closest?.(".sheetbg");
+ if(bg)closeSheet(bg.id);
+}
+function closeAllSheets(){
+ document.querySelectorAll(".sheetbg.open").forEach(bg=>closeSheet(bg.id));
+}
 function openSheet(id){
  const bg=document.getElementById(id);bg.classList.add("open");enableSwipeSheet(bg);
  if(id==="routeSheet"){renderRouteSheet();renderMissed()}
@@ -546,7 +591,7 @@ function renderMarkers(){
  r.forEach((s,i)=>{
    const m=L.marker([s.lat,s.lng],{title:s.name}).addTo(map)
      .bindTooltip(s.name,{permanent:true,direction:"top",offset:[0,-28],className:"map-label"})
-     .bindPopup(`<b>${i+1}. ${s.name}</b><br>${s.desc||s.type}<br><span style="color:#666">${s.photo?`Photo: ${s.photo}`:""}</span>`);
+     .bindPopup(`<div style="font-size:15px;line-height:1.5"><b style="font-size:17px">${i+1}. ${s.name}</b><br>${s.desc||s.type}<br><span style="color:#666">${s.photo?`Photo: ${s.photo}`:""}</span></div>`);
    markers.push(m)
  });
  mrt.forEach(st=>{
@@ -615,6 +660,9 @@ function renderRouteSheet(){
  smartBtn.classList.toggle("on",state.routeMode==="smart");walkBtn.classList.toggle("on",state.routeMode==="walk");
 }
 async function showLegRoute(aid,bid,mode){
+ closeAllSheets();
+ document.querySelector(".routefloat")?.classList.add("collapsed");
+ if(typeof expandRouteBtn!=="undefined")expandRouteBtn.textContent="Expand";
  const a=byId(aid),b=byId(bid);closeSheet("routeSheet");
  if(mode==="transit"){await drawTransitTo(a,b);return}
  try{const r=await footRoute([a,b]);if(routeLayer)map.removeLayer(routeLayer);routeLayer=L.geoJSON(r.geometry,{style:{color:"#1677ff",weight:6,opacity:.9}}).addTo(map);map.fitBounds(routeLayer.getBounds().pad(.15));routeStats.textContent=`Walk · ${(r.distance/1000).toFixed(1)} km · ${Math.round(r.duration/60)} min`}catch(e){routeStats.textContent="Walking route unavailable"}
@@ -657,6 +705,8 @@ function toggleWet(){state.mode=state.mode==="Dry"?"Wet":"Dry";save();applyPlanR
 function skipNext(){const id=state.routes[state.day].shift();if(id)state.missed.push({id,reason:"Skipped"});save();renderAll();rebuildRoute()}
 function locateMe(){if(!navigator.geolocation)return;navigator.geolocation.getCurrentPosition(p=>{userPos={lat:p.coords.latitude,lng:p.coords.longitude};if(userMarker)map.removeLayer(userMarker);userMarker=L.circleMarker([userPos.lat,userPos.lng],{radius:8,weight:3,fillOpacity:.9}).addTo(map).bindPopup("You are here");map.setView([userPos.lat,userPos.lng],16);renderNext()})}
 async function followRoute(){
+ document.querySelector(".routefloat")?.classList.add("collapsed");
+ expandRouteBtn.textContent="Expand";
  if(!userPos){locateMe();setTimeout(followRoute,900);return}
  const n=routeObjs()[0];if(!n)return;
  if(nextMode==="transit"||state.mode==="Wet"||state.hot){await drawTransitTo(userPos,n);return}
@@ -665,8 +715,10 @@ async function followRoute(){
 function focusStop(id){const s=byId(id);map.setView([s.lat,s.lng],17)}
 
 function toggleUpcoming(){
- upcomingList.classList.toggle("open");
- expandRouteBtn.textContent=upcomingList.classList.contains("open")?"Collapse":"Expand";
+ const card=document.querySelector(".routefloat");
+ const collapsed=card.classList.toggle("collapsed");
+ expandRouteBtn.textContent=collapsed?"Expand":"Collapse";
+ if(!collapsed)renderUpcoming();
 }
 function setNextMode(mode){nextMode=mode;nextWalkBtn.classList.toggle("active",mode==="walk");nextTransitBtn.classList.toggle("active",mode==="transit");renderNext();rebuildRoute()}
 function renderUpcoming(){
@@ -684,7 +736,9 @@ function renderUpcoming(){
 function showUpcomingOnMap(id,index){
  document.querySelectorAll(".upcoming-row").forEach(x=>x.classList.remove("selected"));
  const row=document.getElementById(`up-${id}-${index}`);if(row)row.classList.add("selected");
- const s=byId(id);if(!s)return;map.setView([s.lat,s.lng],17);
+ const s=byId(id);if(!s)return;
+ const card=document.querySelector(".routefloat");card.classList.add("collapsed");expandRouteBtn.textContent="Expand";
+ map.setView([s.lat,s.lng],17);
  const match=markers.find(m=>m.getLatLng&&Math.abs(m.getLatLng().lat-s.lat)<0.00001&&Math.abs(m.getLatLng().lng-s.lng)<0.00001);
  if(match)match.openPopup();
 }
@@ -709,6 +763,9 @@ function getCoolPlaces(){
 function showCoolPins(){clearActionMarkers();getCoolPlaces().forEach((x,i)=>{const m=L.marker([x.lat,x.lng],{icon:actionIcon("cool","C")}).addTo(map).bindPopup(`<b>${x.name}</b><br>${x.note}<br><button onclick="routeToCool(${i})">Route here</button>`);actionMarkers.push(m)})}
 function renderCool(){const p=getCoolPlaces();coolList.innerHTML='<div class="card">'+p.map((x,i)=>`<div class="place"><div><h3>${x.name}</h3><p>${x.note}${userPos?` · ${hav(userPos,x).toFixed(1)} km`:""}</p></div><button class="sbtn" onclick="routeToCool(${i})">Route</button></div>`).join("")+'</div>'}
 async function routeToCool(i){
+ closeAllSheets();
+ document.querySelector(".routefloat")?.classList.add("collapsed");
+ if(typeof expandRouteBtn!=="undefined")expandRouteBtn.textContent="Expand";
  const p=getCoolPlaces()[i];closeSheet("coolSheet");
  if(!userPos){locateMe();setTimeout(()=>routeToCool(i),900);return}
  if(state.hot||state.mode==="Wet"){await drawTransitTo(userPos,p);return}
@@ -747,12 +804,30 @@ function renderSmoking(){
 }
 
 async function routeToSmoking(i){
+ closeAllSheets();
+ document.querySelector(".routefloat")?.classList.add("collapsed");
+ if(typeof expandRouteBtn!=="undefined")expandRouteBtn.textContent="Expand";
  const p=smokingPlaces[i];closeSheet("smokeSheet");
  if(!userPos){locateMe();setTimeout(()=>routeToSmoking(i),900);return}
  if(state.hot||state.mode==="Wet"){await drawTransitTo(userPos,p);routeStats.textContent="Smoking route · MRT / transport";return}
  try{const route=await footRoute([userPos,p]);if(routeLayer)map.removeLayer(routeLayer);routeLayer=L.geoJSON(route.geometry,{style:{color:"#1677ff",weight:6,opacity:.9}}).addTo(map);map.fitBounds(routeLayer.getBounds().pad(.18));routeStats.textContent=`Smoking route · ${(route.distance/1000).toFixed(1)} km · ${Math.round(route.duration/60)} min`}catch(e){map.setView([p.lat,p.lng],17);routeStats.textContent="Smoking location shown · route unavailable"}
 }
 function renderAll(){ensureHotelReturn();applyPlanRules();renderHeader();renderDays();renderNext();renderSpend();renderMarkers()}
+document.addEventListener("click",e=>{
+ const btn=e.target.closest(".sheet button");
+ if(!btn)return;
+ const keepOpen =
+   btn.closest("form") ||
+   btn.id==="smartBtn" ||
+   btn.id==="walkBtn" ||
+   btn.type==="submit" ||
+   btn.dataset.keepopen==="1";
+ if(!keepOpen){
+   const bg=btn.closest(".sheetbg");
+   if(bg)setTimeout(()=>closeSheet(bg.id),30);
+ }
+});
+
 initMap();setTimeout(()=>map.invalidateSize(),250);window.addEventListener("resize",()=>map.invalidateSize());renderAll();rebuildRoute();
 </script>
 <div id="appError" style="display:none;position:fixed;left:12px;right:12px;top:72px;z-index:99999;background:#fff3cd;border:1px solid #ffe69c;padding:10px 12px;border-radius:10px;font:13px Arial;color:#664d03"></div>
