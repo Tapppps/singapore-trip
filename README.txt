@@ -1,9 +1,8 @@
-Singapore Trip App V7
+Singapore Trip App V13
 
-Route rule corrected:
-- Thursday ALWAYS starts at Hotel Boss and ends at Hotel Boss.
-- Friday ALWAYS starts at Hotel Boss and ends at Hotel Boss.
-- Saturday ALWAYS starts at Hotel Boss and ends at Hotel Boss.
-- Sunday starts at Hotel Boss, then follows the airport/Jewel plan and ends at Changi Terminal 4.
-- These required start/end points are locked and cannot be removed accidentally.
-- Added/returned locations remain inserted between the fixed start/end points.
+New:
+- Walking legs now include an "Along the way" section.
+- It calls out notable buildings, bridges, museums, shophouses and structures you pass.
+- Each callout gives a short explanation of what it is and why it is interesting.
+- Route Now can also show nearby/along-the-way information for the active leg.
+- This is curated for the main photo walking routes rather than generic neighbourhood descriptions.
