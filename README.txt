@@ -1,8 +1,9 @@
-Singapore Trip App V13
+Singapore Trip App V14
 
-New:
-- Walking legs now include an "Along the way" section.
-- It calls out notable buildings, bridges, museums, shophouses and structures you pass.
-- Each callout gives a short explanation of what it is and why it is interesting.
-- Route Now can also show nearby/along-the-way information for the active leg.
-- This is curated for the main photo walking routes rather than generic neighbourhood descriptions.
+Critical fix:
+- Fixed JavaScript syntax errors in V13 that caused the map and all buttons to stop working.
+- Validated the inline JavaScript before packaging.
+- Added a visible error message if a future JavaScript error occurs instead of silently showing a blank app.
+- Updated the service worker so the main page prefers the newest network version and old caches are cleared on activation.
+
+All V13 route, photo, waypoint, Cool Nearby, Smoking, Dry/Wet, Too Hot, River Cruise, Flower Dome, Singapore Flyer, Sentosa and "Along the way" features remain.

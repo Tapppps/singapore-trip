@@ -260,7 +260,7 @@ const stops=[
 {id:"hotel",name:"Hotel Boss",lat:1.3057,lng:103.8603,day:0,type:"Indoor",priority:"Must See",desc:"Your base at Jalan Sultan, close to Kampong Glam and Lavender MRT.",photo:"Useful base / street scenes nearby"},
 {id:"fullerton",name:"Fullerton Waterfront",lat:1.2860,lng:103.8530,day:0,type:"Outdoor",priority:"Would Like",desc:"Historic waterfront beside the Fullerton Hotel with strong river-to-skyline views.",photo:"Best at blue hour / night reflections"},
 {id:"jubilee",name:"Jubilee Bridge",lat:1.2889,lng:103.8542,day:0,type:"Outdoor",priority:"Would Like",desc:"Pedestrian bridge linking the civic waterfront to Merlion Park with open Marina Bay views.",photo:"Excellent sunset / blue hour viewpoint"},
-{id:"esplanade",name:"Esplanade Waterfront",lat:1.2897,lng:103.8559,day:0,type:"Outdoor",priority:"Would Like",desc:"Bayfront promenade by the Esplanade with broad skyline views across the water.",photo:"Blue hour / night skyline"}
+{id:"esplanade",name:"Esplanade Waterfront",lat:1.2897,lng:103.8559,day:0,type:"Outdoor",priority:"Would Like",desc:"Bayfront promenade by the Esplanade with broad skyline views across the water.",photo:"Blue hour / night skyline"},
 {id:"merlion",name:"Merlion Park",lat:1.2868,lng:103.8545,day:0,type:"Outdoor",priority:"Would Like",desc:"Classic waterfront viewpoint across Marina Bay with the Merlion and skyline.",photo:"Best at sunset / blue hour"},
 {id:"helix",name:"Helix Bridge",lat:1.2875,lng:103.8601,day:0,type:"Outdoor",priority:"Would Like",desc:"Pedestrian bridge with strong views of the Marina Bay skyline and water.",photo:"Best after sunset / night lights"},
 {id:"mbs",name:"Marina Bay Sands promenade",lat:1.2834,lng:103.8607,day:0,type:"Outdoor",priority:"Must See",desc:"Waterfront promenade beneath Marina Bay Sands with skyline and bay views.",photo:"Golden hour into blue hour"},
@@ -275,7 +275,7 @@ const stops=[
 {id:"baghdad",name:"Baghdad & Kandahar Streets",lat:1.3028,lng:103.8601,day:1,type:"Outdoor",priority:"Would Like",desc:"Atmospheric side streets with restored shophouses, cafés, textures and quieter photo angles.",photo:"Late afternoon for warm side light"},
 {id:"tan",name:"House of Tan Teng Niah",lat:1.3072,lng:103.8510,day:1,type:"Outdoor",priority:"Would Like",desc:"Brightly painted historic Chinese villa and one of Little India’s most distinctive photo stops.",photo:"Morning / late afternoon colour"},
 {id:"clive",name:"Clive Street Murals",lat:1.3077,lng:103.8528,day:1,type:"Outdoor",priority:"Would Like",desc:"Little India side streets with murals, shopfronts and everyday street life.",photo:"Daylight street photography"},
-{id:"serangoon",name:"Serangoon Road Street Walk",lat:1.3088,lng:103.8520,day:1,type:"Outdoor",priority:"Would Like",desc:"Main Little India spine with colourful façades, signs, flower garlands and busy street scenes.",photo:"Late morning or late afternoon"}
+{id:"serangoon",name:"Serangoon Road Street Walk",lat:1.3088,lng:103.8520,day:1,type:"Outdoor",priority:"Would Like",desc:"Main Little India spine with colourful façades, signs, flower garlands and busy street scenes.",photo:"Late morning or late afternoon"},
 {id:"haji",name:"Haji Lane",lat:1.3008,lng:103.8592,day:1,type:"Outdoor",priority:"Must See",desc:"Narrow lane of murals, small shops, cafés and colourful shopfronts.",photo:"Morning before it gets busy"},
 {id:"arab",name:"Arab Street",lat:1.3021,lng:103.8586,day:1,type:"Outdoor",priority:"Would Like",desc:"Historic street of fabric shops, cafés and views toward Sultan Mosque.",photo:"Morning / late afternoon"},
 {id:"bugis",name:"Bugis Street",lat:1.3008,lng:103.8552,day:1,type:"Indoor",priority:"Must See",desc:"Busy covered shopping area known for inexpensive clothes, snacks and souvenirs.",photo:"Daytime / busy street scenes"},
@@ -286,7 +286,7 @@ const stops=[
 {id:"cavenagh",name:"Cavenagh Bridge",lat:1.2869,lng:103.8524,day:2,type:"Outdoor",priority:"Would Like",desc:"Historic iron bridge across the Singapore River with Fullerton and river views.",photo:"Late afternoon / blue hour"},
 {id:"anderson",name:"Anderson Bridge",lat:1.2862,lng:103.8531,day:2,type:"Outdoor",priority:"Would Like",desc:"Elegant historic bridge at the river mouth leading naturally toward Marina Bay.",photo:"Blue hour / night reflections"},
 {id:"annsiang",name:"Ann Siang Hill",lat:1.2819,lng:103.8461,day:2,type:"Outdoor",priority:"Would Like",desc:"Sloping heritage street with colourful shophouses and a quieter Chinatown feel.",photo:"Late afternoon side light"},
-{id:"telokayer",name:"Telok Ayer Street",lat:1.2824,lng:103.8484,day:2,type:"Outdoor",priority:"Would Like",desc:"Historic street of preserved façades and temples linking Chinatown with the CBD.",photo:"Daylight architectural details"}
+{id:"telokayer",name:"Telok Ayer Street",lat:1.2824,lng:103.8484,day:2,type:"Outdoor",priority:"Would Like",desc:"Historic street of preserved façades and temples linking Chinatown with the CBD.",photo:"Daylight architectural details"},
 {id:"clarke",name:"Clarke Quay",lat:1.2906,lng:103.8465,day:2,type:"Mixed",priority:"Would Like",desc:"Colourful riverside district with restored warehouses and river views.",photo:"Late afternoon into evening"},
 {id:"rivercruise",name:"Singapore River Cruise",lat:1.2906,lng:103.8465,day:2,type:"Mixed",priority:"Optional",desc:"Optional sightseeing boat loop starting and finishing at Clarke Quay Jetty, passing Boat Quay, Merlion / Marina Bay, Marina Bay Sands and the Esplanade area before returning to Clarke Quay.",photo:"Best around sunset into blue hour for skyline and reflections"},
 {id:"boat",name:"Boat Quay",lat:1.2875,lng:103.8498,day:2,type:"Outdoor",priority:"Would Like",desc:"Historic Singapore River promenade lined with shophouses and skyline views.",photo:"Blue hour / night reflections"},
@@ -351,7 +351,7 @@ const mrt=[
 {name:"Gardens by the Bay",code:"TE22",lat:1.2795,lng:103.8675},
 {name:"Tanjong Rhu",code:"TE23",lat:1.2990,lng:103.8730}
 ];
-let state=JSON.parse(localStorage.getItem("sgTripV13")||"null")||{
+let state=JSON.parse(localStorage.getItem("sgTripV14")||"null")||{
  day:0,routes:days.map((_,i)=>stops.filter(s=>s.day===i).map(s=>s.id)),missed:[],expenses:[],custom:[],mode:"Dry",hot:false,routeMode:"smart",fx:{gbp:.58,cad:.96}
 };
 if(typeof state.hot==="undefined") state.hot=false;
@@ -388,7 +388,7 @@ function ensureHotelReturn(){
 }
 ensureHotelReturn();
 
-function save(){localStorage.setItem("sgTripV13",JSON.stringify(state))}
+function save(){localStorage.setItem("sgTripV14",JSON.stringify(state))}
 function allStops(){return [...stops,...state.custom]}
 function byId(id){return allStops().find(s=>s.id===id)}
 function routeObjs(){return state.routes[state.day].map(byId).filter(Boolean)}
@@ -754,6 +754,17 @@ async function routeToSmoking(i){
 }
 function renderAll(){ensureHotelReturn();applyPlanRules();renderHeader();renderDays();renderNext();renderSpend();renderMarkers()}
 initMap();setTimeout(()=>map.invalidateSize(),250);window.addEventListener("resize",()=>map.invalidateSize());renderAll();rebuildRoute();
+</script>
+<div id="appError" style="display:none;position:fixed;left:12px;right:12px;top:72px;z-index:99999;background:#fff3cd;border:1px solid #ffe69c;padding:10px 12px;border-radius:10px;font:13px Arial;color:#664d03"></div>
+
+<script>
+window.addEventListener("error",function(e){
+  const box=document.getElementById("appError");
+  if(box){
+    box.style.display="block";
+    box.textContent="App error: "+(e.message||"Unknown error")+". Please refresh after the next update.";
+  }
+});
 </script>
 </body>
 </html>
