@@ -180,6 +180,35 @@ input,select,textarea{width:100%;border:1px solid var(--line);background:#fff;bo
   .routefloat.collapsed{max-height:58px}
 }
 
+
+/* V16 route-card behaviour */
+.routefloat{max-height:min(52vh,520px)!important}
+.routefloat.collapsed{max-height:62px!important;padding-bottom:10px}
+.routefloat.collapsed #planBanner,
+.routefloat.collapsed #routeTheme,
+.routefloat.collapsed #nextCard,
+.routefloat.collapsed .transport-switch,
+.routefloat.collapsed .actions,
+.routefloat.collapsed #upcomingList{display:none!important}
+.routehead{cursor:pointer;user-select:none}
+.routehead .tap-hint{font-size:11px;color:var(--muted);margin-left:auto}
+#upcomingList{
+  display:block!important;
+  max-height:230px;
+  overflow-y:auto;
+  overscroll-behavior:contain;
+  padding-right:2px;
+}
+.routefloat:not(.collapsed) #upcomingList{display:block!important}
+.routefloat:not(.collapsed) .routehead .tap-hint::after{content:" · tap to close"}
+.routefloat.collapsed .routehead .tap-hint::after{content:" · tap to open"}
+.nearby-gps-note{font-size:12px;color:var(--muted);margin:6px 0 8px}
+.photo-result{margin-top:10px;padding:11px;border:1px solid var(--line);border-radius:14px;background:#fafafa}
+.photo-result h3{font-size:16px;margin:0 0 5px}
+.photo-result p{font-size:14px;line-height:1.5;margin:4px 0}
+.option-actions{display:flex;gap:7px;flex-wrap:wrap;margin-top:7px}
+.option-actions .sbtn{flex:1;min-width:120px}
+
 </style>
 </head>
 <body>
@@ -208,11 +237,11 @@ input,select,textarea{width:100%;border:1px solid var(--line);background:#fff;bo
     <button class="chip" onclick="toggleWet()"><svg class="ico" viewBox="0 0 24 24"><path d="M7 18h10a4 4 0 0 0 .4-8A6 6 0 0 0 6 9.5 4.3 4.3 0 0 0 7 18Z"/><path d="M8 21l1-2M12 21l1-2M16 21l1-2"/></svg><span id="weatherMode">Dry plan</span></button>
   </div>
 
-  <div class="routefloat">
-    <div class="routehead">
+  <div class="routefloat collapsed">
+    <div class="routehead" onclick="toggleRouteCard()">
       <div class="name">Route now</div>
       <div class="stats" id="routeStats">—</div>
-      <button onclick="toggleUpcoming()" id="expandRouteBtn">Collapse</button>
+      <div class="tap-hint">Today’s locations</div>
     </div>
     <div id="planBanner" class="plan-banner">Dry plan · outdoor walking preferred</div><div class="route-detail-line" id="routeTheme">Routes use specific photogenic streets, bridges and viewpoints rather than simply passing through an area.</div><div class="next" id="nextCard"></div>
     <div class="transport-switch">
@@ -252,7 +281,7 @@ input,select,textarea{width:100%;border:1px solid var(--line);background:#fff;bo
 </div></div>
 
 <div class="sheetbg" id="photoSheet"><div class="sheet"><div class="handle"></div><div class="shead"><h2>Photo check</h2><button class="close" onclick="closeSheet('photoSheet')">×</button></div>
-<div class="card"><p style="font-size:13px;line-height:1.5;margin-top:0">Tap below to open the phone camera. After taking the picture, tap <b>Use photo</b>.</p><input id="photoInput" type="file" accept="image/*" capture="environment" onchange="previewPhoto(event)"><img id="photoPreview" style="width:100%;max-height:320px;object-fit:cover;border-radius:16px;display:none;margin-top:8px"><button id="usePhotoBtn" class="primary" style="width:100%;margin-top:8px;display:none" onclick="usePhoto()">Use photo</button><div id="photoUsed" class="muted" style="margin-top:8px"></div></div>
+<div class="card"><p style="font-size:13px;line-height:1.5;margin-top:0">Take or choose a photo, then tap <b>Identify & info</b>. The current static app uses your GPS and trip context to suggest the most likely place; true visual landmark recognition needs a secure AI backend.</p><input id="photoInput" type="file" accept="image/*" capture="environment" onchange="previewPhoto(event)"><img id="photoPreview" style="width:100%;max-height:320px;object-fit:cover;border-radius:16px;display:none;margin-top:8px"><button id="usePhotoBtn" class="primary" style="width:100%;margin-top:8px;display:none" onclick="usePhoto()">Identify & info</button><div id="photoUsed" class="muted" style="margin-top:8px"></div></div>
 </div></div>
 
 <div class="sheetbg" id="weatherSheet"><div class="sheet"><div class="handle"></div><div class="shead"><h2>Weather</h2><button class="close" onclick="closeSheet('weatherSheet')">×</button></div><div id="weatherBody"></div></div></div>
@@ -267,15 +296,35 @@ input,select,textarea{width:100%;border:1px solid var(--line);background:#fff;bo
 <div class="sheetbg" id="moreSheet"><div class="sheet"><div class="handle"></div><div class="shead"><h2>Menu</h2><button class="close" onclick="closeSheet('moreSheet')">×</button></div>
 <div class="card">
   <h3 style="margin-top:0">Optional Alternatives</h3>
-  <p class="muted">Use these only if weather, energy and time suit. They are not forced into the main route.</p>
-  <div class="place"><div><h3>Singapore Flyer</h3><p>Best around sunset / blue hour for elevated Marina Bay views.</p></div><button class="sbtn" onclick="closeSheet('moreSheet');focusStop('flyer')">Map</button></div>
-  <div class="place"><div><h3>Sentosa</h3><p>VivoCity → Sensoryscape → Beach Station → Palawan Beach. Better as a half-day alternative.</p></div><button class="sbtn" onclick="closeSheet('moreSheet');focusStop('sensoryscape')">Map</button></div>
-  <div class="place"><div><h3>Flower Dome</h3><p>Indoor cooled conservatory at Gardens by the Bay. Kept in the main Day 1 plan but easy to skip if short on time.</p></div><button class="sbtn" onclick="closeSheet('moreSheet');focusStop('flowerdome')">Map</button></div>
+  <p class="muted">Show the location and route from your current GPS position, or add/remove it from today’s route.</p>
+
+  <div class="place"><div><h3>Singapore Flyer</h3><p>Elevated Marina Bay views; best around sunset / blue hour.</p></div></div>
+  <div class="option-actions">
+    <button class="sbtn" onclick="mapAndRouteOption('flyer')">Map + route from me</button>
+    <button class="sbtn" data-option-id="flyer" onclick="toggleTodayRoute('flyer');event.stopPropagation()">Add to today</button>
+  </div>
+
+  <div class="place"><div><h3>Sentosa</h3><p>VivoCity → Sensoryscape → Beach Station → Palawan Beach. Better as a half-day alternative.</p></div></div>
+  <div class="option-actions">
+    <button class="sbtn" onclick="mapAndRouteOption('sensoryscape')">Map + route from me</button>
+    <button class="sbtn" data-option-id="sensoryscape" onclick="toggleTodayRoute('sensoryscape');event.stopPropagation()">Add to today</button>
+  </div>
+
+  <div class="place"><div><h3>Flower Dome</h3><p>Cooled conservatory at Gardens by the Bay; useful in heat or rain.</p></div></div>
+  <div class="option-actions">
+    <button class="sbtn" onclick="mapAndRouteOption('flowerdome')">Map + route from me</button>
+    <button class="sbtn" data-option-id="flowerdome" onclick="toggleTodayRoute('flowerdome');event.stopPropagation()">Add to today</button>
+  </div>
 </div>
+
 <div class="card">
   <h3 style="margin-top:0">Singapore River Cruise</h3>
   <p class="muted">Optional loop from Clarke Quay Jetty: Clarke Quay → Boat Quay → Merlion / Marina Bay → Marina Bay Sands / Esplanade → Clarke Quay.</p>
   <p class="muted">Best fitted into a late-afternoon/evening river day so you get daylight, sunset and night views.</p>
+  <div class="option-actions">
+    <button class="sbtn" onclick="mapAndRouteOption('rivercruise')">Map + route from me</button>
+    <button class="sbtn" data-option-id="rivercruise" onclick="toggleTodayRoute('rivercruise');event.stopPropagation()">Add to today</button>
+  </div>
   <button class="sbtn" style="width:100%" onclick="closeSheet('moreSheet');focusStop('rivercruise')">Show on map</button>
 </div>
 <div class="card"><button class="sbtn" style="width:100%;text-align:left" onclick="closeSheet('moreSheet');openCameraCheck()">Photo check</button></div>
@@ -389,7 +438,7 @@ const mrt=[
 {name:"Gardens by the Bay",code:"TE22",lat:1.2795,lng:103.8675},
 {name:"Tanjong Rhu",code:"TE23",lat:1.2990,lng:103.8730}
 ];
-let state=JSON.parse(localStorage.getItem("sgTripV15")||"null")||{
+let state=JSON.parse(localStorage.getItem("sgTripV16")||"null")||{
  day:0,routes:days.map((_,i)=>stops.filter(s=>s.day===i).map(s=>s.id)),missed:[],expenses:[],custom:[],mode:"Dry",hot:false,routeMode:"smart",fx:{gbp:.58,cad:.96}
 };
 if(typeof state.hot==="undefined") state.hot=false;
@@ -426,7 +475,7 @@ function ensureHotelReturn(){
 }
 ensureHotelReturn();
 
-function save(){localStorage.setItem("sgTripV15",JSON.stringify(state))}
+function save(){localStorage.setItem("sgTripV16",JSON.stringify(state))}
 function allStops(){return [...stops,...state.custom]}
 function byId(id){return allStops().find(s=>s.id===id)}
 function routeObjs(){return state.routes[state.day].map(byId).filter(Boolean)}
@@ -448,6 +497,7 @@ function openSheet(id){
  if(id==="coolSheet"){renderCool();showCoolPins()}
  if(id==="weatherSheet")loadWeather();
  if(id==="smokeSheet"){renderSmoking();showSmokingPins()}
+ if(id==="moreSheet")setTimeout(refreshOptionButtons,0)
 }
 function enableSwipeSheet(bg){
  if(bg.dataset.swipeReady)return;bg.dataset.swipeReady="1";
@@ -563,6 +613,44 @@ function alongInfo(a,b){
  return alongTheWay[`${a.id}>${b.id}`] || [];
 }
 
+function isInToday(id){return state.routes[state.day]?.includes(id)}
+function addToTodayRoute(id){
+ const route=state.routes[state.day]||[];
+ if(route.includes(id))return;
+ const endId=state.day===3?"t4":"hotel";
+ const endIndex=Math.max(1,route.lastIndexOf(endId));
+ route.splice(endIndex,0,id);
+ state.routes[state.day]=route;save();renderAll();refreshOptionButtons();
+}
+function removeFromTodayRoute(id){
+ state.routes[state.day]=state.routes[state.day].filter((x,i)=>!(x===id && i!==0 && i!==state.routes[state.day].length-1));
+ save();renderAll();refreshOptionButtons();
+}
+function toggleTodayRoute(id){isInToday(id)?removeFromTodayRoute(id):addToTodayRoute(id)}
+function refreshOptionButtons(){
+ document.querySelectorAll("[data-option-id]").forEach(btn=>{
+   const id=btn.dataset.optionId;
+   btn.textContent=isInToday(id)?"Delete from today":"Add to today";
+ });
+}
+async function mapAndRouteOption(id){
+ closeAllSheets();
+ const s=byId(id);if(!s)return;
+ if(!userPos){locateMe();setTimeout(()=>mapAndRouteOption(id),900);return}
+ const card=document.querySelector(".routefloat");card.classList.add("collapsed");
+ map.setView([s.lat,s.lng],16);
+ try{
+   if(state.mode==="Wet"||state.hot||hav(userPos,s)>1.6) await drawTransitTo(userPos,s);
+   else{
+     const r=await footRoute([userPos,s]);
+     if(routeLayer)map.removeLayer(routeLayer);
+     routeLayer=L.geoJSON(r.geometry,{style:{color:"#1677ff",weight:6,opacity:.9}}).addTo(map);
+     map.fitBounds(routeLayer.getBounds().pad(.18));
+     routeStats.textContent=`From you · Walk ${(r.distance/1000).toFixed(1)} km · ${Math.round(r.duration/60)} min`;
+   }
+ }catch(e){map.setView([s.lat,s.lng],16);routeStats.textContent="Location shown · route unavailable"}
+}
+
 function dayRouteTheme(){
  const themes=[
   "Arrival + Marina Bay photo walk: waterfront, skyline, reflections and night lights.",
@@ -662,7 +750,7 @@ function renderRouteSheet(){
 async function showLegRoute(aid,bid,mode){
  closeAllSheets();
  document.querySelector(".routefloat")?.classList.add("collapsed");
- if(typeof expandRouteBtn!=="undefined")expandRouteBtn.textContent="Expand";
+ if(typeof expandRouteBtn!=="undefined")if(typeof expandRouteBtn!=="undefined"&&expandRouteBtn)expandRouteBtn.textContent="Expand";
  const a=byId(aid),b=byId(bid);closeSheet("routeSheet");
  if(mode==="transit"){await drawTransitTo(a,b);return}
  try{const r=await footRoute([a,b]);if(routeLayer)map.removeLayer(routeLayer);routeLayer=L.geoJSON(r.geometry,{style:{color:"#1677ff",weight:6,opacity:.9}}).addTo(map);map.fitBounds(routeLayer.getBounds().pad(.15));routeStats.textContent=`Walk · ${(r.distance/1000).toFixed(1)} km · ${Math.round(r.duration/60)} min`}catch(e){routeStats.textContent="Walking route unavailable"}
@@ -706,7 +794,7 @@ function skipNext(){const id=state.routes[state.day].shift();if(id)state.missed.
 function locateMe(){if(!navigator.geolocation)return;navigator.geolocation.getCurrentPosition(p=>{userPos={lat:p.coords.latitude,lng:p.coords.longitude};if(userMarker)map.removeLayer(userMarker);userMarker=L.circleMarker([userPos.lat,userPos.lng],{radius:8,weight:3,fillOpacity:.9}).addTo(map).bindPopup("You are here");map.setView([userPos.lat,userPos.lng],16);renderNext()})}
 async function followRoute(){
  document.querySelector(".routefloat")?.classList.add("collapsed");
- expandRouteBtn.textContent="Expand";
+ if(typeof expandRouteBtn!=="undefined"&&expandRouteBtn)expandRouteBtn.textContent="Expand";
  if(!userPos){locateMe();setTimeout(followRoute,900);return}
  const n=routeObjs()[0];if(!n)return;
  if(nextMode==="transit"||state.mode==="Wet"||state.hot){await drawTransitTo(userPos,n);return}
@@ -714,12 +802,12 @@ async function followRoute(){
 }
 function focusStop(id){const s=byId(id);map.setView([s.lat,s.lng],17)}
 
-function toggleUpcoming(){
+function toggleRouteCard(){
  const card=document.querySelector(".routefloat");
- const collapsed=card.classList.toggle("collapsed");
- expandRouteBtn.textContent=collapsed?"Expand":"Collapse";
- if(!collapsed)renderUpcoming();
+ card.classList.toggle("collapsed");
+ if(!card.classList.contains("collapsed"))renderUpcoming();
 }
+function toggleUpcoming(){toggleRouteCard()}
 function setNextMode(mode){nextMode=mode;nextWalkBtn.classList.toggle("active",mode==="walk");nextTransitBtn.classList.toggle("active",mode==="transit");renderNext();rebuildRoute()}
 function renderUpcoming(){
  const r=routeObjs();let out="";
@@ -737,7 +825,7 @@ function showUpcomingOnMap(id,index){
  document.querySelectorAll(".upcoming-row").forEach(x=>x.classList.remove("selected"));
  const row=document.getElementById(`up-${id}-${index}`);if(row)row.classList.add("selected");
  const s=byId(id);if(!s)return;
- const card=document.querySelector(".routefloat");card.classList.add("collapsed");expandRouteBtn.textContent="Expand";
+ const card=document.querySelector(".routefloat");card.classList.add("collapsed");if(typeof expandRouteBtn!=="undefined"&&expandRouteBtn)expandRouteBtn.textContent="Expand";
  map.setView([s.lat,s.lng],17);
  const match=markers.find(m=>m.getLatLng&&Math.abs(m.getLatLng().lat-s.lat)<0.00001&&Math.abs(m.getLatLng().lng-s.lng)<0.00001);
  if(match)match.openPopup();
@@ -760,12 +848,33 @@ function getCoolPlaces(){
  const p=[{name:"Bugis Junction",lat:1.2997,lng:103.8555,note:"Air-conditioned mall · free entry"},{name:"Raffles City",lat:1.2931,lng:103.8533,note:"Air-conditioned mall · free entry"},{name:"Clarke Quay Central",lat:1.2897,lng:103.8465,note:"Air-conditioned mall · free entry"},{name:"Marina Bay Sands Shoppes",lat:1.2839,lng:103.8591,note:"Air-conditioned mall · free entry"},{name:"Tekka Centre",lat:1.3062,lng:103.8504,note:"Covered food centre"}];
  if(userPos)p.sort((a,b)=>hav(userPos,a)-hav(userPos,b));return p;
 }
-function showCoolPins(){clearActionMarkers();getCoolPlaces().forEach((x,i)=>{const m=L.marker([x.lat,x.lng],{icon:actionIcon("cool","C")}).addTo(map).bindPopup(`<b>${x.name}</b><br>${x.note}<br><button onclick="routeToCool(${i})">Route here</button>`);actionMarkers.push(m)})}
-function renderCool(){const p=getCoolPlaces();coolList.innerHTML='<div class="card">'+p.map((x,i)=>`<div class="place"><div><h3>${x.name}</h3><p>${x.note}${userPos?` · ${hav(userPos,x).toFixed(1)} km`:""}</p></div><button class="sbtn" onclick="routeToCool(${i})">Route</button></div>`).join("")+'</div>'}
+function showCoolPins(){
+ clearActionMarkers();
+ if(!userPos){
+   locateMe();
+   setTimeout(showCoolPins,900);
+   return;
+ }
+ const p=getCoolPlaces().slice(0,4);
+ const pts=[[userPos.lat,userPos.lng]];
+ p.forEach((x,i)=>{
+  const m=L.marker([x.lat,x.lng],{icon:actionIcon("cool","C")}).addTo(map).bindPopup(`<div style="font-size:14px;line-height:1.45"><b style="font-size:16px">${x.name}</b><br>${x.note}<br>${hav(userPos,x).toFixed(1)} km from your GPS location<br><button onclick="routeToCool(${i})">Route here</button></div>`);
+  actionMarkers.push(m);pts.push([x.lat,x.lng]);
+ });
+ map.fitBounds(L.latLngBounds(pts).pad(.22),{maxZoom:16});
+}
+function renderCool(){
+ if(!userPos){
+   coolList.innerHTML='<div class="card"><div class="nearby-gps-note">Getting your GPS location so the nearest cool places can be shown…</div></div>';
+   locateMe();setTimeout(()=>{renderCool();showCoolPins()},900);return;
+ }
+ const p=getCoolPlaces().slice(0,4);
+ coolList.innerHTML='<div class="card"><div class="nearby-gps-note">Nearest cool places from your current GPS location.</div>'+p.map((x,i)=>`<div class="place"><div><h3>${x.name}</h3><p>${x.note} · ${hav(userPos,x).toFixed(1)} km from you</p></div><button class="sbtn" onclick="routeToCool(${i})">Route</button></div>`).join("")+'</div>';
+}
 async function routeToCool(i){
  closeAllSheets();
  document.querySelector(".routefloat")?.classList.add("collapsed");
- if(typeof expandRouteBtn!=="undefined")expandRouteBtn.textContent="Expand";
+ if(typeof expandRouteBtn!=="undefined")if(typeof expandRouteBtn!=="undefined"&&expandRouteBtn)expandRouteBtn.textContent="Expand";
  const p=getCoolPlaces()[i];closeSheet("coolSheet");
  if(!userPos){locateMe();setTimeout(()=>routeToCool(i),900);return}
  if(state.hot||state.mode==="Wet"){await drawTransitTo(userPos,p);return}
@@ -779,9 +888,42 @@ function wxIcon(rain,cloud=0){
 async function loadWeather(){weatherBody.innerHTML='<div class="card">Loading forecast…</div>';try{const r=await fetch("https://api.open-meteo.com/v1/forecast?latitude=1.3521&longitude=103.8198&hourly=temperature_2m,precipitation_probability,cloud_cover&timezone=Asia%2FSingapore&forecast_days=16"),j=await r.json(),date=days[state.day].date,arr=j.hourly.time.map((t,i)=>({t,temp:j.hourly.temperature_2m[i],rain:j.hourly.precipitation_probability[i],cloud:j.hourly.cloud_cover[i]})).filter(x=>x.t.startsWith(date)&&+x.t.slice(11,13)>=7&&+x.t.slice(11,13)<=22);if(!arr.length)throw 0;weatherBody.innerHTML='<div class="card">'+arr.map(x=>`<div class="place"><div style="display:flex;gap:10px;align-items:center"><div class="weather-icon ${x.rain>=55?'rainy':x.cloud>65?'cloudy':'sunny'}">${wxIcon(x.rain,x.cloud)}</div><div><h3>${x.t.slice(11,16)}</h3><p>${Math.round(x.temp)}°C · ${x.rain}% rain · ${x.cloud}% cloud</p></div></div></div>`).join("")+'</div>'}catch(e){weatherBody.innerHTML='<div class="card">Exact hourly forecast is not available yet. Refresh nearer the trip.</div>'}}
 function openCameraCheck(){openSheet("photoSheet");setTimeout(()=>photoInput.click(),180)}
 function previewPhoto(ev){const f=ev.target.files?.[0];if(!f)return;photoPreview.src=URL.createObjectURL(f);photoPreview.style.display="block";usePhotoBtn.style.display="block";photoUsed.textContent=""}
-function usePhoto(){const f=photoInput.files?.[0];if(!f)return;photoUsed.textContent="Photo selected and ready to use for this place.";usePhotoBtn.style.display="none"}
+function usePhoto(){
+ const f=photoInput.files?.[0];if(!f)return;
+ if(!userPos){
+   photoUsed.innerHTML='<div class="photo-result"><h3>Getting location…</h3><p>Allow location access so I can match the photo with nearby trip places.</p></div>';
+   locateMe();setTimeout(usePhoto,900);return;
+ }
+ const candidates=stops
+   .filter(s=>typeof s.lat==="number"&&typeof s.lng==="number")
+   .map(s=>({s,d:hav(userPos,s)}))
+   .sort((a,b)=>a.d-b.d);
+ const nearest=candidates[0];
+ const likely=nearest?.s;
+ const nearby=candidates.slice(0,3).map(x=>`${x.s.name} (${x.d.toFixed(1)} km)`).join(" · ");
+ photoUsed.innerHTML=`<div class="photo-result">
+   <h3>${likely?`Likely nearby: ${likely.name}`:"Photo captured"}</h3>
+   ${likely?`<p>${likely.desc||""}</p><p><b>Photo tip:</b> ${likely.photo||"Good documentary shot."}</p>`:""}
+   <p><b>Nearby trip places:</b> ${nearby||"No nearby saved locations found."}</p>
+   <p><b>Important:</b> this is based on GPS and route context, not true image recognition. A secure AI photo-analysis backend is required to identify landmarks from the pixels themselves.</p>
+ </div>`;
+ usePhotoBtn.style.display="none";
+}
+function showSmokingPins(){
+ clearActionMarkers();
+ if(!userPos){
+   locateMe();setTimeout(showSmokingPins,900);return;
+ }
+ const ranked=[...smokingPlaces].sort((a,b)=>hav(userPos,a)-hav(userPos,b)).slice(0,5);
+ const pts=[[userPos.lat,userPos.lng]];
+ ranked.forEach(p=>{
+  const originalIndex=smokingPlaces.indexOf(p);
+  const m=L.marker([p.lat,p.lng],{icon:actionIcon("smoke","S")}).addTo(map).bindPopup(`<div style="font-size:14px;line-height:1.45"><b style="font-size:16px">${p.name}</b><br>${p.note}<br>${hav(userPos,p).toFixed(1)} km from your GPS location<br><button onclick="routeToSmoking(${originalIndex})">Route here</button></div>`);
+  actionMarkers.push(m);pts.push([p.lat,p.lng]);
+ });
+ map.fitBounds(L.latLngBounds(pts).pad(.22),{maxZoom:16});
+}
 
-function showSmokingPins(){clearActionMarkers();smokingPlaces.forEach((p,i)=>{const m=L.marker([p.lat,p.lng],{icon:actionIcon("smoke","S")}).addTo(map).bindPopup(`<b>${p.name}</b><br>${p.note}<br><button onclick="routeToSmoking(${i})">Route here</button>`);actionMarkers.push(m)})}
 const smokingPlaces=[
  {name:"Changi T4 public kerbside smoking area",lat:1.3385,lng:103.9838,note:"Terminal 4 public-side vicinity. Follow the airport smoking-area signs when you arrive."},
  {name:"Changi T4 transit smoking area – Gate G4 area",lat:1.3394,lng:103.9847,note:"Airside/transit vicinity. Only accessible after immigration/security."},
@@ -789,24 +931,21 @@ const smokingPlaces=[
 ];
 
 function renderSmoking(){
- const list=smokingPlaces.slice();
- if(userPos) list.sort((a,b)=>hav(userPos,a)-hav(userPos,b));
- smokeList.innerHTML='<div class="card">'+list.map((p,i)=>`
+ if(!userPos){
+   smokeList.innerHTML='<div class="card"><div class="nearby-gps-note">Getting your GPS location so the nearest smoking locations can be shown…</div></div>';
+   locateMe();setTimeout(()=>{renderSmoking();showSmokingPins()},900);return;
+ }
+ const ranked=[...smokingPlaces].sort((a,b)=>hav(userPos,a)-hav(userPos,b)).slice(0,5);
+ smokeList.innerHTML=`<div class="card"><div class="nearby-gps-note">Nearest listed smoking locations from your current GPS position. Always follow local signs.</div>${ranked.map(p=>`
    <div class="place">
-     <div>
-       <h3>${p.name}</h3>
-       <p>${p.note}${userPos?` · approx. ${hav(userPos,p).toFixed(1)} km from you`:""}</p>
-     </div>
-     <button class="sbtn" onclick="routeToSmoking(${smokingPlaces.indexOf(p)})">Route</button>
-   </div>`).join('')+
-   `<div class="place"><div><h3>Orchard Road</h3><p>No-smoking zone except marked Designated Smoking Areas. I will only route you to a DSA once we have a confirmed current location.</p></div></div>`+
-   '</div>';
+    <div><h3>${p.name}</h3><p>${p.note} · ${hav(userPos,p).toFixed(1)} km from you</p></div>
+    <button class="sbtn" onclick="routeToSmoking(${smokingPlaces.indexOf(p)})">Route</button>
+   </div>`).join("")}</div>`;
 }
-
 async function routeToSmoking(i){
  closeAllSheets();
  document.querySelector(".routefloat")?.classList.add("collapsed");
- if(typeof expandRouteBtn!=="undefined")expandRouteBtn.textContent="Expand";
+ if(typeof expandRouteBtn!=="undefined")if(typeof expandRouteBtn!=="undefined"&&expandRouteBtn)expandRouteBtn.textContent="Expand";
  const p=smokingPlaces[i];closeSheet("smokeSheet");
  if(!userPos){locateMe();setTimeout(()=>routeToSmoking(i),900);return}
  if(state.hot||state.mode==="Wet"){await drawTransitTo(userPos,p);routeStats.textContent="Smoking route · MRT / transport";return}

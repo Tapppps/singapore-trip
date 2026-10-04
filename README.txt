@@ -1,9 +1,12 @@
-Singapore Trip App V15
+Singapore Trip App V16
 
-UI improvements:
-- Route Now now properly collapses/expands as one compact card.
-- Map/route actions collapse Route Now automatically so the map stays visible.
-- Buttons inside slide-up cards close the card after the action, except controls that need the card to remain open.
-- Detail text is larger and easier to read.
-- Route descriptions, along-the-way information, photo notes and map popup text are larger.
-- Mobile Route Now uses less screen space.
+Changes:
+- Route Now starts collapsed.
+- No separate expand/collapse button: tap the Route Now header to open/close it.
+- When open, today's full list scrolls inside the card.
+- Cool Nearby and Smoking now use the user's GPS location, show nearest points, and zoom the map to the user + nearby locations.
+- Optional Alternatives and River Cruise have:
+  * Map + route from current GPS location
+  * Add to today / Delete from today
+- Photo Check opens camera/chooser and now gives a likely place + info based on GPS and route context.
+- IMPORTANT: true landmark recognition from the image pixels still requires a secure AI backend; the static app does not fake this.
