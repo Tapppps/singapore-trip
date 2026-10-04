@@ -209,6 +209,19 @@ input,select,textarea{width:100%;border:1px solid var(--line);background:#fff;bo
 .option-actions{display:flex;gap:7px;flex-wrap:wrap;margin-top:7px}
 .option-actions .sbtn{flex:1;min-width:120px}
 
+
+/* V17 full-day route list */
+#upcomingList{max-height:300px!important;overflow-y:auto!important;padding-right:3px}
+.upcoming-row{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:8px;align-items:start}
+.upcoming-row.route-off{opacity:.55;background:#f5f5f5}
+.route-row-actions{display:flex;gap:5px;flex-direction:column}
+.route-row-actions .sbtn{min-width:58px;padding:6px 8px}
+.route-toggle{font-size:18px!important;line-height:1!important;font-weight:400;min-width:42px!important}
+.airport-transfer{margin:8px 0;padding:11px;border:1px solid var(--line);border-radius:14px;background:#f8fbff}
+.airport-transfer h3{font-size:16px;margin:0 0 6px}
+.airport-step{font-size:14px;line-height:1.5;margin:4px 0}
+.airport-stations{font-size:13px;line-height:1.55;color:var(--muted);margin-top:7px}
+.route-mode-note{font-size:12px;margin:5px 0;color:var(--muted)}
 </style>
 </head>
 <body>
@@ -343,7 +356,7 @@ const days=[
  {date:"2026-10-18",label:"Sun 18",title:"Changi · Jewel · T4"}
 ];
 const stops=[
-{id:"airport",name:"Changi Airport",lat:1.3572,lng:103.9880,day:0,type:"Indoor",priority:"Must See",desc:"Singapore’s main airport; follow signs for the MRT after arrivals.",photo:"Good in daylight / Jewel later"},
+{id:"airport",name:"Changi Airport T4 Arrivals",lat:1.3384,lng:103.9832,day:0,type:"Indoor",priority:"Must See",desc:"Arrival at Terminal 4. Take the free terminal shuttle to T2/MRT, then continue by MRT to Lavender.",photo:"Arrival / travel documentary"},
 {id:"hotel",name:"Hotel Boss",lat:1.3057,lng:103.8603,day:0,type:"Indoor",priority:"Must See",desc:"Your base at Jalan Sultan, close to Kampong Glam and Lavender MRT.",photo:"Useful base / street scenes nearby"},
 {id:"fullerton",name:"Fullerton Waterfront",lat:1.2860,lng:103.8530,day:0,type:"Outdoor",priority:"Would Like",desc:"Historic waterfront beside the Fullerton Hotel with strong river-to-skyline views.",photo:"Best at blue hour / night reflections"},
 {id:"jubilee",name:"Jubilee Bridge",lat:1.2889,lng:103.8542,day:0,type:"Outdoor",priority:"Would Like",desc:"Pedestrian bridge linking the civic waterfront to Merlion Park with open Marina Bay views.",photo:"Excellent sunset / blue hour viewpoint"},
@@ -438,44 +451,42 @@ const mrt=[
 {name:"Gardens by the Bay",code:"TE22",lat:1.2795,lng:103.8675},
 {name:"Tanjong Rhu",code:"TE23",lat:1.2990,lng:103.8730}
 ];
-let state=JSON.parse(localStorage.getItem("sgTripV16")||"null")||{
- day:0,routes:days.map((_,i)=>stops.filter(s=>s.day===i).map(s=>s.id)),missed:[],expenses:[],custom:[],mode:"Dry",hot:false,routeMode:"smart",fx:{gbp:.58,cad:.96}
+const masterPlans=[
+ ["airport","hotel","fullerton","merlion","jubilee","esplanade","helix","mbs","spectra","gardens","flowerdome","f1","hotel"],
+ ["hotel","sultan","bussorah","muscat","baghdad","arab","haji","bugis","littleindia","tan","clive","serangoon","tekka","hotel"],
+ ["hotel","fort","hillstreet","chinatown","annsiang","telokayer","laupasat","cavenagh","anderson","boat","clarke","rivercruise","hotel"],
+ ["hotel","jewel","t4"]
+];
+
+let state=JSON.parse(localStorage.getItem("sgTripV17")||localStorage.getItem("sgTripV16")||"null")||{
+ day:0,routes:masterPlans.map(x=>[...x]),missed:[],expenses:[],custom:[],mode:"Dry",hot:false,routeMode:"smart",fx:{gbp:.58,cad:.96},excluded:[[],[],[],[]]
 };
 if(typeof state.hot==="undefined") state.hot=false;
+if(!Array.isArray(state.excluded))state.excluded=[[],[],[],[]];
+while(state.excluded.length<4)state.excluded.push([]);
+if(!Array.isArray(state.routes)||state.routes.length<4)state.routes=masterPlans.map(x=>[...x]);
+
 let map, routeLayer=null, userPos=null,userMarker=null,markers=[],pendingAdd=null,lastRoute=null,mrtMarkers=[],nextMode="walk";
 
+function fixedRouteItem(day,id,index,plan){
+ if(day===0&&(index===0||index===1||index===plan.length-1))return true;
+ if((day===1||day===2)&&(index===0||index===plan.length-1))return true;
+ if(day===3&&(index===0||index===plan.length-1))return true;
+ return false;
+}
 function ensureHotelReturn(){
-  // Day 1: airport arrival, MRT to hotel, then a continuous Marina Bay photo walk.
-  state.routes[0]=[
-    "airport","hotel",
-    "fullerton","merlion","jubilee","esplanade","helix","mbs","spectra","gardens","flowerdome","f1",
-    "hotel"
-  ];
-
-  // Day 2: deliberately walk the photogenic lanes, not just neighbourhood labels.
-  state.routes[1]=[
-    "hotel",
-    "sultan","bussorah","muscat","baghdad","arab","haji",
-    "bugis",
-    "littleindia","tan","clive","serangoon","tekka",
-    "hotel"
-  ];
-
-  // Day 3: heritage + Chinatown + Singapore River, finishing on the river for evening light.
-  state.routes[2]=[
-    "hotel",
-    "fort","hillstreet",
-    "chinatown","annsiang","telokayer","laupasat",
-    "cavenagh","anderson","boat","clarke","rivercruise",
-    "hotel"
-  ];
-
-  // Departure day.
-  state.routes[3]=["hotel","jewel","t4"];
+ for(let d=0;d<4;d++){
+   const base=masterPlans[d],excluded=new Set(state.excluded[d]||[]);
+   const extras=(state.routes[d]||[]).filter(id=>!base.includes(id));
+   let route=base.filter((id,i)=>fixedRouteItem(d,id,i,base)||!excluded.has(id));
+   const final=route.pop();
+   route=[...route,...extras.filter(id=>!excluded.has(id)),final];
+   state.routes[d]=route;
+ }
 }
 ensureHotelReturn();
 
-function save(){localStorage.setItem("sgTripV16",JSON.stringify(state))}
+function save(){localStorage.setItem("sgTripV17",JSON.stringify(state))}
 function allStops(){return [...stops,...state.custom]}
 function byId(id){return allStops().find(s=>s.id===id)}
 function routeObjs(){return state.routes[state.day].map(byId).filter(Boolean)}
@@ -615,18 +626,22 @@ function alongInfo(a,b){
 
 function isInToday(id){return state.routes[state.day]?.includes(id)}
 function addToTodayRoute(id){
- const route=state.routes[state.day]||[];
- if(route.includes(id))return;
- const endId=state.day===3?"t4":"hotel";
- const endIndex=Math.max(1,route.lastIndexOf(endId));
- route.splice(endIndex,0,id);
- state.routes[state.day]=route;save();renderAll();refreshOptionButtons();
+ state.excluded[state.day]=(state.excluded[state.day]||[]).filter(x=>x!==id);
+ const base=masterPlans[state.day];
+ if(!base.includes(id)&&!state.routes[state.day].includes(id)){
+   const final=state.routes[state.day].pop();state.routes[state.day].push(id,final);
+ }
+ ensureHotelReturn();save();renderAll();refreshOptionButtons();
 }
 function removeFromTodayRoute(id){
- state.routes[state.day]=state.routes[state.day].filter((x,i)=>!(x===id && i!==0 && i!==state.routes[state.day].length-1));
- save();renderAll();refreshOptionButtons();
+ const base=masterPlans[state.day];
+ if(base.includes(id)){
+   const ex=state.excluded[state.day]||[];if(!ex.includes(id))ex.push(id);state.excluded[state.day]=ex;
+ }else state.routes[state.day]=state.routes[state.day].filter(x=>x!==id);
+ ensureHotelReturn();save();renderAll();refreshOptionButtons();
 }
 function toggleTodayRoute(id){isInToday(id)?removeFromTodayRoute(id):addToTodayRoute(id)}
+
 function refreshOptionButtons(){
  document.querySelectorAll("[data-option-id]").forEach(btn=>{
    const id=btn.dataset.optionId;
@@ -649,6 +664,40 @@ async function mapAndRouteOption(id){
      routeStats.textContent=`From you · Walk ${(r.distance/1000).toFixed(1)} km · ${Math.round(r.duration/60)} min`;
    }
  }catch(e){map.setView([s.lat,s.lng],16);routeStats.textContent="Location shown · route unavailable"}
+}
+
+function airportTransferHtml(){
+ return `<div class="airport-transfer">
+   <h3>Changi T4 → Hotel Boss by MRT</h3>
+   <div class="airport-step"><b>1.</b> After arrivals at <b>Terminal 4</b>, go to the <b>T4 Arrival Bus Lounge</b>.</div>
+   <div class="airport-step"><b>2.</b> Take the <b>free public shuttle bus to T2 / MRT</b>. The public-area terminal journey is about 10 minutes.</div>
+   <div class="airport-step"><b>3.</b> Enter <b>Changi Airport MRT (CG2)</b>.</div>
+   <div class="airport-stations"><b>CG2 Changi Airport → CG1 Expo → EW4 Tanah Merah</b></div>
+   <div class="airport-step"><b>4.</b> At <b>Tanah Merah (EW4)</b>, change to the <b>westbound East–West Line toward Tuas Link</b>.</div>
+   <div class="airport-stations">EW5 Bedok → EW6 Kembangan → EW7 Eunos → EW8 Paya Lebar → EW9 Aljunied → EW10 Kallang → <b>EW11 Lavender</b></div>
+   <div class="airport-step"><b>5.</b> At <b>Lavender EW11</b>, use <b>Exit B</b>.</div>
+   <div class="airport-step"><b>6.</b> Walk about <b>400 m / 4–5 minutes</b> to <b>Hotel Boss, 500 Jalan Sultan</b>.</div>
+   <div class="option-actions"><button class="sbtn" onclick="showAirportHotelRoute()">Show route on map</button></div>
+ </div>`;
+}
+async function showAirportHotelRoute(){
+ closeAllSheets();
+ const t4=byId("airport"),hotel=byId("hotel");
+ const names=["Changi Airport","Expo","Tanah Merah","Bedok","Kembangan","Eunos","Paya Lebar","Aljunied","Kallang","Lavender"];
+ const pts=names.map(n=>mrt.find(x=>x.name===n)).filter(Boolean);
+ if(routeLayer)map.removeLayer(routeLayer);
+ const layers=[];
+ if(pts[0])layers.push(L.polyline([[t4.lat,t4.lng],[pts[0].lat,pts[0].lng]],{color:"#7b7f86",weight:5,dashArray:"8 7",opacity:.85}).addTo(map));
+ layers.push(L.polyline(pts.map(x=>[x.lat,x.lng]),{color:"#2d8b57",weight:6,opacity:.9}).addTo(map));
+ const lav=mrt.find(x=>x.name==="Lavender");
+ try{
+   if(lav){const walk=await footRoute([lav,hotel]);layers.push(L.geoJSON(walk.geometry,{style:{color:"#1677ff",weight:5,opacity:.9}}).addTo(map))}
+ }catch(e){if(lav)layers.push(L.polyline([[lav.lat,lav.lng],[hotel.lat,hotel.lng]],{color:"#1677ff",weight:5,dashArray:"5 5"}).addTo(map))}
+ routeLayer=L.featureGroup(layers);
+ const bounds=[[t4.lat,t4.lng],...pts.map(x=>[x.lat,x.lng]),[hotel.lat,hotel.lng]];
+ map.fitBounds(L.latLngBounds(bounds).pad(.10),{maxZoom:15});
+ routeStats.textContent="T4 shuttle → CG2 → Tanah Merah change → Lavender → walk to Hotel Boss";
+ document.querySelector(".routefloat")?.classList.add("collapsed");
 }
 
 function dayRouteTheme(){
@@ -744,7 +793,7 @@ function renderRouteSheet(){
   const alongHtml=along.length?`<div class="along-card"><div class="along-title">Along the way</div>${along.map(x=>`<div class="along-item"><b>${x.name}</b> — ${x.info}</div>`).join("")}</div>`:"";
   cards+=`<div class="leg-card"><div class="leg-top"><div><div class="leg-name">${i+1}. ${a.name} → ${b.name}</div><div class="leg-detail">${detail}</div><div class="leg-detail">${placeNote}${cruiseNote}</div>${alongHtml}</div><div class="muted">${km.toFixed(1)} km</div></div><div class="leg-modes"><button onclick="showLegRoute('${a.id}','${b.id}','walk')">Walk</button><button onclick="showLegRoute('${a.id}','${b.id}','transit')">MRT / transport</button></div></div>`;
  }
- routeList.innerHTML=`<div class="card"><div class="muted">Approx. stop-to-stop distance: ${total.toFixed(1)} km</div></div>${cards}`;
+ routeList.innerHTML=`${state.day===0?airportTransferHtml():""}<div class="card"><div class="muted">Approx. stop-to-stop distance: ${total.toFixed(1)} km</div></div>${cards}`;
  smartBtn.classList.toggle("on",state.routeMode==="smart");walkBtn.classList.toggle("on",state.routeMode==="walk");
 }
 async function showLegRoute(aid,bid,mode){
@@ -791,7 +840,7 @@ function applyPlanRules(){
 }
 function toggleWet(){state.mode=state.mode==="Dry"?"Wet":"Dry";save();applyPlanRules();renderHeader();renderAll();rebuildRoute()}
 function skipNext(){const id=state.routes[state.day].shift();if(id)state.missed.push({id,reason:"Skipped"});save();renderAll();rebuildRoute()}
-function locateMe(){if(!navigator.geolocation)return;navigator.geolocation.getCurrentPosition(p=>{userPos={lat:p.coords.latitude,lng:p.coords.longitude};if(userMarker)map.removeLayer(userMarker);userMarker=L.circleMarker([userPos.lat,userPos.lng],{radius:8,weight:3,fillOpacity:.9}).addTo(map).bindPopup("You are here");map.setView([userPos.lat,userPos.lng],16);renderNext()})}
+function locateMe(){if(!navigator.geolocation)return;navigator.geolocation.getCurrentPosition(p=>{userPos={lat:p.coords.latitude,lng:p.coords.longitude};if(userMarker)map.removeLayer(userMarker);userMarker=L.circleMarker([userPos.lat,userPos.lng],{radius:8,weight:3,fillOpacity:.9}).addTo(map).bindPopup("You are here");map.setView([userPos.lat,userPos.lng],18);userMarker.openPopup();renderNext()})}
 async function followRoute(){
  document.querySelector(".routefloat")?.classList.add("collapsed");
  if(typeof expandRouteBtn!=="undefined"&&expandRouteBtn)expandRouteBtn.textContent="Expand";
@@ -800,7 +849,7 @@ async function followRoute(){
  if(nextMode==="transit"||state.mode==="Wet"||state.hot){await drawTransitTo(userPos,n);return}
  try{const route=await footRoute([userPos,n]);if(routeLayer)map.removeLayer(routeLayer);routeLayer=L.geoJSON(route.geometry,{style:{color:"#1677ff",weight:6,opacity:.9}}).addTo(map);map.fitBounds(routeLayer.getBounds().pad(.16));routeStats.textContent=`Walk · ${(route.distance/1000).toFixed(1)} km · ${Math.round(route.duration/60)} min`}catch(e){routeStats.textContent="Walking route unavailable"}
 }
-function focusStop(id){const s=byId(id);map.setView([s.lat,s.lng],17)}
+function focusStop(id){const s=byId(id);if(!s)return;closeAllSheets();document.querySelector(".routefloat")?.classList.add("collapsed");map.setView([s.lat,s.lng],18);const match=markers.find(m=>m.getLatLng&&Math.abs(m.getLatLng().lat-s.lat)<0.00001&&Math.abs(m.getLatLng().lng-s.lng)<0.00001);if(match)match.openPopup()}
 
 function toggleRouteCard(){
  const card=document.querySelector(".routefloat");
@@ -809,15 +858,68 @@ function toggleRouteCard(){
 }
 function toggleUpcoming(){toggleRouteCard()}
 function setNextMode(mode){nextMode=mode;nextWalkBtn.classList.toggle("active",mode==="walk");nextTransitBtn.classList.toggle("active",mode==="transit");renderNext();rebuildRoute()}
+function dayDisplayPlan(){
+ const base=[...masterPlans[state.day]];
+ const extras=(state.routes[state.day]||[]).filter(id=>!base.includes(id));
+ if(extras.length){const end=base.pop();base.push(...extras,end)}
+ return base;
+}
+function routeItemIncluded(id,index,plan){
+ if(fixedRouteItem(state.day,id,index,plan))return true;
+ return !(state.excluded[state.day]||[]).includes(id);
+}
+function toggleDayLocation(id,index){
+ const plan=dayDisplayPlan();
+ if(fixedRouteItem(state.day,id,index,plan))return;
+ const arr=state.excluded[state.day]||[],pos=arr.indexOf(id);
+ if(pos>=0)arr.splice(pos,1);else arr.push(id);
+ state.excluded[state.day]=arr;
+ ensureHotelReturn();save();renderAll();rebuildRoute();
+}
+async function routeFromMe(id){
+ const s=byId(id);if(!s)return;
+ closeAllSheets();
+ if(!userPos){locateMe();setTimeout(()=>routeFromMe(id),900);return}
+ document.querySelector(".routefloat")?.classList.add("collapsed");
+ map.fitBounds(L.latLngBounds([[userPos.lat,userPos.lng],[s.lat,s.lng]]).pad(.14),{maxZoom:18});
+ const useTransit=state.mode==="Wet"||state.hot;
+ if(useTransit){await drawTransitTo(userPos,s);return}
+ try{
+  const r=await footRoute([userPos,s]);
+  if(routeLayer)map.removeLayer(routeLayer);
+  routeLayer=L.geoJSON(r.geometry,{style:{color:"#1677ff",weight:6,opacity:.9}}).addTo(map);
+  map.fitBounds(routeLayer.getBounds().pad(.10),{maxZoom:18});
+  routeStats.textContent=`From GPS · Walk ${(r.distance/1000).toFixed(1)} km · ${Math.round(r.duration/60)} min`;
+ }catch(e){
+  map.fitBounds(L.latLngBounds([[userPos.lat,userPos.lng],[s.lat,s.lng]]).pad(.14),{maxZoom:18});
+  routeStats.textContent="Chosen location + GPS shown · route unavailable";
+ }
+}
 function renderUpcoming(){
- const r=routeObjs();let out="";
- for(let i=0;i<r.length;i++){
-   const cur=r[i];let meta=i===0?"Start":(i===r.length-1?"End of day":"");
-   if(i<r.length-1){const nxt=r[i+1],km=hav(cur,nxt),hint=smartTransportHint(cur,nxt);meta=`${km.toFixed(1)} km · ${hint.mode}`}
-   const action=(cur.id==="hotel"&&i===r.length-1)
-     ?'<button class="sbtn" onclick="event.stopPropagation();showReturnOptions()">Return options</button>'
-     :`<button class="sbtn" onclick="event.stopPropagation();showUpcomingOnMap('${cur.id}',${i})">Map</button>`;
-   out+=`<div class="upcoming-row" id="up-${cur.id}-${i}" onclick="showUpcomingOnMap('${cur.id}',${i})"><div><div class="u-name">${i+1}. ${cur.name}</div><div class="u-meta">${meta}</div><div class="u-meta">${cur.desc||""}</div><div class="u-meta">${cur.photo?`<span class="photo-badge">Photo: ${cur.photo}</span>`:""}</div></div>${action}</div>`;
+ const plan=dayDisplayPlan();let out="";
+ if(state.day===0)out+=airportTransferHtml();
+ out+=`<div class="route-mode-note">${state.mode==="Wet"?"Wet plan: Route uses MRT / public transport where practical.":"Dry plan: Route favours walking. Too Hot switches it toward MRT / public transport."}</div>`;
+ for(let i=0;i<plan.length;i++){
+   const id=plan[i],cur=byId(id);if(!cur)continue;
+   const included=routeItemIncluded(id,i,plan),fixed=fixedRouteItem(state.day,id,i,plan);
+   let meta=i===0?"Start":(i===plan.length-1?"End of day":"");
+   if(included){
+     let next=null;
+     for(let j=i+1;j<plan.length;j++){if(routeItemIncluded(plan[j],j,plan)){next=byId(plan[j]);break}}
+     if(next){const km=hav(cur,next),hint=smartTransportHint(cur,next);meta=`${km.toFixed(1)} km · ${hint.mode}`}
+   }else meta="Not taking this stop";
+   out+=`<div class="upcoming-row ${included?"":"route-off"}" id="up-${id}-${i}">
+    <div onclick="showUpcomingOnMap('${id}',${i})">
+      <div class="u-name">${i+1}. ${cur.name}</div>
+      <div class="u-meta">${meta}</div>
+      <div class="u-meta">${cur.desc||""}</div>
+      <div class="u-meta">${cur.photo?`<span class="photo-badge">Photo: ${cur.photo}</span>`:""}</div>
+    </div>
+    <div class="route-row-actions">
+      <button class="sbtn" onclick="event.stopPropagation();routeFromMe('${id}')">Route</button>
+      ${fixed?'<button class="sbtn route-toggle" disabled title="Required stop">•</button>':`<button class="sbtn route-toggle" onclick="event.stopPropagation();toggleDayLocation('${id}',${i})">${included?"−":"+"}</button>`}
+    </div>
+   </div>`;
  }
  upcomingList.innerHTML=out;
 }
@@ -826,7 +928,7 @@ function showUpcomingOnMap(id,index){
  const row=document.getElementById(`up-${id}-${index}`);if(row)row.classList.add("selected");
  const s=byId(id);if(!s)return;
  const card=document.querySelector(".routefloat");card.classList.add("collapsed");if(typeof expandRouteBtn!=="undefined"&&expandRouteBtn)expandRouteBtn.textContent="Expand";
- map.setView([s.lat,s.lng],17);
+ map.setView([s.lat,s.lng],18);
  const match=markers.find(m=>m.getLatLng&&Math.abs(m.getLatLng().lat-s.lat)<0.00001&&Math.abs(m.getLatLng().lng-s.lng)<0.00001);
  if(match)match.openPopup();
 }

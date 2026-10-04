@@ -1,12 +1,11 @@
-Singapore Trip App V16
+Singapore Trip App V17
 
-Changes:
-- Route Now starts collapsed.
-- No separate expand/collapse button: tap the Route Now header to open/close it.
-- When open, today's full list scrolls inside the card.
-- Cool Nearby and Smoking now use the user's GPS location, show nearest points, and zoom the map to the user + nearby locations.
-- Optional Alternatives and River Cruise have:
-  * Map + route from current GPS location
-  * Add to today / Delete from today
-- Photo Check opens camera/chooser and now gives a likely place + info based on GPS and route context.
-- IMPORTANT: true landmark recognition from the image pixels still requires a secure AI backend; the static app does not fake this.
+- Detailed Changi T4 -> Hotel Boss transfer:
+  T4 free shuttle -> T2/MRT -> Changi Airport CG2 -> Expo -> Tanah Merah change -> Bedok -> Kembangan -> Eunos -> Paya Lebar -> Aljunied -> Kallang -> Lavender EW11 Exit B -> walk about 400m to Hotel Boss.
+- Route Now shows the whole day's plan.
+- Every non-required location has +/- to remove or add it back.
+- Every location has a Route button.
+- Route respects Dry/Wet/Too Hot: Dry favours walking; Wet/Too Hot favours MRT/public transport.
+- Route Now list scrolls.
+- Route removals now persist and are not overwritten on each render.
+- Chosen places and GPS zoom tighter.
