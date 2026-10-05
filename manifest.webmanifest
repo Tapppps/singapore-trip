@@ -3,7 +3,7 @@
   "short_name": "SG Trip",
   "start_url": "./index.html",
   "display": "standalone",
-  "background_color": "#fafafa",
-  "theme_color": "#fafafa",
+  "background_color": "#f4f5f7",
+  "theme_color": "#f4f5f7",
   "icons": []
 }

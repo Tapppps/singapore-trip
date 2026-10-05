@@ -375,6 +375,108 @@ input,select,textarea{width:100%;border:1px solid var(--line);background:#fff;bo
   #hawkerPanel{top:148px;width:min(310px,82vw);max-height:54vh}
 }
 
+
+/* V22 */
+#liveWeatherBadge{
+  position:absolute; right:10px; bottom:86px; z-index:640;
+  min-width:52px; height:52px; border:1px solid var(--line);
+  background:rgba(255,255,255,.96); border-radius:16px;
+  display:flex; align-items:center; justify-content:center; gap:4px;
+  padding:6px 8px; box-shadow:0 3px 14px rgba(0,0,0,.12); cursor:pointer;
+}
+#liveWeatherBadge .weather-icon{margin:0}
+#liveWeatherBadge .temp{font-size:12px;font-weight:600}
+#miniRouteWrap{display:none;margin:6px 0 8px}
+.routefloat:not(.collapsed) #miniRouteWrap{display:block}
+#miniRouteMap{height:145px;border-radius:14px;overflow:hidden;border:1px solid var(--line)}
+#miniRouteInfo{font-size:12px;color:var(--muted);line-height:1.4;margin-top:5px}
+.route-inline-detail{padding:8px 9px;background:#fafafa;border:1px solid var(--line);border-radius:12px;margin-bottom:7px}
+.route-inline-detail h3{font-size:15px;margin:0 0 4px}
+.route-inline-detail p{font-size:13px;line-height:1.45;margin:3px 0}
+.detail-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:8px}
+.detail-box{border:1px solid var(--line);border-radius:12px;padding:8px;background:#fff}
+.detail-box h4{font-size:13px;margin:0 0 4px}
+.detail-box p{font-size:13px;line-height:1.45;margin:2px 0}
+.evening-pick{padding:8px 0;border-top:1px solid var(--line)}
+.evening-pick:first-of-type{border-top:0}
+.evening-pick h4{font-size:14px;margin:0 0 3px}
+.evening-pick p{font-size:13px;line-height:1.45;margin:2px 0}
+.photo-ai-status{font-size:13px;line-height:1.45;margin-top:8px}
+.photo-ai-good{color:#1f6b3b}
+.photo-ai-warn{color:#8a5a00}
+@media(max-width:699px){
+ #liveWeatherBadge{bottom:78px;right:8px}
+ #miniRouteMap{height:135px}
+ .detail-grid{grid-template-columns:1fr}
+}
+
+
+/* V23 simplified journey dashboard */
+main{overflow-y:auto!important;background:#f4f5f7!important}
+#map,.tools,#hawkerChip,#hawkerPanel,#mrtJourneyPanel,#liveWeatherBadge,.routefloat{display:none!important}
+#journeyDashboard{padding:12px 10px 92px;max-width:760px;margin:0 auto}
+.journey-toolbar{display:flex;gap:7px;overflow-x:auto;padding:2px 0 10px;scrollbar-width:none}
+.journey-toolbar::-webkit-scrollbar{display:none}
+.journey-toolbar .chip{flex:0 0 auto;background:#fff}
+.journey-intro{padding:4px 2px 10px}
+.journey-intro h2{font-size:18px;margin:0 0 3px;font-weight:650}
+.journey-intro p{font-size:13px;color:var(--muted);margin:0;line-height:1.45}
+.journey-card{
+  background:#fff;border:1px solid var(--line);border-radius:22px;
+  margin:0 0 13px;overflow:hidden;box-shadow:0 3px 14px rgba(0,0,0,.06)
+}
+.journey-band{height:7px;background:var(--route-colour,#0b5cab)}
+.journey-card-inner{padding:12px}
+.journey-step{display:flex;justify-content:space-between;gap:10px;align-items:flex-start;margin-bottom:7px}
+.journey-step .step-no{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.04em}
+.journey-step h3{font-size:17px;line-height:1.25;margin:2px 0 0}
+.journey-step .mode{font-size:11px;font-weight:700;border:1px solid var(--line);padding:5px 7px;border-radius:999px;white-space:nowrap}
+.journey-instruction{font-size:14px;line-height:1.5;margin:0 0 9px;color:#262626}
+.schematic{
+  position:relative;height:170px;border-radius:17px;background:#fbfbfb;
+  border:1px solid #ececec;overflow:hidden
+}
+.schematic svg{width:100%;height:100%;display:block}
+.schematic .loading{position:absolute;inset:0;display:grid;place-items:center;font-size:12px;color:var(--muted)}
+.route-stats{font-size:13px;color:var(--muted);margin-top:7px}
+.poi-row{display:flex;gap:7px;overflow-x:auto;padding-top:9px;scrollbar-width:none}
+.poi-row::-webkit-scrollbar{display:none}
+.poi-btn{
+  flex:0 0 auto;border:1px solid var(--line);background:#fff;border-radius:12px;
+  padding:7px 9px;font-size:12px;max-width:180px;text-align:left
+}
+.poi-dot{display:inline-block;width:8px;height:8px;border-radius:50%;background:#e32017;margin-right:5px}
+.next-arrow{font-size:12px;color:var(--muted);margin:7px 0 0;text-align:right}
+#journeyWeather{
+  position:fixed;right:12px;bottom:82px;z-index:700;background:#fff;border:1px solid var(--line);
+  border-radius:16px;padding:7px 9px;display:flex;align-items:center;gap:5px;box-shadow:0 3px 12px rgba(0,0,0,.12)
+}
+#journeyWeather .weather-icon{margin:0}
+#journeyWeather .temp{font-size:12px;font-weight:700}
+#poiOverlay{
+  position:fixed;inset:0;z-index:3000;background:#101010;color:#fff;display:none;overflow-y:auto
+}
+#poiOverlay.open{display:block}
+.poi-hero{position:relative;height:min(56vh,520px);background:#222;overflow:hidden}
+.poi-hero img{width:100%;height:100%;object-fit:cover;display:block}
+.poi-hero:after{content:"";position:absolute;left:0;right:0;bottom:0;height:45%;background:linear-gradient(transparent,rgba(0,0,0,.72))}
+.poi-close{
+  position:absolute;z-index:2;top:14px;left:14px;border:0;border-radius:999px;background:rgba(0,0,0,.58);
+  color:#fff;padding:10px 13px;font-size:14px
+}
+.poi-content{padding:17px 16px 30px;max-width:720px;margin:0 auto}
+.poi-content h2{font-size:24px;line-height:1.2;margin:0 0 8px}
+.poi-content p{font-size:16px;line-height:1.55;margin:7px 0;color:#e8e8e8}
+.poi-content .poi-tip{padding:11px 12px;background:#1e1e1e;border-radius:14px;margin-top:12px}
+.poi-fallback{position:absolute;inset:0;display:grid;place-items:center;font-size:18px;color:#ddd;background:linear-gradient(135deg,#1a3150,#722f37)}
+@media(max-width:699px){
+ #journeyDashboard{padding-left:8px;padding-right:8px}
+ .journey-card-inner{padding:11px}
+ .schematic{height:158px}
+ .poi-content h2{font-size:22px}
+ .poi-content p{font-size:15px}
+}
+
 </style>
 </head>
 <body>
@@ -394,33 +496,34 @@ input,select,textarea{width:100%;border:1px solid var(--line);background:#fff;bo
 
 <main>
   <div id="map"></div>
-
-  <div class="tools">
-    <button class="chip" onclick="openSheet('addSheet')"><svg class="ico" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>Add stop</button>
-    <button class="chip" onclick="toggleHot()"><svg class="ico" viewBox="0 0 24 24"><path d="M12 3v3M4.2 6.2l2.1 2.1M3 14h3M20.8 6.2l-2.1 2.1M21 14h-3"/><path d="M8 17a4 4 0 1 1 8 0"/></svg>Too hot <span id="hotState" class="quick-state">Off</span></button>
-    <button class="chip" onclick="openSheet('coolSheet')"><svg class="ico" viewBox="0 0 24 24"><path d="M12 2v20M4 7l16 10M20 7 4 17M8 4l4 3 4-3M8 20l4-3 4 3"/></svg>Cool nearby</button>
-    <button class="chip" onclick="openSheet('smokeSheet')"><svg class="ico" viewBox="0 0 24 24"><path d="M3 15h13v4H3zM18 15v4M21 15v4"/><path d="M15 8c2 0 3-1 3-3M18 11c2 0 3-1 3-3"/></svg>Smoking</button>
-    <button class="chip" onclick="toggleWet()"><svg class="ico" viewBox="0 0 24 24"><path d="M7 18h10a4 4 0 0 0 .4-8A6 6 0 0 0 6 9.5 4.3 4.3 0 0 0 7 18Z"/><path d="M8 21l1-2M12 21l1-2M16 21l1-2"/></svg><span id="weatherMode">Dry plan</span></button>
-  </div>
-
-  <button id="hawkerChip" onclick="toggleHawkerPanel()">Food nearby</button>
-<div id="hawkerPanel" aria-live="polite"></div>
-<div id="mrtJourneyPanel" aria-live="polite"></div>
-<div class="routefloat collapsed">
-    <div class="routehead" onclick="toggleRouteCard()">
-      <div class="name">Route now</div>
-      <div class="stats" id="routeStats">—</div>
-      <div class="tap-hint">Today’s locations</div>
+  <div id="journeyDashboard">
+    <div class="journey-toolbar">
+      <button class="chip" onclick="openSheet('addSheet')">+ Add stop</button>
+      <button class="chip" onclick="toggleHot()">Too hot <span id="hotState" class="quick-state">Off</span></button>
+      <button class="chip" onclick="openSheet('coolSheet')">Cool nearby</button>
+      <button class="chip" onclick="openSheet('smokeSheet')">Smoking</button>
+      <button class="chip" onclick="toggleWet()"><span id="weatherMode">Dry plan</span></button>
     </div>
-    <div id="planBanner" class="plan-banner">Dry plan · outdoor walking preferred</div><div class="route-detail-line" id="routeTheme">Routes use specific photogenic streets, bridges and viewpoints rather than simply passing through an area.</div><div class="next" id="nextCard"></div>
-    <div class="transport-switch">
-      <button id="nextWalkBtn" class="active" onclick="setNextMode('walk')">Walk</button>
-      <button id="nextTransitBtn" onclick="setNextMode('transit')">Public transport</button>
+    <div class="journey-intro">
+      <h2 id="journeyTitle">Today</h2>
+      <p id="journeyIntro">Scroll down and follow one simple route card at a time.</p>
     </div>
-    <div class="actions"><button class="go" onclick="followRoute()">Follow route</button><button class="skip" onclick="skipNext()">Skip</button></div>
-    <div class="upcoming" id="upcomingList"></div>
+    <div id="journeyCards"></div>
   </div>
+  <button id="journeyWeather" onclick="openSheet('weatherSheet')" aria-label="Live weather"><span class="temp">--°</span></button>
 </main>
+<div id="poiOverlay" role="dialog" aria-modal="true">
+  <div class="poi-hero">
+    <button class="poi-close" onclick="closePoiOverlay()">← Back to route</button>
+    <div class="poi-fallback" id="poiFallback">Singapore place</div>
+    <img id="poiImage" alt="" onerror="this.style.display='none'">
+  </div>
+  <div class="poi-content">
+    <h2 id="poiTitle"></h2>
+    <p id="poiInfo"></p>
+    <div class="poi-tip" id="poiTip"></div>
+  </div>
+</div>
 
 <nav>
   <button class="nav active" onclick="openSheet('daysSheet')"><svg class="ico" viewBox="0 0 24 24"><rect x="4" y="5" width="16" height="15" rx="2"/><path d="M8 3v4M16 3v4M4 9h16"/></svg>Day</button>
@@ -450,8 +553,10 @@ input,select,textarea{width:100%;border:1px solid var(--line);background:#fff;bo
 </div></div>
 
 <div class="sheetbg" id="photoSheet"><div class="sheet"><div class="handle"></div><div class="shead"><h2>Photo check</h2><button class="close" onclick="closeSheet('photoSheet')">×</button></div>
-<div class="card"><p style="font-size:13px;line-height:1.5;margin-top:0">Take or choose a photo, then tap <b>Identify & info</b>. The current static app uses your GPS and trip context to suggest the most likely place; true visual landmark recognition needs a secure AI backend.</p><input id="photoInput" type="file" accept="image/*" capture="environment" onchange="previewPhoto(event)"><img id="photoPreview" style="width:100%;max-height:320px;object-fit:cover;border-radius:16px;display:none;margin-top:8px"><button id="usePhotoBtn" class="primary" style="width:100%;margin-top:8px;display:none" onclick="usePhoto()">Identify & info</button><div id="photoUsed" class="muted" style="margin-top:8px"></div></div>
+<div class="card"><p style="font-size:13px;line-height:1.5;margin-top:0">Take or choose a photo, then tap <b>Identify & info</b>. This now sends the image to the connected secure Photo AI backend for visual landmark identification.</p><input id="photoInput" type="file" accept="image/*" capture="environment" onchange="previewPhoto(event)"><img id="photoPreview" style="width:100%;max-height:320px;object-fit:cover;border-radius:16px;display:none;margin-top:8px"><button id="usePhotoBtn" class="primary" style="width:100%;margin-top:8px;display:none" onclick="usePhoto()">Identify & info</button><div id="photoUsed" class="muted" style="margin-top:8px"></div></div>
 </div></div>
+
+<div class="sheetbg" id="locationDetailSheet"><div class="sheet"><div class="handle"></div><div class="shead"><h2 id="locationDetailTitle">Location</h2><button class="close" onclick="closeSheet('locationDetailSheet')">×</button></div><div id="locationDetailBody"></div></div></div>
 
 <div class="sheetbg" id="weatherSheet"><div class="sheet"><div class="handle"></div><div class="shead"><h2>Weather</h2><button class="close" onclick="closeSheet('weatherSheet')">×</button></div><div id="weatherBody"></div></div></div>
 
@@ -463,6 +568,33 @@ input,select,textarea{width:100%;border:1px solid var(--line);background:#fff;bo
 </div></div>
 
 <div class="sheetbg" id="moreSheet"><div class="sheet"><div class="handle"></div><div class="shead"><h2>Menu</h2><button class="close" onclick="closeSheet('moreSheet')">×</button></div>
+<div class="card">
+  <h3 style="margin-top:0">Evening View / Rooftop Options</h3>
+  <p class="muted">Cheapest useful options first. Deals change, so confirm before ordering.</p>
+  <div class="evening-pick">
+    <h4>Lumina Rooftop Bar by White Shades</h4>
+    <p><b>Best cheap rooftop deal:</b> Sunset Hour daily 5–7pm — draught beer from S$10, highball S$11, tap cocktails S$13.</p>
+    <p>Near Telok Ayer. Good for sunset / CBD rooftop views.</p>
+    <div class="option-actions"><button class="sbtn" onclick="showEveningSpot(1.2827,103.8475,'Lumina Rooftop Bar')">Map + route</button></div>
+  </div>
+  <div class="evening-pick">
+    <h4>Southbridge Rooftop</h4>
+    <p>80 Boat Quay, Level 5. Excellent river / skyline view. Happy-hour prices are best Mon–Thu; Friday/Saturday use it mainly for the view.</p>
+    <p>Classic cocktails start around S$18; entrance is from South Bridge Road near Elgin Bridge.</p>
+    <div class="option-actions"><button class="sbtn" onclick="showEveningSpot(1.2879,103.8490,'Southbridge Rooftop')">Map + route</button></div>
+  </div>
+  <div class="evening-pick">
+    <h4>LeVeL33</h4>
+    <p>Marina Bay Financial Centre, Level 33. House-brewed beer with a strong Marina Bay view; generally pricier than Lumina.</p>
+    <div class="option-actions"><button class="sbtn" onclick="showEveningSpot(1.2808,103.8545,'LeVeL33')">Map + route</button></div>
+  </div>
+</div>
+<div class="card">
+  <h3 style="margin-top:0">Photo Check AI</h3>
+  <p class="muted">For accurate image identification, connect the secure Photo AI backend once it is deployed.</p>
+  <input id="photoAiUrlInput" placeholder="Photo AI backend URL" style="width:100%;margin-bottom:7px">
+  <button class="sbtn" style="width:100%" onclick="savePhotoAiUrl()">Save backend URL</button>
+</div>
 <div class="card">
   <h3 style="margin-top:0">Fashion Shopping Break</h3>
   <p class="muted">One person can shop while the other explores nearby photo locations. These are optional and are not forced into the day.</p>
@@ -649,7 +781,7 @@ const masterPlans=[
  ["hotel","jewel","t4"]
 ];
 
-let state=JSON.parse(localStorage.getItem("sgTripV21")||localStorage.getItem("sgTripV16")||"null")||{
+let state=JSON.parse(localStorage.getItem("sgTripV23")||localStorage.getItem("sgTripV16")||"null")||{
  day:0,routes:masterPlans.map(x=>[...x]),missed:[],expenses:[],custom:[],mode:"Dry",hot:false,routeMode:"smart",fx:{gbp:.58,cad:.96},excluded:[[],[],[],[]]
 };
 if(typeof state.hot==="undefined") state.hot=false;
@@ -900,7 +1032,7 @@ function ensureHotelReturn(){
 }
 ensureHotelReturn();
 
-function save(){localStorage.setItem("sgTripV21",JSON.stringify(state))}
+function save(){localStorage.setItem("sgTripV23",JSON.stringify(state))}
 function allStops(){return [...stops,...state.custom]}
 function byId(id){return allStops().find(s=>s.id===id)}
 function routeObjs(){return state.routes[state.day].map(byId).filter(Boolean)}
@@ -922,7 +1054,7 @@ function openSheet(id){
  if(id==="coolSheet"){renderCool();showCoolPins()}
  if(id==="weatherSheet")loadWeather();
  if(id==="smokeSheet"){renderSmoking();showSmokingPins()}
- if(id==="moreSheet")setTimeout(()=>{
+ if(id==="moreSheet")setTimeout(()=>{loadPhotoAiUrl();
    const box=document.getElementById("shoppingBreakOptions");
    if(box)box.innerHTML=shoppingOptionCard("bugisplus")+shoppingOptionCard("somerset313");
    refreshOptionButtons();
@@ -957,7 +1089,7 @@ function initMap(){
 }
 function renderHeader(){dayTitle.textContent=days[state.day].title;daySub.textContent=`${days[state.day].label} · ${state.mode} plan`;weatherMode.textContent=state.mode+" plan"}
 function renderDays(){daysList.innerHTML=days.map((d,i)=>`<div class="place"><div><h3>${d.label}</h3><p>${d.title}</p></div><button class="sbtn" onclick="setDay(${i})">${i===state.day?"Current":"Open"}</button></div>`).join("")}
-function setDay(i){state.day=i;save();closeSheet("daysSheet");renderAll();rebuildRoute()}
+function setDay(i){state.day=i;save();closeSheet("daysSheet");renderAll();renderJourneyDashboard();window.scrollTo({top:0,behavior:"smooth"})}
 const alongTheWay={
  "fullerton>merlion":[
   {name:"The Fullerton Hotel",info:"Former General Post Office and one of Singapore’s major colonial-era civic buildings."},
@@ -1123,6 +1255,274 @@ async function showAirportHotelRoute(){
  const airportJ=preferredMRTJourney(mrt.find(x=>x.name==="Changi Airport"),mrt.find(x=>x.name==="Lavender"));
  showMRTJourney(airportJ,mrt.find(x=>x.name==="Changi Airport"),mrt.find(x=>x.name==="Lavender"));
  document.querySelector(".routefloat")?.classList.add("collapsed");
+}
+
+
+let miniMap=null,miniRouteLayer=null,selectedRouteIndex=0;
+function ensureMiniMap(){
+ if(miniMap)return;
+ miniMap=L.map("miniRouteMap",{zoomControl:false,attributionControl:false,dragging:true,scrollWheelZoom:false});
+ L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",{maxZoom:19}).addTo(miniMap);
+ setTimeout(()=>miniMap.invalidateSize(),50);
+}
+function nextIncludedStop(plan,index){
+ for(let j=index+1;j<plan.length;j++){
+   if(routeItemIncluded(plan[j],j,plan))return byId(plan[j]);
+ }
+ return null;
+}
+function estimateTransitMinutes(a,b,j){
+ if(!j||!j.path)return Math.max(5,Math.round(hav(a,b)*5));
+ const stationHops=Math.max(1,j.path.stations.length-1);
+ const changes=Math.max(0,j.segments.length-1);
+ return walkMins(hav(a,j.s1))+walkMins(hav(b,j.s2))+stationHops*2.5+changes*5;
+}
+async function previewRouteLeg(id,index){
+ const plan=dayDisplayPlan(),a=byId(id),b=nextIncludedStop(plan,index);
+ selectedRouteIndex=index;
+ if(!a)return;
+ renderInlineLocationDetail(a,b);
+ if(!b){miniRouteInfo.textContent="End of day.";return}
+ ensureMiniMap();
+ if(miniRouteLayer){miniMap.removeLayer(miniRouteLayer);miniRouteLayer=null}
+ const km=hav(a,b),hint=smartTransportHint(a,b);
+ try{
+   if(hint.mode==="Walk"){
+     const r=await footRoute([a,b]);
+     miniRouteLayer=L.geoJSON(r.geometry,{style:{color:"#1677ff",weight:5,opacity:.9}}).addTo(miniMap);
+     miniMap.fitBounds(miniRouteLayer.getBounds().pad(.14),{maxZoom:17});
+     miniRouteInfo.textContent=`Next: ${b.name} · Walk ${(r.distance/1000).toFixed(1)} km · about ${Math.round(r.duration/60)} min`;
+   }else{
+     const j=preferredMRTJourney(a,b),layers=[];
+     j.segments.forEach(seg=>{
+       const info=mrtLineInfo[seg.line]||{color:"#777"};
+       const pts=seg.stations.map(name=>mrt.find(x=>x.name===name)).filter(Boolean).map(x=>[x.lat,x.lng]);
+       if(pts.length>=2)layers.push(L.polyline(pts,{color:info.color,weight:5,opacity:.9}).addTo(miniMap));
+     });
+     layers.push(L.polyline([[a.lat,a.lng],[j.s1.lat,j.s1.lng]],{color:"#1677ff",weight:3,dashArray:"5 4"}).addTo(miniMap));
+     layers.push(L.polyline([[j.s2.lat,j.s2.lng],[b.lat,b.lng]],{color:"#1677ff",weight:3,dashArray:"5 4"}).addTo(miniMap));
+     miniRouteLayer=L.featureGroup(layers);
+     miniMap.fitBounds(L.latLngBounds([[a.lat,a.lng],[b.lat,b.lng],[j.s1.lat,j.s1.lng],[j.s2.lat,j.s2.lng]]).pad(.14),{maxZoom:17});
+     miniRouteInfo.textContent=`Next: ${b.name} · MRT · approx. ${km.toFixed(1)} km · ${Math.round(estimateTransitMinutes(a,b,j))} min`;
+   }
+ }catch(e){
+   miniMap.setView([(a.lat+b.lat)/2,(a.lng+b.lng)/2],15);
+   miniRouteInfo.textContent=`Next: ${b.name} · approx. ${km.toFixed(1)} km`;
+ }
+}
+function nearbySummary(s){
+ const attractions=stops.filter(x=>x.id!==s.id&&typeof x.lat==="number"&&hav(s,x)<=1.2).sort((a,b)=>hav(s,a)-hav(s,b)).slice(0,3);
+ const food=hawkerCentres?.map(h=>({h,d:hav(s,h)})).sort((a,b)=>a.d-b.d)[0];
+ const cool=getCoolPlaces().map(c=>({c,d:hav(s,c)})).sort((a,b)=>a.d-b.d)[0];
+ const smoke=[...smokingPlaces].map(p=>({p,d:hav(s,p)})).sort((a,b)=>a.d-b.d)[0];
+ return {attractions,food,cool,smoke};
+}
+function renderInlineLocationDetail(s,b){
+ const n=nearbySummary(s);
+ routeInlineDetail.innerHTML=`<h3>${s.name}</h3>
+ <p>${s.desc||""}</p>
+ <p>${s.photo?`<b>Photo:</b> ${s.photo}`:""}</p>
+ ${b?`<p><b>Next:</b> ${b.name}</p>`:""}
+ <div class="detail-grid">
+  <div class="detail-box"><h4>Nearby attractions</h4><p>${n.attractions.length?n.attractions.map(x=>`${x.name} (${hav(s,x).toFixed(1)} km)`).join("<br>"):"None saved nearby"}</p></div>
+  <div class="detail-box"><h4>Food</h4><p>${n.food?`${n.food.h.name} (${n.food.d.toFixed(1)} km)`:"No hawker centre nearby"}</p></div>
+  <div class="detail-box"><h4>A/C / cool</h4><p>${n.cool?`${n.cool.c.name} (${n.cool.d.toFixed(1)} km)`:"No saved cool place nearby"}</p></div>
+  <div class="detail-box"><h4>Smoking</h4><p>${n.smoke?`${n.smoke.p.name} (${n.smoke.d.toFixed(1)} km)`:"No saved smoking point nearby"}</p></div>
+ </div>
+ <div class="option-actions"><button class="sbtn" onclick="routeFromMe('${s.id}')">Route from GPS</button><button class="sbtn" onclick="openLocationDetails('${s.id}')">More details</button></div>`;
+}
+function openLocationDetails(id){
+ const s=byId(id); if(!s)return;
+ const n=nearbySummary(s);
+ locationDetailTitle.textContent=s.name;
+ locationDetailBody.innerHTML=`<div class="card">
+   <h3>${s.name}</h3><p>${s.desc||""}</p><p>${s.photo?`<b>Best photo time:</b> ${s.photo}`:""}</p>
+   <div class="detail-grid">
+    <div class="detail-box"><h4>Nearby attractions</h4><p>${n.attractions.length?n.attractions.map(x=>`${x.name} · ${hav(s,x).toFixed(1)} km`).join("<br>"):"None saved nearby"}</p></div>
+    <div class="detail-box"><h4>Food</h4><p>${n.food?`${n.food.h.name} · ${n.food.d.toFixed(1)} km<br>${n.food.h.where}`:"No hawker centre nearby"}</p></div>
+    <div class="detail-box"><h4>A/C / cool</h4><p>${n.cool?`${n.cool.c.name} · ${n.cool.d.toFixed(1)} km<br>${n.cool.c.note}`:"No saved cool place nearby"}</p></div>
+    <div class="detail-box"><h4>Smoking</h4><p>${n.smoke?`${n.smoke.p.name} · ${n.smoke.d.toFixed(1)} km<br>${n.smoke.p.note}`:"No saved smoking point nearby"}</p></div>
+   </div>
+   <div class="option-actions"><button class="sbtn" onclick="routeFromMe('${s.id}')">Route from GPS</button><button class="sbtn" onclick="focusStop('${s.id}')">Show on map</button></div>
+ </div>`;
+ openSheet("locationDetailSheet");
+}
+async function loadLiveWeather(){
+ try{
+   const r=await fetch("https://api.open-meteo.com/v1/forecast?latitude=1.3521&longitude=103.8198&current=temperature_2m,precipitation,cloud_cover&timezone=Asia%2FSingapore");
+   const j=await r.json(),c=j.current||{};
+   const rain=(c.precipitation||0)>0?80:0,cloud=c.cloud_cover||0;
+   liveWeatherBadge.innerHTML=`<div class="weather-icon ${rain>=55?'rainy':cloud>65?'cloudy':'sunny'}">${wxIcon(rain,cloud)}</div><span class="temp">${Math.round(c.temperature_2m||0)}°</span>`;
+ }catch(e){liveWeatherBadge.innerHTML='<span class="temp">Weather</span>'}
+}
+function showEveningSpot(lat,lng,name){
+ closeAllSheets();
+ const p={lat,lng,name};
+ if(!userPos){getGPS(()=>showEveningSpot(lat,lng,name));return}
+ map.fitBounds(L.latLngBounds([[userPos.lat,userPos.lng],[lat,lng]]).pad(.14),{maxZoom:17});
+ routeStats.textContent=`${name} · from your GPS`;
+}
+function savePhotoAiUrl(){
+ localStorage.setItem("photoAiUrl",photoAiUrlInput.value.trim());
+}
+function loadPhotoAiUrl(){
+ const v=localStorage.getItem("photoAiUrl")||"";
+ if(document.getElementById("photoAiUrlInput"))photoAiUrlInput.value=v;
+ return v;
+}
+
+
+const dayRouteColours=["#0050A4","#E32017","#009645","#8B4513"];
+let journeyWeatherTimer=null;
+
+function bearingText(a,b){
+ const lat1=a.lat*Math.PI/180,lat2=b.lat*Math.PI/180,dLon=(b.lng-a.lng)*Math.PI/180;
+ const y=Math.sin(dLon)*Math.cos(lat2);
+ const x=Math.cos(lat1)*Math.sin(lat2)-Math.sin(lat1)*Math.cos(lat2)*Math.cos(dLon);
+ let deg=(Math.atan2(y,x)*180/Math.PI+360)%360;
+ const dirs=["north","north-east","east","south-east","south","south-west","west","north-west"];
+ return dirs[Math.round(deg/45)%8];
+}
+function simplifyCoords(coords,maxPts=18){
+ if(!coords||coords.length<=maxPts)return coords||[];
+ const out=[];const step=(coords.length-1)/(maxPts-1);
+ for(let i=0;i<maxPts;i++)out.push(coords[Math.round(i*step)]);
+ return out;
+}
+function projectCoords(coords,w=320,h=160,pad=22){
+ if(!coords.length)return [];
+ const xs=coords.map(c=>c[0]),ys=coords.map(c=>c[1]);
+ const minX=Math.min(...xs),maxX=Math.max(...xs),minY=Math.min(...ys),maxY=Math.max(...ys);
+ const dx=Math.max(maxX-minX,.00001),dy=Math.max(maxY-minY,.00001);
+ return coords.map(([lng,lat])=>[
+   pad+(lng-minX)/dx*(w-pad*2),
+   h-pad-(lat-minY)/dy*(h-pad*2)
+ ]);
+}
+function svgPath(points){
+ return points.map((p,i)=>(i?"L":"M")+p[0].toFixed(1)+","+p[1].toFixed(1)).join(" ");
+}
+function routePois(a,b){
+ const along=alongInfo(a,b)||[];
+ const nearby=stops.filter(s=>s.id!==a.id&&s.id!==b.id&&typeof s.lat==="number"&&typeof s.lng==="number")
+  .map(s=>({s,d:Math.min(hav(a,s),hav(b,s))}))
+  .filter(x=>x.d<=0.55)
+  .sort((x,y)=>x.d-y.d).slice(0,2)
+  .map(x=>({name:x.s.name,info:x.s.desc||"",photo:x.s.photo||"",kind:"stop"}));
+ return [...along.slice(0,2).map(x=>({name:x.name,info:x.info,photo:"Look out for it as you pass.",kind:"along"})),...nearby].slice(0,3);
+}
+function poiImageUrl(name){
+ const q=encodeURIComponent(("Singapore "+name).replace(/[^\w\s-]/g," "));
+ return `https://loremflickr.com/1200/900/${q}`;
+}
+function openPoiOverlay(name,info,tip){
+ poiTitle.textContent=name;
+ poiInfo.textContent=info||"Interesting place along this route.";
+ poiTip.textContent=tip||"Look for a clear angle before taking the photo.";
+ poiFallback.textContent=name;
+ poiImage.style.display="block";
+ poiImage.src=poiImageUrl(name);
+ poiImage.alt=name;
+ poiOverlay.classList.add("open");
+ document.body.style.overflow="hidden";
+}
+function closePoiOverlay(){
+ poiOverlay.classList.remove("open");
+ document.body.style.overflow="";
+}
+function poisHtml(pois){
+ if(!pois.length)return "";
+ return `<div class="poi-row">${pois.map((p,i)=>`<button class="poi-btn" onclick='openPoiOverlay(${JSON.stringify(p.name)},${JSON.stringify(p.info)},${JSON.stringify(p.photo)})'><span class="poi-dot"></span>${p.name}</button>`).join("")}</div>`;
+}
+function mrtSchematic(j,colour){
+ const segs=j?.segments||[];
+ let stations=[];
+ segs.forEach((seg,si)=>{
+   seg.stations.forEach((name,i)=>{
+     if(si>0&&i===0)return;
+     stations.push({name,line:seg.line,change:i===0&&si>0});
+   });
+ });
+ const h=160,w=320,x=52;
+ if(!stations.length)return "";
+ const top=22,bottom=h-22,step=stations.length>1?(bottom-top)/(stations.length-1):0;
+ let lines="",dots="",labels="";
+ for(let i=0;i<stations.length-1;i++){
+   const y1=top+i*step,y2=top+(i+1)*step;
+   const lineKey=stations[i+1].line||stations[i].line;
+   const c=(mrtLineInfo[lineKey]||{}).color||colour;
+   lines+=`<line x1="${x}" y1="${y1}" x2="${x}" y2="${y2}" stroke="${c}" stroke-width="7" stroke-linecap="round"/>`;
+ }
+ stations.forEach((st,i)=>{
+   const y=top+i*step,c=(mrtLineInfo[st.line]||{}).color||colour;
+   dots+=`<circle cx="${x}" cy="${y}" r="${i===0||i===stations.length-1?7:5}" fill="white" stroke="${c}" stroke-width="4"/>`;
+   labels+=`<text x="${x+18}" y="${y+4}" font-size="11" fill="#202020">${st.name}</text>`;
+ });
+ return `<svg viewBox="0 0 ${w} ${h}" aria-label="MRT schematic">${lines}${dots}${labels}</svg>`;
+}
+async function buildJourneyCard(index,a,b){
+ const box=document.getElementById(`schematic-${index}`),stats=document.getElementById(`stats-${index}`);
+ if(!box||!stats)return;
+ const hint=smartTransportHint(a,b),km=hav(a,b),dir=bearingText(a,b);
+ try{
+   if(hint.mode==="Walk"){
+     const r=await footRoute([a,b]);
+     const coords=simplifyCoords(r.geometry.coordinates,20),pts=projectCoords(coords);
+     const colour=dayRouteColours[state.day%dayRouteColours.length];
+     box.innerHTML=`<svg viewBox="0 0 320 160"><path d="${svgPath(pts)}" fill="none" stroke="${colour}" stroke-width="8" stroke-linecap="round" stroke-linejoin="round"/><circle cx="${pts[0][0]}" cy="${pts[0][1]}" r="8" fill="white" stroke="${colour}" stroke-width="4"/><circle cx="${pts[pts.length-1][0]}" cy="${pts[pts.length-1][1]}" r="8" fill="${colour}"/></svg>`;
+     stats.textContent=`Walk ${(r.distance/1000).toFixed(1)} km · about ${Math.round(r.duration/60)} min · generally ${dir}`;
+   }else{
+     const j=preferredMRTJourney(a,b);
+     const colour=(mrtLineInfo[j.segments?.[0]?.line]||{}).color||dayRouteColours[state.day%dayRouteColours.length];
+     box.innerHTML=mrtSchematic(j,colour);
+     stats.textContent=`MRT · approx. ${km.toFixed(1)} km · about ${Math.round(estimateTransitMinutes(a,b,j))} min`;
+   }
+ }catch(e){
+   const colour=dayRouteColours[state.day%dayRouteColours.length];
+   box.innerHTML=`<svg viewBox="0 0 320 160"><path d="M40,120 L120,100 L190,62 L280,42" fill="none" stroke="${colour}" stroke-width="8" stroke-linecap="round"/><circle cx="40" cy="120" r="8" fill="white" stroke="${colour}" stroke-width="4"/><circle cx="280" cy="42" r="8" fill="${colour}"/></svg>`;
+   stats.textContent=`Approx. ${km.toFixed(1)} km · head ${dir}`;
+ }
+}
+function journeyInstruction(a,b){
+ const km=hav(a,b),hint=smartTransportHint(a,b),dir=bearingText(a,b);
+ if(hint.mode==="Walk")return `Head ${dir}. Keep following the coloured line for about ${walkMins(km)} minutes until you reach ${b.name}.`;
+ const j=preferredMRTJourney(a,b);
+ const changes=j.segments.length>1?` Change at ${j.segments.slice(0,-1).map(s=>s.stations[s.stations.length-1]).join(", ")}.`:"";
+ return `Walk to ${j.s1.name}, take the MRT to ${j.s2.name}.${changes} Then walk the final short section to ${b.name}.`;
+}
+function renderJourneyDashboard(){
+ if(!document.getElementById("journeyCards"))return;
+ ensureHotelReturn();
+ const route=routeObjs();
+ journeyTitle.textContent=days[state.day].title;
+ journeyIntro.textContent=state.day===0?"Arrival and first evening. Follow one simple card at a time.":"Scroll down. Each card shows only the direction you need for the next part of the day.";
+ let out="";
+ for(let i=0;i<route.length-1;i++){
+   const a=route[i],b=route[i+1],pois=routePois(a,b),colour=dayRouteColours[state.day%dayRouteColours.length],hint=smartTransportHint(a,b);
+   out+=`<section class="journey-card" style="--route-colour:${colour}">
+     <div class="journey-band"></div>
+     <div class="journey-card-inner">
+       <div class="journey-step">
+         <div><div class="step-no">Step ${i+1}</div><h3>${a.name} → ${b.name}</h3></div>
+         <div class="mode">${hint.mode==="MRT"?"MRT":"WALK"}</div>
+       </div>
+       <p class="journey-instruction">${journeyInstruction(a,b)}</p>
+       <div class="schematic" id="schematic-${i}"><div class="loading">Drawing route…</div></div>
+       <div class="route-stats" id="stats-${i}">Calculating…</div>
+       ${poisHtml(pois)}
+       <div class="next-arrow">Scroll for next step ↓</div>
+     </div>
+   </section>`;
+ }
+ journeyCards.innerHTML=out||'<div class="card">No route for this day.</div>';
+ setTimeout(()=>route.slice(0,-1).forEach((a,i)=>buildJourneyCard(i,a,route[i+1])),40);
+}
+async function loadJourneyWeather(){
+ try{
+   const r=await fetch("https://api.open-meteo.com/v1/forecast?latitude=1.3521&longitude=103.8198&current=temperature_2m,precipitation,cloud_cover&timezone=Asia%2FSingapore");
+   const j=await r.json(),c=j.current||{},rain=(c.precipitation||0)>0?80:0,cloud=c.cloud_cover||0;
+   journeyWeather.innerHTML=`<div class="weather-icon ${rain>=55?'rainy':cloud>65?'cloudy':'sunny'}">${wxIcon(rain,cloud)}</div><span class="temp">${Math.round(c.temperature_2m||0)}°</span>`;
+ }catch(e){journeyWeather.innerHTML='<span class="temp">Weather</span>'}
 }
 
 function dayRouteTheme(){
@@ -1372,7 +1772,10 @@ function focusStop(id){const s=byId(id);if(!s)return;closeAllSheets();document.q
 function toggleRouteCard(){
  const card=document.querySelector(".routefloat");
  card.classList.toggle("collapsed");
- if(!card.classList.contains("collapsed"))renderUpcoming();
+ if(!card.classList.contains("collapsed")){
+   renderUpcoming();
+   setTimeout(()=>{ensureMiniMap();miniMap.invalidateSize();const p=dayDisplayPlan();if(p[0])previewRouteLeg(p[0],0)},80);
+ }
 }
 function toggleUpcoming(){toggleRouteCard()}
 function setNextMode(mode){
@@ -1438,7 +1841,7 @@ function renderUpcoming(){
      if(next){const km=hav(cur,next),hint=smartTransportHint(cur,next);meta=`${km.toFixed(1)} km · ${hint.mode}`}
    }else meta="Not taking this stop";
    out+=`<div class="upcoming-row ${included?"":"route-off"}" id="up-${id}-${i}">
-    <div onclick="routeFromMe('${id}')" title="Show this location and route from your current GPS">
+    <div onclick="previewRouteLeg('${id}',${i})" title="Show details and route to the next location">
       <div class="u-name">${i+1}. ${cur.name}</div>
       <div class="u-meta">${meta}</div>
       <div class="u-meta">${cur.desc||""}</div>
@@ -1524,44 +1927,34 @@ function wxIcon(rain,cloud=0){
 async function loadWeather(){weatherBody.innerHTML='<div class="card">Loading forecast…</div>';try{const r=await fetch("https://api.open-meteo.com/v1/forecast?latitude=1.3521&longitude=103.8198&hourly=temperature_2m,precipitation_probability,cloud_cover&timezone=Asia%2FSingapore&forecast_days=16"),j=await r.json(),date=days[state.day].date,arr=j.hourly.time.map((t,i)=>({t,temp:j.hourly.temperature_2m[i],rain:j.hourly.precipitation_probability[i],cloud:j.hourly.cloud_cover[i]})).filter(x=>x.t.startsWith(date)&&+x.t.slice(11,13)>=7&&+x.t.slice(11,13)<=22);if(!arr.length)throw 0;weatherBody.innerHTML='<div class="card">'+arr.map(x=>`<div class="place"><div style="display:flex;gap:10px;align-items:center"><div class="weather-icon ${x.rain>=55?'rainy':x.cloud>65?'cloudy':'sunny'}">${wxIcon(x.rain,x.cloud)}</div><div><h3>${x.t.slice(11,16)}</h3><p>${Math.round(x.temp)}°C · ${x.rain}% rain · ${x.cloud}% cloud</p></div></div></div>`).join("")+'</div>'}catch(e){weatherBody.innerHTML='<div class="card">Exact hourly forecast is not available yet. Refresh nearer the trip.</div>'}}
 function openCameraCheck(){openSheet("photoSheet");setTimeout(()=>photoInput.click(),180)}
 function previewPhoto(ev){const f=ev.target.files?.[0];if(!f)return;photoPreview.src=URL.createObjectURL(f);photoPreview.style.display="block";usePhotoBtn.style.display="block";photoUsed.textContent=""}
-function usePhoto(){
+async function usePhoto(){
  const f=photoInput.files?.[0];if(!f)return;
- if(!userPos){
-   photoUsed.innerHTML='<div class="photo-result"><h3>Getting location…</h3><p>Allow location access so I can match the photo with nearby trip places.</p></div>';
-   locateMe();setTimeout(usePhoto,900);return;
+ const endpoint=loadPhotoAiUrl();
+ if(!endpoint){
+   photoUsed.innerHTML='<div class="photo-result"><h3>Photo AI not connected</h3><p class="photo-ai-warn">Enter the secure Photo AI backend URL in Menu → Photo Check AI. The static website cannot identify landmarks accurately by itself.</p></div>';
+   return;
  }
- const candidates=stops
-   .filter(s=>typeof s.lat==="number"&&typeof s.lng==="number")
-   .map(s=>({s,d:hav(userPos,s)}))
-   .sort((a,b)=>a.d-b.d);
- const nearest=candidates[0];
- const likely=nearest?.s;
- const nearby=candidates.slice(0,3).map(x=>`${x.s.name} (${x.d.toFixed(1)} km)`).join(" · ");
- photoUsed.innerHTML=`<div class="photo-result">
-   <h3>${likely?`Likely nearby: ${likely.name}`:"Photo captured"}</h3>
-   ${likely?`<p>${likely.desc||""}</p><p><b>Photo tip:</b> ${likely.photo||"Good documentary shot."}</p>`:""}
-   <p><b>Nearby trip places:</b> ${nearby||"No nearby saved locations found."}</p>
-   <p><b>Important:</b> this is based on GPS and route context, not true image recognition. A secure AI photo-analysis backend is required to identify landmarks from the pixels themselves.</p>
- </div>`;
+ photoUsed.innerHTML='<div class="photo-result"><h3>Identifying…</h3><p>Analysing the image and matching visual details.</p></div>';
+ try{
+   const fd=new FormData();fd.append("image",f);
+   if(userPos){fd.append("lat",String(userPos.lat));fd.append("lng",String(userPos.lng))}
+   fd.append("known_places",JSON.stringify(stops.map(s=>({name:s.name,lat:s.lat,lng:s.lng,desc:s.desc||""}))));
+   const r=await fetch(endpoint.replace(/\/$/,"")+"/photo-identify",{method:"POST",body:fd});
+   if(!r.ok)throw new Error("Photo AI service returned "+r.status);
+   const j=await r.json();
+   photoUsed.innerHTML=`<div class="photo-result">
+     <h3>${j.name||"Location identified"}</h3>
+     <p class="photo-ai-good"><b>Confidence:</b> ${j.confidence||"Not stated"}</p>
+     <p>${j.description||""}</p>
+     ${j.evidence?`<p><b>Why:</b> ${j.evidence}</p>`:""}
+     ${j.tip?`<p><b>Photo / visit tip:</b> ${j.tip}</p>`:""}
+   </div>`;
+ }catch(e){
+   photoUsed.innerHTML=`<div class="photo-result"><h3>Could not identify</h3><p class="photo-ai-warn">${e.message}</p><p>Check that the Photo AI backend URL is correct and running.</p></div>`;
+ }
  usePhotoBtn.style.display="none";
 }
-function zoomNearestSmoking(){
- if(!userPos)return;
- clearActionMarkers();
- const ranked=[...smokingPlaces].sort((a,b)=>hav(userPos,a)-hav(userPos,b));
- const nearest=ranked[0];
- ranked.slice(0,5).forEach(p=>{
-  const originalIndex=smokingPlaces.indexOf(p);
-  const m=L.marker([p.lat,p.lng],{icon:actionIcon("smoke","S")}).addTo(map)
-   .bindPopup(`<div style="font-size:14px;line-height:1.45"><b style="font-size:16px">${p.name}</b><br>${p.note}<br>${hav(userPos,p).toFixed(1)} km from your GPS location<br><button onclick="routeToSmoking(${originalIndex})">Route here</button></div>`);
-  actionMarkers.push(m);
- });
- if(nearest){
-   map.fitBounds(L.latLngBounds([[userPos.lat,userPos.lng],[nearest.lat,nearest.lng]]).pad(.14),{maxZoom:18});
-   actionMarkers[0]?.openPopup();
-   routeStats.textContent=`Nearest smoking location · ${nearest.name} · ${hav(userPos,nearest).toFixed(1)} km`;
- }
-}
+
 function showSmokingPins(){
  if(!userPos){getGPS(()=>{renderSmoking();zoomNearestSmoking()});return}
  zoomNearestSmoking();
@@ -1595,7 +1988,7 @@ async function routeToSmoking(i){
  if(nextMode==="transit" || (nextMode!=="walk" && hav(userPos,p)>0.85)){const j=preferredMRTJourney(userPos,p);await drawTransitTo(userPos,p,j);routeStats.textContent="Smoking route · MRT / transport";return}else hideMRTJourney()
  try{const route=await footRoute([userPos,p]);if(routeLayer)map.removeLayer(routeLayer);routeLayer=L.geoJSON(route.geometry,{style:{color:"#1677ff",weight:6,opacity:.9}}).addTo(map);map.fitBounds(routeLayer.getBounds().pad(.10),{maxZoom:18});routeStats.textContent=`Smoking route · ${(route.distance/1000).toFixed(1)} km · ${Math.round(route.duration/60)} min`}catch(e){map.setView([p.lat,p.lng],17);routeStats.textContent="Smoking location shown · route unavailable"}
 }
-function renderAll(){ensureHotelReturn();applyPlanRules();renderHeader();renderDays();renderNext();renderSpend();renderMarkers()}
+function renderAll(){ensureHotelReturn();applyPlanRules();renderHeader();renderDays();renderNext();renderSpend();renderMarkers();renderJourneyDashboard()}
 document.addEventListener("click",e=>{
  const btn=e.target.closest(".sheet button");
  if(!btn)return;
@@ -1611,7 +2004,7 @@ document.addEventListener("click",e=>{
  }
 });
 
-initMap();setTimeout(()=>map.invalidateSize(),250);window.addEventListener("resize",()=>map.invalidateSize());renderAll();rebuildRoute();
+initMap();renderAll();renderJourneyDashboard();loadJourneyWeather();journeyWeatherTimer=setInterval(loadJourneyWeather,900000);
 </script>
 <div id="appError" style="display:none;position:fixed;left:12px;right:12px;top:72px;z-index:99999;background:#fff3cd;border:1px solid #ffe69c;padding:10px 12px;border-radius:10px;font:13px Arial;color:#664d03"></div>
 

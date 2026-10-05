@@ -1,14 +1,14 @@
-Singapore Trip App V21
+Singapore Trip App V23
 
-New optional fashion-shopping breaks:
-- Friday: Bugis+
-  Shopper: fashion/lifestyle mall on the existing Bugis route.
-  Explorer: Bugis Street, Waterloo area, Haji Lane and Arab Street for street photography.
-- Saturday: 313@somerset
-  Shopper: major Orchard Road fashion mall.
-  Explorer: Orchard Central rooftop, Orchard Road architecture and Emerald Hill shophouses.
-- Each option has:
-  * Map + route from current GPS
-  * Add to today / Delete from today on the correct day
-  * Brief split plan for shopper and non-shopper
-- These remain optional and do not replace the normal sightseeing route.
+Radical dashboard redesign:
+- The normal map is removed from the home dashboard.
+- The home screen is now a vertical sequence of simple journey cards.
+- Each card shows only the current location -> next location.
+- Walking cards use a simplified line based on the real routed street geometry, stripped of road labels and map clutter.
+- MRT cards use an Underground-style station/line schematic with the MRT line colour.
+- Each card shows a simple direction, estimated distance and estimated time.
+- Scroll down for the next route card.
+- Nearby / along-the-way places of interest appear as small buttons on each route card.
+- Tapping a place opens a full-screen photo/info view.
+- The full-screen place view has a Back to route button which returns to the same journey-card page.
+- Styling is inspired by London Underground diagrams: strong coloured route lines, white background, round nodes and minimal information.
