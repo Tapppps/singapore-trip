@@ -508,7 +508,7 @@ main{overflow-y:auto!important;background:#f4f5f7!important}
       <h2 id="journeyTitle">Today</h2>
       <p id="journeyIntro">Scroll down and follow one simple route card at a time.</p>
     </div>
-    <div id="journeyCards"></div>
+    <div id="journeyCards"><div class="journey-card"><div class="journey-band"></div><div class="journey-card-inner"><p class="journey-instruction">Loading today’s route…</p></div></div></div>
   </div>
   <button id="journeyWeather" onclick="openSheet('weatherSheet')" aria-label="Live weather"><span class="temp">--°</span></button>
 </main>
@@ -781,7 +781,7 @@ const masterPlans=[
  ["hotel","jewel","t4"]
 ];
 
-let state=JSON.parse(localStorage.getItem("sgTripV23")||localStorage.getItem("sgTripV16")||"null")||{
+let state=JSON.parse(localStorage.getItem("sgTripV24")||localStorage.getItem("sgTripV16")||"null")||{
  day:0,routes:masterPlans.map(x=>[...x]),missed:[],expenses:[],custom:[],mode:"Dry",hot:false,routeMode:"smart",fx:{gbp:.58,cad:.96},excluded:[[],[],[],[]]
 };
 if(typeof state.hot==="undefined") state.hot=false;
@@ -1032,7 +1032,7 @@ function ensureHotelReturn(){
 }
 ensureHotelReturn();
 
-function save(){localStorage.setItem("sgTripV23",JSON.stringify(state))}
+function save(){localStorage.setItem("sgTripV24",JSON.stringify(state))}
 function allStops(){return [...stops,...state.custom]}
 function byId(id){return allStops().find(s=>s.id===id)}
 function routeObjs(){return state.routes[state.day].map(byId).filter(Boolean)}
@@ -1089,7 +1089,7 @@ function initMap(){
 }
 function renderHeader(){dayTitle.textContent=days[state.day].title;daySub.textContent=`${days[state.day].label} · ${state.mode} plan`;weatherMode.textContent=state.mode+" plan"}
 function renderDays(){daysList.innerHTML=days.map((d,i)=>`<div class="place"><div><h3>${d.label}</h3><p>${d.title}</p></div><button class="sbtn" onclick="setDay(${i})">${i===state.day?"Current":"Open"}</button></div>`).join("")}
-function setDay(i){state.day=i;save();closeSheet("daysSheet");renderAll();renderJourneyDashboard();window.scrollTo({top:0,behavior:"smooth"})}
+function setDay(i){state.day=i;save();closeSheet("daysSheet");renderAll();window.scrollTo({top:0,behavior:"smooth"})}
 const alongTheWay={
  "fullerton>merlion":[
   {name:"The Fullerton Hotel",info:"Former General Post Office and one of Singapore’s major colonial-era civic buildings."},
@@ -1524,6 +1524,16 @@ async function loadJourneyWeather(){
    journeyWeather.innerHTML=`<div class="weather-icon ${rain>=55?'rainy':cloud>65?'cloudy':'sunny'}">${wxIcon(rain,cloud)}</div><span class="temp">${Math.round(c.temperature_2m||0)}°</span>`;
  }catch(e){journeyWeather.innerHTML='<span class="temp">Weather</span>'}
 }
+
+
+function showJourneyError(msg){
+ const box=document.getElementById("journeyCards");
+ if(box)box.innerHTML=`<div class="journey-card"><div class="journey-band" style="background:#d22"></div><div class="journey-card-inner"><h3>Route cards could not load</h3><p class="journey-instruction">${msg}</p></div></div>`;
+}
+window.addEventListener("error",e=>{
+ const box=document.getElementById("journeyCards");
+ if(box && (!box.children.length || box.textContent.includes("Loading today’s route")))showJourneyError(e.message||"Unknown app error");
+});
 
 function dayRouteTheme(){
  const themes=[
@@ -1988,7 +1998,7 @@ async function routeToSmoking(i){
  if(nextMode==="transit" || (nextMode!=="walk" && hav(userPos,p)>0.85)){const j=preferredMRTJourney(userPos,p);await drawTransitTo(userPos,p,j);routeStats.textContent="Smoking route · MRT / transport";return}else hideMRTJourney()
  try{const route=await footRoute([userPos,p]);if(routeLayer)map.removeLayer(routeLayer);routeLayer=L.geoJSON(route.geometry,{style:{color:"#1677ff",weight:6,opacity:.9}}).addTo(map);map.fitBounds(routeLayer.getBounds().pad(.10),{maxZoom:18});routeStats.textContent=`Smoking route · ${(route.distance/1000).toFixed(1)} km · ${Math.round(route.duration/60)} min`}catch(e){map.setView([p.lat,p.lng],17);routeStats.textContent="Smoking location shown · route unavailable"}
 }
-function renderAll(){ensureHotelReturn();applyPlanRules();renderHeader();renderDays();renderNext();renderSpend();renderMarkers();renderJourneyDashboard()}
+function renderAll(){ensureHotelReturn();applyPlanRules();renderHeader();renderDays();renderSpend();renderJourneyDashboard()}
 document.addEventListener("click",e=>{
  const btn=e.target.closest(".sheet button");
  if(!btn)return;
@@ -2004,7 +2014,7 @@ document.addEventListener("click",e=>{
  }
 });
 
-initMap();renderAll();renderJourneyDashboard();loadJourneyWeather();journeyWeatherTimer=setInterval(loadJourneyWeather,900000);
+initMap();renderAll();loadJourneyWeather();journeyWeatherTimer=setInterval(loadJourneyWeather,900000);
 </script>
 <div id="appError" style="display:none;position:fixed;left:12px;right:12px;top:72px;z-index:99999;background:#fff3cd;border:1px solid #ffe69c;padding:10px 12px;border-radius:10px;font:13px Arial;color:#664d03"></div>
 
