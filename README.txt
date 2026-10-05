@@ -1,11 +1,15 @@
-Singapore Trip App V17
+Singapore Trip App V20
 
-- Detailed Changi T4 -> Hotel Boss transfer:
-  T4 free shuttle -> T2/MRT -> Changi Airport CG2 -> Expo -> Tanah Merah change -> Bedok -> Kembangan -> Eunos -> Paya Lebar -> Aljunied -> Kallang -> Lavender EW11 Exit B -> walk about 400m to Hotel Boss.
-- Route Now shows the whole day's plan.
-- Every non-required location has +/- to remove or add it back.
-- Every location has a Route button.
-- Route respects Dry/Wet/Too Hot: Dry favours walking; Wet/Too Hot favours MRT/public transport.
-- Route Now list scrolls.
-- Route removals now persist and are not overwritten on each render.
-- Chosen places and GPS zoom tighter.
+New food feature:
+- Once GPS permission has been granted, the app keeps checking location while open.
+- When you come close to a supported hawker centre, a small "Food nearby" chip appears.
+- Tap it for 3 recommended stalls with:
+  * current/popular review indication
+  * what to order
+  * exact stall number / floor or street directions
+- Current centres covered:
+  * Golden Mile Food Centre
+  * Tekka Centre
+  * Chinatown Complex Food Centre
+  * Lau Pa Sat / Satay Street
+- The food panel stays compact so it does not cover most of the map.

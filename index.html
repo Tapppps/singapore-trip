@@ -222,6 +222,159 @@ input,select,textarea{width:100%;border:1px solid var(--line);background:#fff;bo
 .airport-step{font-size:14px;line-height:1.5;margin:4px 0}
 .airport-stations{font-size:13px;line-height:1.55;color:var(--muted);margin-top:7px}
 .route-mode-note{font-size:12px;margin:5px 0;color:var(--muted)}
+
+/* V18 Route Now usability */
+.routefloat:not(.collapsed){
+  max-height:72vh!important;
+  overflow:hidden!important;
+}
+.routefloat:not(.collapsed) #nextCard,
+.routefloat:not(.collapsed) .actions{
+  display:none!important;
+}
+.routefloat:not(.collapsed) #routeTheme{
+  font-size:13px!important;
+  line-height:1.35!important;
+  margin:4px 0 6px!important;
+  max-height:38px;
+  overflow:hidden;
+}
+.routefloat:not(.collapsed) #planBanner{margin:4px 0 5px!important}
+.routefloat:not(.collapsed) .transport-switch{margin:5px 0!important}
+#upcomingList{
+  max-height:52vh!important;
+  overflow-y:auto!important;
+  -webkit-overflow-scrolling:touch;
+  overscroll-behavior:contain;
+  padding-right:4px;
+}
+.airport-transfer details summary{
+  font-size:14px;
+  font-weight:600;
+  cursor:pointer;
+  padding:3px 0 5px;
+}
+.airport-transfer details[open] summary{margin-bottom:6px}
+.gps-error{font-size:13px;line-height:1.45;color:#8a3b12;background:#fff3e8;border:1px solid #ffd5b5;border-radius:10px;padding:8px;margin:6px 0}
+.nearest-badge{font-size:12px;color:#2e6a47;margin-top:4px}
+
+
+/* V19 MRT-first routing + line diagram */
+#mrtJourneyPanel{
+  position:absolute;
+  top:112px;
+  right:8px;
+  z-index:650;
+  width:min(250px,46vw);
+  max-height:68vh;
+  overflow-y:auto;
+  background:rgba(255,255,255,.97);
+  border:1px solid var(--line);
+  border-radius:16px;
+  padding:10px 10px 12px;
+  box-shadow:0 4px 18px rgba(0,0,0,.14);
+  display:none;
+}
+#mrtJourneyPanel.open{display:block}
+#mrtJourneyPanel h3{font-size:15px;margin:0 0 3px}
+#mrtJourneyPanel .mrt-sub{font-size:12px;color:var(--muted);line-height:1.4;margin-bottom:8px}
+.mrt-close{float:right;border:0;background:transparent;font-size:12px;color:var(--muted);padding:2px 4px}
+.mrt-segment{position:relative;margin:4px 0 10px;padding-left:28px}
+.mrt-segment:before{
+  content:"";
+  position:absolute;
+  left:10px;
+  top:13px;
+  bottom:13px;
+  width:5px;
+  border-radius:4px;
+  background:var(--mrt-line,#777);
+}
+.mrt-line-name{font-size:12px;font-weight:700;margin:2px 0 7px;color:var(--mrt-line,#555)}
+.mrt-station{
+  position:relative;
+  min-height:28px;
+  padding:2px 0 6px;
+  font-size:12px;
+  line-height:1.25;
+}
+.mrt-station:before{
+  content:"";
+  position:absolute;
+  left:-22px;
+  top:6px;
+  width:10px;
+  height:10px;
+  border:3px solid var(--mrt-line,#777);
+  border-radius:50%;
+  background:white;
+  box-sizing:border-box;
+}
+.mrt-station.start:before,.mrt-station.end:before{
+  width:12px;height:12px;left:-23px;top:5px;background:var(--mrt-line,#777);
+}
+.mrt-code{font-size:10px;color:var(--muted);margin-left:3px}
+.mrt-change{
+  font-size:11px;
+  font-weight:700;
+  padding:5px 7px;
+  background:#f5f5f5;
+  border-radius:8px;
+  margin:2px 0 8px;
+}
+.route-mode-note strong{font-weight:700}
+@media(max-width:699px){
+ #mrtJourneyPanel{top:108px;width:min(260px,58vw);max-height:66vh}
+}
+
+
+/* V20 nearby hawker suggestions */
+#hawkerChip{
+  position:absolute;
+  top:112px;
+  left:8px;
+  z-index:655;
+  display:none;
+  border:1px solid var(--line);
+  background:rgba(255,255,255,.96);
+  border-radius:999px;
+  padding:8px 11px;
+  font-size:13px;
+  font-weight:600;
+  box-shadow:0 3px 12px rgba(0,0,0,.12);
+}
+#hawkerChip.show{display:block}
+#hawkerPanel{
+  position:absolute;
+  top:154px;
+  left:8px;
+  z-index:656;
+  width:min(310px,72vw);
+  max-height:58vh;
+  overflow-y:auto;
+  display:none;
+  background:rgba(255,255,255,.98);
+  border:1px solid var(--line);
+  border-radius:16px;
+  padding:10px;
+  box-shadow:0 4px 18px rgba(0,0,0,.16);
+}
+#hawkerPanel.open{display:block}
+.hawker-head{display:flex;justify-content:space-between;gap:8px;align-items:start;margin-bottom:7px}
+.hawker-head h3{font-size:16px;margin:0}
+.hawker-head button{border:0;background:transparent;font-size:12px;color:var(--muted)}
+.hawker-sub{font-size:12px;color:var(--muted);line-height:1.4;margin-bottom:7px}
+.food-pick{padding:8px 0;border-top:1px solid var(--line)}
+.food-pick:first-of-type{border-top:0}
+.food-pick h4{font-size:14px;margin:0 0 3px}
+.food-pick p{font-size:13px;line-height:1.45;margin:2px 0}
+.food-rating{font-weight:700}
+.food-find{color:var(--muted)}
+@media(max-width:699px){
+  #hawkerChip{top:106px}
+  #hawkerPanel{top:148px;width:min(310px,82vw);max-height:54vh}
+}
+
 </style>
 </head>
 <body>
@@ -250,7 +403,10 @@ input,select,textarea{width:100%;border:1px solid var(--line);background:#fff;bo
     <button class="chip" onclick="toggleWet()"><svg class="ico" viewBox="0 0 24 24"><path d="M7 18h10a4 4 0 0 0 .4-8A6 6 0 0 0 6 9.5 4.3 4.3 0 0 0 7 18Z"/><path d="M8 21l1-2M12 21l1-2M16 21l1-2"/></svg><span id="weatherMode">Dry plan</span></button>
   </div>
 
-  <div class="routefloat collapsed">
+  <button id="hawkerChip" onclick="toggleHawkerPanel()">Food nearby</button>
+<div id="hawkerPanel" aria-live="polite"></div>
+<div id="mrtJourneyPanel" aria-live="polite"></div>
+<div class="routefloat collapsed">
     <div class="routehead" onclick="toggleRouteCard()">
       <div class="name">Route now</div>
       <div class="stats" id="routeStats">—</div>
@@ -458,7 +614,7 @@ const masterPlans=[
  ["hotel","jewel","t4"]
 ];
 
-let state=JSON.parse(localStorage.getItem("sgTripV17")||localStorage.getItem("sgTripV16")||"null")||{
+let state=JSON.parse(localStorage.getItem("sgTripV20")||localStorage.getItem("sgTripV16")||"null")||{
  day:0,routes:masterPlans.map(x=>[...x]),missed:[],expenses:[],custom:[],mode:"Dry",hot:false,routeMode:"smart",fx:{gbp:.58,cad:.96},excluded:[[],[],[],[]]
 };
 if(typeof state.hot==="undefined") state.hot=false;
@@ -466,7 +622,230 @@ if(!Array.isArray(state.excluded))state.excluded=[[],[],[],[]];
 while(state.excluded.length<4)state.excluded.push([]);
 if(!Array.isArray(state.routes)||state.routes.length<4)state.routes=masterPlans.map(x=>[...x]);
 
-let map, routeLayer=null, userPos=null,userMarker=null,markers=[],pendingAdd=null,lastRoute=null,mrtMarkers=[],nextMode="walk";
+let map, routeLayer=null, userPos=null,userMarker=null,markers=[],pendingAdd=null,lastRoute=null,mrtMarkers=[],nextMode="auto";
+
+
+
+const hawkerCentres=[
+ {
+  id:"goldenmile",name:"Golden Mile Food Centre",lat:1.3030,lng:103.8642,radius:650,
+  where:"505 Beach Road. Multi-level hawker centre; stall numbers tell you the floor: B1 is basement, 01 is level 1.",
+  picks:[
+   {name:"Hainan Fried Hokkien Mee",rating:"Well reviewed",dish:"Dry-style Hokkien prawn mee with wok hei.",find:"Go to B1, stall #B1-34."},
+   {name:"Yew Chuan Claypot Rice",rating:"Popular",dish:"Charcoal claypot rice with crispy rice crust.",find:"Level 1, stall #01-73. Cooked to order, so expect a wait."},
+   {name:"Ashes Burnnit",rating:"Popular",dish:"Halal gourmet burgers at hawker prices.",find:"Basement B1, stall #B1-24."}
+  ]
+ },
+ {
+  id:"tekka",name:"Tekka Centre",lat:1.3062,lng:103.8504,radius:500,
+  where:"665 Buffalo Road beside Little India MRT. The food stalls are on level 1; use the stall number printed above each unit.",
+  picks:[
+   {name:"Poona Punjabi Dhaba",rating:"4.8 ★",dish:"Punjabi / North Indian food with strong current reviews.",find:"Look for stall #01-302 inside Tekka Centre."},
+   {name:"Ar-Rahman Cafe",rating:"4.6 ★",dish:"Indian-Muslim hawker food; good current review score.",find:"Stall #01-247 on level 1."},
+   {name:"545 Whampoa Prawn Noodles",rating:"4.3 ★",dish:"Prawn noodles; a popular breakfast/lunch choice.",find:"Stall #01-326 on level 1."}
+  ]
+ },
+ {
+  id:"chinatowncomplex",name:"Chinatown Complex Food Centre",lat:1.2825,lng:103.8432,radius:550,
+  where:"Smith Street. The wet market is downstairs; the hawker food centre is on level 2 (#02).",
+  picks:[
+   {name:"Lian He Ben Ji Claypot Rice",rating:"4.6 ★ / Bib Gourmand",dish:"Charcoal-cooked claypot rice made from scratch.",find:"Go to level 2, units #02-198 / #02-199."},
+   {name:"Zhong Guo La Mian Xiao Long Bao",rating:"4.4 ★",dish:"Handmade xiao long bao and la mian.",find:"Level 2, stall #02-135."},
+   {name:"Ann Chin Popiah",rating:"Michelin-selected",dish:"Classic handmade popiah and kueh pie tee.",find:"Level 2, stall #02-112."}
+  ]
+ },
+ {
+  id:"laupasat",name:"Lau Pa Sat",lat:1.2806,lng:103.8504,radius:550,
+  where:"18 Raffles Quay. Most stalls are inside the octagonal market; Satay Street is immediately outside on Boon Tat Street.",
+  picks:[
+   {name:"Lao Fu Zi Fried Kway Teow",rating:"4.5 ★",dish:"Char kway teow with wok hei; also serves laksa.",find:"Inside Lau Pa Sat, stalls #74–75."},
+   {name:"LiXin Teochew Fishball Noodles",rating:"4.4 ★",dish:"Fishball noodles with handmade fishballs and wantons.",find:"Inside Lau Pa Sat, stall #32."},
+   {name:"Best Satay 7 & 8",rating:"Very popular",dish:"Chicken, beef, mutton and prawn satay over charcoal.",find:"Go outside to Boon Tat Street after the road closes; look for the large stall numbers 7 and 8."}
+  ]
+ }
+];
+let activeHawker=null;
+function nearestHawker(){
+ if(!userPos)return null;
+ const ranked=hawkerCentres.map(h=>({h,d:hav(userPos,h)})).sort((a,b)=>a.d-b.d);
+ return ranked[0]&&ranked[0].d<=ranked[0].h.radius/1000?ranked[0]:null;
+}
+function checkNearbyHawker(){
+ const hit=nearestHawker();
+ const chip=document.getElementById("hawkerChip");
+ const panel=document.getElementById("hawkerPanel");
+ if(!hit){activeHawker=null;chip.classList.remove("show");panel.classList.remove("open");return}
+ activeHawker=hit;
+ chip.textContent=`Food nearby · ${hit.h.name}`;
+ chip.classList.add("show");
+ renderHawkerPanel(hit);
+}
+function renderHawkerPanel(hit){
+ const p=document.getElementById("hawkerPanel");
+ p.innerHTML=`<div class="hawker-head">
+   <div><h3>${hit.h.name}</h3><div class="hawker-sub">${hit.d.toFixed(1)} km from you · ${hit.h.where}</div></div>
+   <button onclick="toggleHawkerPanel(false)">Close</button>
+ </div>
+ ${hit.h.picks.map(x=>`<div class="food-pick">
+   <h4>${x.name} <span class="food-rating">· ${x.rating}</span></h4>
+   <p>${x.dish}</p>
+   <p class="food-find"><b>How to find it:</b> ${x.find}</p>
+ </div>`).join("")}`;
+}
+function toggleHawkerPanel(force){
+ const p=document.getElementById("hawkerPanel");
+ const open=typeof force==="boolean"?force:!p.classList.contains("open");
+ p.classList.toggle("open",open);
+}
+
+const mrtLineInfo={
+ EW:{name:"East–West Line",color:"#009645"},
+ CG:{name:"Changi Airport Branch",color:"#009645"},
+ DT:{name:"Downtown Line",color:"#005EC4"},
+ CC:{name:"Circle Line",color:"#FA9E0D"},
+ CE:{name:"Circle Line Extension",color:"#FA9E0D"},
+ NE:{name:"North East Line",color:"#9900AA"},
+ NS:{name:"North–South Line",color:"#D42E12"},
+ TE:{name:"Thomson–East Coast Line",color:"#9D5B25"}
+};
+const mrtNetworks={
+ CG:[
+  ["Changi Airport","CG2"],["Expo","CG1"],["Tanah Merah","EW4"]
+ ],
+ EW:[
+  ["Tanah Merah","EW4"],["Bedok","EW5"],["Kembangan","EW6"],["Eunos","EW7"],["Paya Lebar","EW8"],
+  ["Aljunied","EW9"],["Kallang","EW10"],["Lavender","EW11"],["Bugis","EW12"],["City Hall","EW13"],
+  ["Raffles Place","EW14"],["Tanjong Pagar","EW15"],["Outram Park","EW16"],["Tiong Bahru","EW17"],
+  ["Redhill","EW18"],["Queenstown","EW19"],["Commonwealth","EW20"],["Buona Vista","EW21"]
+ ],
+ DT:[
+  ["Expo","DT35"],["Upper Changi","DT34"],["Tampines East","DT33"],["Tampines","DT32"],["Tampines West","DT31"],
+  ["Bedok Reservoir","DT30"],["Bedok North","DT29"],["Kaki Bukit","DT28"],["Ubi","DT27"],["MacPherson","DT26"],
+  ["Mattar","DT25"],["Geylang Bahru","DT24"],["Bendemeer","DT23"],["Jalan Besar","DT22"],["Bencoolen","DT21"],
+  ["Fort Canning","DT20"],["Chinatown","DT19"],["Telok Ayer","DT18"],["Downtown","DT17"],["Bayfront","DT16"],
+  ["Promenade","DT15"],["Bugis","DT14"],["Rochor","DT13"],["Little India","DT12"],["Newton","DT11"]
+ ],
+ NE:[
+  ["Outram Park","NE3"],["Chinatown","NE4"],["Clarke Quay","NE5"],["Dhoby Ghaut","NE6"],
+  ["Little India","NE7"],["Farrer Park","NE8"],["Boon Keng","NE9"]
+ ],
+ NS:[
+  ["Orchard","NS22"],["Somerset","NS23"],["Dhoby Ghaut","NS24"],["City Hall","NS25"],
+  ["Raffles Place","NS26"],["Marina Bay","NS27"]
+ ],
+ CC:[
+  ["Dhoby Ghaut","CC1"],["Bras Basah","CC2"],["Esplanade","CC3"],["Promenade","CC4"],["Nicoll Highway","CC5"],
+  ["Stadium","CC6"],["Mountbatten","CC7"],["Dakota","CC8"],["Paya Lebar","CC9"],["MacPherson","CC10"]
+ ],
+ CE:[
+  ["Promenade","CC4"],["Bayfront","CE1"],["Marina Bay","CE2"]
+ ],
+ TE:[
+  ["Orchard","TE14"],["Great World","TE15"],["Havelock","TE16"],["Outram Park","TE17"],["Maxwell","TE18"],
+  ["Shenton Way","TE19"],["Marina Bay","TE20"],["Gardens by the Bay","TE22"],["Tanjong Rhu","TE23"]
+ ]
+};
+
+function stationCode(name,lineKey){
+ const line=mrtNetworks[lineKey]||[];
+ const row=line.find(x=>x[0]===name);
+ return row?row[1]:"";
+}
+function stationLines(name){
+ return Object.entries(mrtNetworks).filter(([k,v])=>v.some(x=>x[0]===name)).map(([k])=>k);
+}
+function buildMRTGraph(){
+ const g={};
+ for(const [lineKey,stations] of Object.entries(mrtNetworks)){
+  for(let i=0;i<stations.length;i++){
+   const name=stations[i][0]; if(!g[name])g[name]=[];
+   if(i>0)g[name].push({to:stations[i-1][0],line:lineKey});
+   if(i<stations.length-1)g[name].push({to:stations[i+1][0],line:lineKey});
+  }
+ }
+ return g;
+}
+const mrtGraph=buildMRTGraph();
+
+function shortestMRTPath(startName,endName){
+ if(startName===endName)return {stations:[startName],edges:[]};
+ const q=[startName],prev={[startName]:null},prevEdge={};
+ while(q.length){
+  const n=q.shift();
+  for(const e of (mrtGraph[n]||[])){
+   if(Object.prototype.hasOwnProperty.call(prev,e.to))continue;
+   prev[e.to]=n; prevEdge[e.to]=e;
+   if(e.to===endName){q.length=0;break}
+   q.push(e.to);
+  }
+ }
+ if(!Object.prototype.hasOwnProperty.call(prev,endName))return null;
+ const stations=[];const edges=[];
+ let cur=endName;
+ while(cur!==null){
+  stations.push(cur);
+  const p=prev[cur];
+  if(p!==null)edges.push({from:p,to:cur,line:prevEdge[cur].line});
+  cur=p;
+ }
+ stations.reverse();edges.reverse();
+ return {stations,edges};
+}
+function pathToSegments(path){
+ if(!path||!path.edges.length)return [];
+ const segs=[];let cur={line:path.edges[0].line,stations:[path.edges[0].from,path.edges[0].to]};
+ for(let i=1;i<path.edges.length;i++){
+  const e=path.edges[i];
+  if(e.line===cur.line)cur.stations.push(e.to);
+  else{segs.push(cur);cur={line:e.line,stations:[e.from,e.to]}}
+ }
+ segs.push(cur);return segs;
+}
+function preferredMRTJourney(a,b){
+ const s1=nearestMRT(a),s2=nearestMRT(b);
+ const path=shortestMRTPath(s1.name,s2.name);
+ return {s1,s2,path,segments:pathToSegments(path)};
+}
+function mrtJourneyText(j){
+ if(!j||!j.path)return "";
+ if(j.s1.name===j.s2.name)return `Use ${j.s1.name} ${j.s1.code}`;
+ const parts=j.segments.map(seg=>{
+   const info=mrtLineInfo[seg.line]||{name:seg.line};
+   return `${info.name}: ${seg.stations[0]} → ${seg.stations[seg.stations.length-1]}`;
+ });
+ return parts.join(" · Change · ");
+}
+function mrtJourneyHtml(j,a,b){
+ if(!j||!j.path)return "";
+ const access=hav(a,j.s1),egress=hav(b,j.s2);
+ let out=`<button class="mrt-close" onclick="hideMRTJourney()">Hide</button>
+ <h3>MRT route</h3>
+ <div class="mrt-sub">Walk ${access.toFixed(1)} km to ${j.s1.name} · MRT · walk ${egress.toFixed(1)} km to destination</div>`;
+ if(j.s1.name===j.s2.name){
+  out+=`<div class="mrt-change">Same nearest station: ${j.s1.name} ${j.s1.code}. Walking may be quicker.</div>`;
+  return out;
+ }
+ j.segments.forEach((seg,idx)=>{
+   const info=mrtLineInfo[seg.line]||{name:seg.line,color:"#777"};
+   out+=`<div class="mrt-segment" style="--mrt-line:${info.color}">
+     <div class="mrt-line-name">${info.name}</div>`;
+   seg.stations.forEach((name,si)=>{
+     const cls=si===0?"start":(si===seg.stations.length-1?"end":"");
+     out+=`<div class="mrt-station ${cls}"><span>${name}</span><span class="mrt-code">${stationCode(name,seg.line)}</span></div>`;
+   });
+   out+=`</div>`;
+   if(idx<j.segments.length-1){
+     const change=seg.stations[seg.stations.length-1];
+     out+=`<div class="mrt-change">Change at ${change}</div>`;
+   }
+ });
+ return out;
+}
+function showMRTJourney(j,a,b){
+ const p=document.getElementById("mrtJourneyPanel");
+ p.innerHTML=mrtJourneyHtml(j,a,b);p.classList.add("open");
+}
+function hideMRTJourney(){document.getElementById("mrtJourneyPanel")?.classList.remove("open")}
 
 function fixedRouteItem(day,id,index,plan){
  if(day===0&&(index===0||index===1||index===plan.length-1))return true;
@@ -486,7 +865,7 @@ function ensureHotelReturn(){
 }
 ensureHotelReturn();
 
-function save(){localStorage.setItem("sgTripV17",JSON.stringify(state))}
+function save(){localStorage.setItem("sgTripV20",JSON.stringify(state))}
 function allStops(){return [...stops,...state.custom]}
 function byId(id){return allStops().find(s=>s.id===id)}
 function routeObjs(){return state.routes[state.day].map(byId).filter(Boolean)}
@@ -651,16 +1030,16 @@ function refreshOptionButtons(){
 async function mapAndRouteOption(id){
  closeAllSheets();
  const s=byId(id);if(!s)return;
- if(!userPos){locateMe();setTimeout(()=>mapAndRouteOption(id),900);return}
+ if(!userPos){getGPS(()=>mapAndRouteOption(id));return}
  const card=document.querySelector(".routefloat");card.classList.add("collapsed");
- map.setView([s.lat,s.lng],16);
+ map.setView([s.lat,s.lng],18);
  try{
-   if(state.mode==="Wet"||state.hot||hav(userPos,s)>1.6) await drawTransitTo(userPos,s);
+   if(nextMode==="transit" || (nextMode!=="walk" && hav(userPos,s)>0.85)) {const j=preferredMRTJourney(userPos,s); await drawTransitTo(userPos,s,j);}
    else{
      const r=await footRoute([userPos,s]);
      if(routeLayer)map.removeLayer(routeLayer);
      routeLayer=L.geoJSON(r.geometry,{style:{color:"#1677ff",weight:6,opacity:.9}}).addTo(map);
-     map.fitBounds(routeLayer.getBounds().pad(.18));
+     map.fitBounds(routeLayer.getBounds().pad(.10),{maxZoom:18});
      routeStats.textContent=`From you · Walk ${(r.distance/1000).toFixed(1)} km · ${Math.round(r.duration/60)} min`;
    }
  }catch(e){map.setView([s.lat,s.lng],16);routeStats.textContent="Location shown · route unavailable"}
@@ -668,16 +1047,18 @@ async function mapAndRouteOption(id){
 
 function airportTransferHtml(){
  return `<div class="airport-transfer">
-   <h3>Changi T4 → Hotel Boss by MRT</h3>
-   <div class="airport-step"><b>1.</b> After arrivals at <b>Terminal 4</b>, go to the <b>T4 Arrival Bus Lounge</b>.</div>
-   <div class="airport-step"><b>2.</b> Take the <b>free public shuttle bus to T2 / MRT</b>. The public-area terminal journey is about 10 minutes.</div>
-   <div class="airport-step"><b>3.</b> Enter <b>Changi Airport MRT (CG2)</b>.</div>
-   <div class="airport-stations"><b>CG2 Changi Airport → CG1 Expo → EW4 Tanah Merah</b></div>
-   <div class="airport-step"><b>4.</b> At <b>Tanah Merah (EW4)</b>, change to the <b>westbound East–West Line toward Tuas Link</b>.</div>
-   <div class="airport-stations">EW5 Bedok → EW6 Kembangan → EW7 Eunos → EW8 Paya Lebar → EW9 Aljunied → EW10 Kallang → <b>EW11 Lavender</b></div>
-   <div class="airport-step"><b>5.</b> At <b>Lavender EW11</b>, use <b>Exit B</b>.</div>
-   <div class="airport-step"><b>6.</b> Walk about <b>400 m / 4–5 minutes</b> to <b>Hotel Boss, 500 Jalan Sultan</b>.</div>
-   <div class="option-actions"><button class="sbtn" onclick="showAirportHotelRoute()">Show route on map</button></div>
+   <details>
+    <summary>Changi T4 → Hotel Boss MRT instructions</summary>
+    <div class="airport-step"><b>1.</b> At <b>Terminal 4 Arrivals</b>, go to the <b>T4 Arrival Bus Lounge</b>.</div>
+    <div class="airport-step"><b>2.</b> Take the <b>free public shuttle to T2 / MRT</b>.</div>
+    <div class="airport-step"><b>3.</b> Enter <b>Changi Airport MRT (CG2)</b>.</div>
+    <div class="airport-stations"><b>CG2 Changi Airport → CG1 Expo → EW4 Tanah Merah</b></div>
+    <div class="airport-step"><b>4.</b> At <b>Tanah Merah EW4</b>, change to the <b>westbound East–West Line toward Tuas Link</b>.</div>
+    <div class="airport-stations">EW5 Bedok → EW6 Kembangan → EW7 Eunos → EW8 Paya Lebar → EW9 Aljunied → EW10 Kallang → <b>EW11 Lavender</b></div>
+    <div class="airport-step"><b>5.</b> At <b>Lavender EW11</b>, use <b>Exit B</b>.</div>
+    <div class="airport-step"><b>6.</b> Walk about <b>400 m / 4–5 minutes</b> to <b>Hotel Boss, 500 Jalan Sultan</b>.</div>
+    <div class="option-actions"><button class="sbtn" onclick="showAirportHotelRoute()">Show route on map</button></div>
+   </details>
  </div>`;
 }
 async function showAirportHotelRoute(){
@@ -697,6 +1078,8 @@ async function showAirportHotelRoute(){
  const bounds=[[t4.lat,t4.lng],...pts.map(x=>[x.lat,x.lng]),[hotel.lat,hotel.lng]];
  map.fitBounds(L.latLngBounds(bounds).pad(.10),{maxZoom:15});
  routeStats.textContent="T4 shuttle → CG2 → Tanah Merah change → Lavender → walk to Hotel Boss";
+ const airportJ=preferredMRTJourney(mrt.find(x=>x.name==="Changi Airport"),mrt.find(x=>x.name==="Lavender"));
+ showMRTJourney(airportJ,mrt.find(x=>x.name==="Changi Airport"),mrt.find(x=>x.name==="Lavender"));
  document.querySelector(".routefloat")?.classList.add("collapsed");
 }
 
@@ -719,7 +1102,10 @@ function renderNext(){
  const alongNow=previous?alongInfo(previous,n):[];
  const alongNowHtml=alongNow.length?`<div class="along-card"><div class="along-title">Look out for</div>${alongNow.map(x=>`<div class="along-item"><b>${x.name}</b> — ${x.info}</div>`).join("")}</div>`:"";
  nextCard.innerHTML=`<div><h2>${n.name}</h2><p>${live}${userPos?`${d.toFixed(1)} km · `:""}${hint.mode}</p><div class="route-detail-line">${n.desc||""}</div><div class="route-detail-line">${hint.text}</div><div class="route-detail-line">${n.photo?`Photo: ${n.photo}`:""}</div>${alongNowHtml}</div><button class="sbtn" onclick="focusStop('${n.id}')">Map</button>`;
- renderUpcoming();nextWalkBtn.classList.toggle("active",nextMode==="walk");nextTransitBtn.classList.toggle("active",nextMode==="transit");
+ renderUpcoming();
+ const suggested=smartTransportHint(from,n).mode;
+ nextWalkBtn.classList.toggle("active",nextMode==="walk"||(nextMode==="auto"&&suggested==="Walk"));
+ nextTransitBtn.classList.toggle("active",nextMode==="transit"||(nextMode==="auto"&&suggested==="MRT"));
 }
 function renderMarkers(){
  markers.forEach(m=>map.removeLayer(m));markers=[];
@@ -748,14 +1134,29 @@ async function footRoute(points){
  if(j.code!=="Ok"||!j.routes?.length)throw new Error("route");
  return j.routes[0];
 }
-async function drawTransitTo(a,b){
+async function drawTransitTo(a,b,j=null){
  if(routeLayer){map.removeLayer(routeLayer);routeLayer=null}
- const s1=nearestMRT(a),s2=nearestMRT(b),parts=[];
- try{const r1=await footRoute([a,s1]);parts.push(L.geoJSON(r1.geometry,{style:{color:"#1677ff",weight:5,opacity:.85}}).addTo(map))}catch(e){}
- parts.push(L.polyline([[s1.lat,s1.lng],[s2.lat,s2.lng]],{color:"#6b7280",weight:5,opacity:.8,dashArray:"9 7"}).addTo(map));
- try{const r2=await footRoute([s2,b]);parts.push(L.geoJSON(r2.geometry,{style:{color:"#1677ff",weight:5,opacity:.85}}).addTo(map))}catch(e){}
- routeLayer=L.featureGroup(parts);map.fitBounds(L.latLngBounds([[a.lat,a.lng],[b.lat,b.lng],[s1.lat,s1.lng],[s2.lat,s2.lng]]).pad(.18));
+ j=j||preferredMRTJourney(a,b);
+ const s1=j.s1,s2=j.s2,parts=[];
+ try{
+   const r1=await footRoute([a,s1]);
+   parts.push(L.geoJSON(r1.geometry,{style:{color:"#1677ff",weight:5,opacity:.85}}).addTo(map));
+ }catch(e){}
+ // Draw MRT segments schematically using station coordinates where available.
+ j.segments.forEach(seg=>{
+   const info=mrtLineInfo[seg.line]||{color:"#777"};
+   const pts=seg.stations.map(name=>mrt.find(x=>x.name===name)).filter(Boolean).map(x=>[x.lat,x.lng]);
+   if(pts.length>=2)parts.push(L.polyline(pts,{color:info.color,weight:6,opacity:.9}).addTo(map));
+ });
+ try{
+   const r2=await footRoute([s2,b]);
+   parts.push(L.geoJSON(r2.geometry,{style:{color:"#1677ff",weight:5,opacity:.85}}).addTo(map));
+ }catch(e){}
+ routeLayer=L.featureGroup(parts);
+ const bounds=[[a.lat,a.lng],[b.lat,b.lng],[s1.lat,s1.lng],[s2.lat,s2.lng]];
+ map.fitBounds(L.latLngBounds(bounds).pad(.10),{maxZoom:18});
  routeStats.textContent=`MRT · ${s1.name} → ${s2.name}`;
+ showMRTJourney(j,a,b);
 }
 async function rebuildRoute(){
  renderMarkers();
@@ -777,10 +1178,20 @@ async function rebuildRoute(){
  if(document.getElementById("routeSheet").classList.contains("open"))renderRouteSheet();
 }
 function smartTransportHint(a,b){
- const km=hav(a,b),forceTransit=nextMode==="transit"||state.mode==="Wet"||state.hot;
- if(!forceTransit&&(state.routeMode==="walk"||km<1.6))return {mode:"Walk",text:`Walk ${km.toFixed(1)} km · about ${walkMins(km)} min`,distance:km};
- const s1=nearestMRT(a),s2=nearestMRT(b);
- return {mode:"MRT",text:`Walk ${hav(a,s1).toFixed(1)} km to ${s1.name} ${s1.code} → MRT → ${s2.name} ${s2.code} → walk ${hav(b,s2).toFixed(1)} km`,distance:km,s1,s2};
+ const km=hav(a,b);
+ const shortWalk=km<=0.85;
+ const explicitWalk=nextMode==="walk";
+ const explicitTransit=nextMode==="transit";
+ if(explicitWalk || (shortWalk&&!explicitTransit)){
+   return {mode:"Walk",text:`Walk ${km.toFixed(1)} km · about ${walkMins(km)} min`,distance:km};
+ }
+ const j=preferredMRTJourney(a,b);
+ const access=hav(a,j.s1),egress=hav(b,j.s2);
+ return {
+   mode:"MRT",
+   text:`Walk ${access.toFixed(1)} km to ${j.s1.name} ${j.s1.code} → ${mrtJourneyText(j)} → walk ${egress.toFixed(1)} km`,
+   distance:km,s1:j.s1,s2:j.s2,journey:j
+ };
 }
 function renderRouteSheet(){
  const r=routeObjs();let cards="",total=0;
@@ -801,7 +1212,7 @@ async function showLegRoute(aid,bid,mode){
  document.querySelector(".routefloat")?.classList.add("collapsed");
  if(typeof expandRouteBtn!=="undefined")if(typeof expandRouteBtn!=="undefined"&&expandRouteBtn)expandRouteBtn.textContent="Expand";
  const a=byId(aid),b=byId(bid);closeSheet("routeSheet");
- if(mode==="transit"){await drawTransitTo(a,b);return}
+ if(mode==="transit"){const j=preferredMRTJourney(a,b);await drawTransitTo(a,b,j);return}else hideMRTJourney()
  try{const r=await footRoute([a,b]);if(routeLayer)map.removeLayer(routeLayer);routeLayer=L.geoJSON(r.geometry,{style:{color:"#1677ff",weight:6,opacity:.9}}).addTo(map);map.fitBounds(routeLayer.getBounds().pad(.15));routeStats.textContent=`Walk · ${(r.distance/1000).toFixed(1)} km · ${Math.round(r.duration/60)} min`}catch(e){routeStats.textContent="Walking route unavailable"}
 }
 function removeStop(id){
@@ -831,23 +1242,88 @@ function checkAdd(id){
 function confirmAdd(mode){if(!pendingAdd)return;const p=pendingAdd;if(mode==="later")state.missed.push({id:p.id,reason:"Saved because it was off-route"});else{state.routes[state.day].splice(p.idx,0,p.id);if(mode==="transit")byId(p.id).transportHint="MRT preferred"}save();pendingAdd=null;closeSheet("detourSheet");renderAll();rebuildRoute()}
 function setRouteMode(m){state.routeMode=m;save();renderRouteSheet()}
 function tooHot(){toggleHot()}
-function toggleHot(){state.hot=!state.hot;save();applyPlanRules();renderAll();rebuildRoute()}
+function toggleHot(){
+ state.hot=!state.hot;
+ nextMode=state.hot?"transit":"auto";
+ save();
+ applyPlanRules();
+ renderAll();
+ if(state.hot){
+   getGPS(()=>zoomNearestCool(true));
+ }else{
+   renderUpcoming();
+   rebuildRoute();
+ }
+}
 function applyPlanRules(){
  hotState.textContent=state.hot?"On":"Off";
  if(state.hot){planBanner.textContent="Too hot · MRT and shorter walking preferred";planBanner.className="plan-banner hot"}
  else if(state.mode==="Wet"){planBanner.textContent="Wet plan · MRT and indoor activities preferred";planBanner.className="plan-banner wet"}
  else{planBanner.textContent="Dry plan · outdoor walking preferred";planBanner.className="plan-banner"}
 }
-function toggleWet(){state.mode=state.mode==="Dry"?"Wet":"Dry";save();applyPlanRules();renderHeader();renderAll();rebuildRoute()}
+function toggleWet(){
+ state.mode=state.mode==="Dry"?"Wet":"Dry";
+ nextMode=state.mode==="Wet"?"transit":"auto";
+ save();applyPlanRules();renderHeader();renderAll();renderUpcoming();rebuildRoute();
+}
 function skipNext(){const id=state.routes[state.day].shift();if(id)state.missed.push({id,reason:"Skipped"});save();renderAll();rebuildRoute()}
-function locateMe(){if(!navigator.geolocation)return;navigator.geolocation.getCurrentPosition(p=>{userPos={lat:p.coords.latitude,lng:p.coords.longitude};if(userMarker)map.removeLayer(userMarker);userMarker=L.circleMarker([userPos.lat,userPos.lng],{radius:8,weight:3,fillOpacity:.9}).addTo(map).bindPopup("You are here");map.setView([userPos.lat,userPos.lng],18);userMarker.openPopup();renderNext()})}
+function setGpsStatus(msg,isError=false){
+ const open=document.querySelector(".sheetbg.open .nearby-gps-note");
+ if(open){open.className=isError?"gps-error":"nearby-gps-note";open.textContent=msg}
+}
+function getGPS(onSuccess,onError){
+ if(userPos){if(onSuccess)onSuccess(userPos);return}
+ if(!navigator.geolocation){
+   setGpsStatus("GPS is not available in this browser.",true);
+   if(onError)onError();return;
+ }
+ setGpsStatus("Getting your current GPS location…");
+ navigator.geolocation.getCurrentPosition(p=>{
+   userPos={lat:p.coords.latitude,lng:p.coords.longitude};
+   if(userMarker)map.removeLayer(userMarker);
+   userMarker=L.circleMarker([userPos.lat,userPos.lng],{radius:8,weight:3,fillOpacity:.9})
+     .addTo(map).bindPopup("You are here");
+   map.setView([userPos.lat,userPos.lng],18);
+   userMarker.openPopup();
+   renderNext();
+   checkNearbyHawker();
+   startLocationWatch();
+   if(onSuccess)onSuccess(userPos);
+ },err=>{
+   const msg=err.code===1
+    ?"Location permission is blocked. Allow location for this site, then try again."
+    :"I couldn’t get your GPS location. Try again outdoors or with location services on.";
+   setGpsStatus(msg,true);
+   routeStats.textContent=msg;
+   if(onError)onError(err);
+ },{enableHighAccuracy:true,timeout:10000,maximumAge:15000});
+}
+function startLocationWatch(){
+ if(window._sgWatchStarted||!navigator.geolocation)return;
+ window._sgWatchStarted=true;
+ navigator.geolocation.watchPosition(p=>{
+   userPos={lat:p.coords.latitude,lng:p.coords.longitude};
+   if(userMarker)map.removeLayer(userMarker);
+   userMarker=L.circleMarker([userPos.lat,userPos.lng],{radius:8,weight:3,fillOpacity:.9}).addTo(map).bindPopup("You are here");
+   checkNearbyHawker();
+ },()=>{}, {enableHighAccuracy:true,maximumAge:20000,timeout:12000});
+}
+function locateMe(){getGPS(()=>startLocationWatch())}
 async function followRoute(){
  document.querySelector(".routefloat")?.classList.add("collapsed");
- if(typeof expandRouteBtn!=="undefined"&&expandRouteBtn)expandRouteBtn.textContent="Expand";
- if(!userPos){locateMe();setTimeout(followRoute,900);return}
+ if(!userPos){getGPS(()=>followRoute());return}
  const n=routeObjs()[0];if(!n)return;
- if(nextMode==="transit"||state.mode==="Wet"||state.hot){await drawTransitTo(userPos,n);return}
- try{const route=await footRoute([userPos,n]);if(routeLayer)map.removeLayer(routeLayer);routeLayer=L.geoJSON(route.geometry,{style:{color:"#1677ff",weight:6,opacity:.9}}).addTo(map);map.fitBounds(routeLayer.getBounds().pad(.16));routeStats.textContent=`Walk · ${(route.distance/1000).toFixed(1)} km · ${Math.round(route.duration/60)} min`}catch(e){routeStats.textContent="Walking route unavailable"}
+ const shortWalk=hav(userPos,n)<=0.85;
+ const useTransit=nextMode==="transit" || (nextMode!=="walk" && !shortWalk);
+ if(useTransit){const j=preferredMRTJourney(userPos,n);await drawTransitTo(userPos,n,j);return}
+ hideMRTJourney();
+ try{
+  const route=await footRoute([userPos,n]);
+  if(routeLayer)map.removeLayer(routeLayer);
+  routeLayer=L.geoJSON(route.geometry,{style:{color:"#1677ff",weight:6,opacity:.9}}).addTo(map);
+  map.fitBounds(routeLayer.getBounds().pad(.10),{maxZoom:18});
+  routeStats.textContent=`Walk · ${(route.distance/1000).toFixed(1)} km · ${Math.round(route.duration/60)} min`;
+ }catch(e){routeStats.textContent="Walking route unavailable"}
 }
 function focusStop(id){const s=byId(id);if(!s)return;closeAllSheets();document.querySelector(".routefloat")?.classList.add("collapsed");map.setView([s.lat,s.lng],18);const match=markers.find(m=>m.getLatLng&&Math.abs(m.getLatLng().lat-s.lat)<0.00001&&Math.abs(m.getLatLng().lng-s.lng)<0.00001);if(match)match.openPopup()}
 
@@ -857,7 +1333,17 @@ function toggleRouteCard(){
  if(!card.classList.contains("collapsed"))renderUpcoming();
 }
 function toggleUpcoming(){toggleRouteCard()}
-function setNextMode(mode){nextMode=mode;nextWalkBtn.classList.toggle("active",mode==="walk");nextTransitBtn.classList.toggle("active",mode==="transit");renderNext();rebuildRoute()}
+function setNextMode(mode){
+ nextMode=mode;
+ state.routeMode=(mode==="walk"?"walk":"smart");
+ save();
+ nextWalkBtn.classList.toggle("active",mode==="walk");
+ nextTransitBtn.classList.toggle("active",mode==="transit");
+ renderNext();renderUpcoming();
+ const n=routeObjs()[0];
+ if(userPos&&n)routeFromMe(n.id);
+ else routeStats.textContent=mode==="walk"?"Walking selected":"Public transport selected";
+}
 function dayDisplayPlan(){
  const base=[...masterPlans[state.day]];
  const extras=(state.routes[state.day]||[]).filter(id=>!base.includes(id));
@@ -879,11 +1365,11 @@ function toggleDayLocation(id,index){
 async function routeFromMe(id){
  const s=byId(id);if(!s)return;
  closeAllSheets();
- if(!userPos){locateMe();setTimeout(()=>routeFromMe(id),900);return}
+ if(!userPos){getGPS(()=>routeFromMe(id));return}
  document.querySelector(".routefloat")?.classList.add("collapsed");
  map.fitBounds(L.latLngBounds([[userPos.lat,userPos.lng],[s.lat,s.lng]]).pad(.14),{maxZoom:18});
- const useTransit=state.mode==="Wet"||state.hot;
- if(useTransit){await drawTransitTo(userPos,s);return}
+ const shortWalk=hav(userPos,s)<=0.85; const useTransit=nextMode==="transit" || (nextMode!=="walk" && !shortWalk);
+ if(useTransit){const j=preferredMRTJourney(userPos,s);showMRTJourney(j,userPos,s);await drawTransitTo(userPos,s,j);return}else hideMRTJourney()
  try{
   const r=await footRoute([userPos,s]);
   if(routeLayer)map.removeLayer(routeLayer);
@@ -898,7 +1384,8 @@ async function routeFromMe(id){
 function renderUpcoming(){
  const plan=dayDisplayPlan();let out="";
  if(state.day===0)out+=airportTransferHtml();
- out+=`<div class="route-mode-note">${state.mode==="Wet"?"Wet plan: Route uses MRT / public transport where practical.":"Dry plan: Route favours walking. Too Hot switches it toward MRT / public transport."}</div>`;
+ const effective=nextMode==="walk"?"Walking":nextMode==="transit"?"Public transport / MRT":"Best route";
+ out+=`<div class="route-mode-note"><strong>${effective}.</strong> MRT is suggested for getting between areas; walks of about 850 m or less are suggested on foot.</div>`;
  for(let i=0;i<plan.length;i++){
    const id=plan[i],cur=byId(id);if(!cur)continue;
    const included=routeItemIncluded(id,i,plan),fixed=fixedRouteItem(state.day,id,i,plan);
@@ -909,7 +1396,7 @@ function renderUpcoming(){
      if(next){const km=hav(cur,next),hint=smartTransportHint(cur,next);meta=`${km.toFixed(1)} km · ${hint.mode}`}
    }else meta="Not taking this stop";
    out+=`<div class="upcoming-row ${included?"":"route-off"}" id="up-${id}-${i}">
-    <div onclick="showUpcomingOnMap('${id}',${i})">
+    <div onclick="routeFromMe('${id}')" title="Show this location and route from your current GPS">
       <div class="u-name">${i+1}. ${cur.name}</div>
       <div class="u-meta">${meta}</div>
       <div class="u-meta">${cur.desc||""}</div>
@@ -950,37 +1437,42 @@ function getCoolPlaces(){
  const p=[{name:"Bugis Junction",lat:1.2997,lng:103.8555,note:"Air-conditioned mall · free entry"},{name:"Raffles City",lat:1.2931,lng:103.8533,note:"Air-conditioned mall · free entry"},{name:"Clarke Quay Central",lat:1.2897,lng:103.8465,note:"Air-conditioned mall · free entry"},{name:"Marina Bay Sands Shoppes",lat:1.2839,lng:103.8591,note:"Air-conditioned mall · free entry"},{name:"Tekka Centre",lat:1.3062,lng:103.8504,note:"Covered food centre"}];
  if(userPos)p.sort((a,b)=>hav(userPos,a)-hav(userPos,b));return p;
 }
-function showCoolPins(){
+function zoomNearestCool(drawRoute=false){
+ const ranked=getCoolPlaces();
+ if(!userPos||!ranked.length)return;
  clearActionMarkers();
- if(!userPos){
-   locateMe();
-   setTimeout(showCoolPins,900);
-   return;
- }
- const p=getCoolPlaces().slice(0,4);
- const pts=[[userPos.lat,userPos.lng]];
- p.forEach((x,i)=>{
-  const m=L.marker([x.lat,x.lng],{icon:actionIcon("cool","C")}).addTo(map).bindPopup(`<div style="font-size:14px;line-height:1.45"><b style="font-size:16px">${x.name}</b><br>${x.note}<br>${hav(userPos,x).toFixed(1)} km from your GPS location<br><button onclick="routeToCool(${i})">Route here</button></div>`);
-  actionMarkers.push(m);pts.push([x.lat,x.lng]);
+ const nearest=ranked[0];
+ ranked.slice(0,4).forEach((x,i)=>{
+  const m=L.marker([x.lat,x.lng],{icon:actionIcon("cool","C")}).addTo(map)
+   .bindPopup(`<div style="font-size:14px;line-height:1.45"><b style="font-size:16px">${x.name}</b><br>${x.note}<br>${hav(userPos,x).toFixed(1)} km from your GPS location<br><button onclick="routeToCool(${i})">Route here</button></div>`);
+  actionMarkers.push(m);
  });
- map.fitBounds(L.latLngBounds(pts).pad(.22),{maxZoom:16});
+ map.fitBounds(L.latLngBounds([[userPos.lat,userPos.lng],[nearest.lat,nearest.lng]]).pad(.14),{maxZoom:18});
+ actionMarkers[0]?.openPopup();
+ routeStats.textContent=`Nearest cool place · ${nearest.name} · ${hav(userPos,nearest).toFixed(1)} km`;
+ if(drawRoute)routeToCool(0);
+}
+function showCoolPins(){
+ if(!userPos){getGPS(()=>{renderCool();zoomNearestCool(false)});return}
+ zoomNearestCool(false);
 }
 function renderCool(){
  if(!userPos){
-   coolList.innerHTML='<div class="card"><div class="nearby-gps-note">Getting your GPS location so the nearest cool places can be shown…</div></div>';
-   locateMe();setTimeout(()=>{renderCool();showCoolPins()},900);return;
+   coolList.innerHTML='<div class="card"><div class="nearby-gps-note">Getting your current GPS location…</div></div>';
+   getGPS(()=>{renderCool();zoomNearestCool(false)});
+   return;
  }
  const p=getCoolPlaces().slice(0,4);
- coolList.innerHTML='<div class="card"><div class="nearby-gps-note">Nearest cool places from your current GPS location.</div>'+p.map((x,i)=>`<div class="place"><div><h3>${x.name}</h3><p>${x.note} · ${hav(userPos,x).toFixed(1)} km from you</p></div><button class="sbtn" onclick="routeToCool(${i})">Route</button></div>`).join("")+'</div>';
+ coolList.innerHTML='<div class="card"><div class="nearby-gps-note">Nearest cool places from your current GPS location.</div>'+p.map((x,i)=>`<div class="place"><div><h3>${x.name}</h3><p>${x.note} · ${hav(userPos,x).toFixed(1)} km from you${i===0?' · Nearest':''}</p></div><button class="sbtn" onclick="routeToCool(${i})">Route</button></div>`).join("")+'</div>';
 }
 async function routeToCool(i){
  closeAllSheets();
  document.querySelector(".routefloat")?.classList.add("collapsed");
  if(typeof expandRouteBtn!=="undefined")if(typeof expandRouteBtn!=="undefined"&&expandRouteBtn)expandRouteBtn.textContent="Expand";
  const p=getCoolPlaces()[i];closeSheet("coolSheet");
- if(!userPos){locateMe();setTimeout(()=>routeToCool(i),900);return}
- if(state.hot||state.mode==="Wet"){await drawTransitTo(userPos,p);return}
- try{const r=await footRoute([userPos,p]);if(routeLayer)map.removeLayer(routeLayer);routeLayer=L.geoJSON(r.geometry,{style:{color:"#1677ff",weight:6,opacity:.9}}).addTo(map);map.fitBounds(routeLayer.getBounds().pad(.18));routeStats.textContent=`Cool place · ${(r.distance/1000).toFixed(1)} km · ${Math.round(r.duration/60)} min`}catch(e){}
+ if(!userPos){getGPS(()=>routeToCool(i));return}
+ if(nextMode==="transit" || (nextMode!=="walk" && hav(userPos,p)>0.85)){const j=preferredMRTJourney(userPos,p);await drawTransitTo(userPos,p,j);return}else hideMRTJourney()
+ try{const r=await footRoute([userPos,p]);if(routeLayer)map.removeLayer(routeLayer);routeLayer=L.geoJSON(r.geometry,{style:{color:"#1677ff",weight:6,opacity:.9}}).addTo(map);map.fitBounds(routeLayer.getBounds().pad(.10),{maxZoom:18});routeStats.textContent=`Cool place · ${(r.distance/1000).toFixed(1)} km · ${Math.round(r.duration/60)} min`}catch(e){}
 }
 function wxIcon(rain,cloud=0){
  if(rain>=55)return `<svg class="wx-svg wx-rain" viewBox="0 0 24 24"><path d="M7 16h10a4 4 0 0 0 .4-8A6 6 0 0 0 6 7.5 4.3 4.3 0 0 0 7 16Z"/><path d="M8 20l1-2M12 20l1-2M16 20l1-2"/></svg>`;
@@ -1011,19 +1503,26 @@ function usePhoto(){
  </div>`;
  usePhotoBtn.style.display="none";
 }
-function showSmokingPins(){
+function zoomNearestSmoking(){
+ if(!userPos)return;
  clearActionMarkers();
- if(!userPos){
-   locateMe();setTimeout(showSmokingPins,900);return;
- }
- const ranked=[...smokingPlaces].sort((a,b)=>hav(userPos,a)-hav(userPos,b)).slice(0,5);
- const pts=[[userPos.lat,userPos.lng]];
- ranked.forEach(p=>{
+ const ranked=[...smokingPlaces].sort((a,b)=>hav(userPos,a)-hav(userPos,b));
+ const nearest=ranked[0];
+ ranked.slice(0,5).forEach(p=>{
   const originalIndex=smokingPlaces.indexOf(p);
-  const m=L.marker([p.lat,p.lng],{icon:actionIcon("smoke","S")}).addTo(map).bindPopup(`<div style="font-size:14px;line-height:1.45"><b style="font-size:16px">${p.name}</b><br>${p.note}<br>${hav(userPos,p).toFixed(1)} km from your GPS location<br><button onclick="routeToSmoking(${originalIndex})">Route here</button></div>`);
-  actionMarkers.push(m);pts.push([p.lat,p.lng]);
+  const m=L.marker([p.lat,p.lng],{icon:actionIcon("smoke","S")}).addTo(map)
+   .bindPopup(`<div style="font-size:14px;line-height:1.45"><b style="font-size:16px">${p.name}</b><br>${p.note}<br>${hav(userPos,p).toFixed(1)} km from your GPS location<br><button onclick="routeToSmoking(${originalIndex})">Route here</button></div>`);
+  actionMarkers.push(m);
  });
- map.fitBounds(L.latLngBounds(pts).pad(.22),{maxZoom:16});
+ if(nearest){
+   map.fitBounds(L.latLngBounds([[userPos.lat,userPos.lng],[nearest.lat,nearest.lng]]).pad(.14),{maxZoom:18});
+   actionMarkers[0]?.openPopup();
+   routeStats.textContent=`Nearest smoking location · ${nearest.name} · ${hav(userPos,nearest).toFixed(1)} km`;
+ }
+}
+function showSmokingPins(){
+ if(!userPos){getGPS(()=>{renderSmoking();zoomNearestSmoking()});return}
+ zoomNearestSmoking();
 }
 
 const smokingPlaces=[
@@ -1034,13 +1533,14 @@ const smokingPlaces=[
 
 function renderSmoking(){
  if(!userPos){
-   smokeList.innerHTML='<div class="card"><div class="nearby-gps-note">Getting your GPS location so the nearest smoking locations can be shown…</div></div>';
-   locateMe();setTimeout(()=>{renderSmoking();showSmokingPins()},900);return;
+   smokeList.innerHTML='<div class="card"><div class="nearby-gps-note">Getting your current GPS location…</div></div>';
+   getGPS(()=>{renderSmoking();zoomNearestSmoking()});
+   return;
  }
  const ranked=[...smokingPlaces].sort((a,b)=>hav(userPos,a)-hav(userPos,b)).slice(0,5);
- smokeList.innerHTML=`<div class="card"><div class="nearby-gps-note">Nearest listed smoking locations from your current GPS position. Always follow local signs.</div>${ranked.map(p=>`
+ smokeList.innerHTML=`<div class="card"><div class="nearby-gps-note">Nearest listed smoking locations from your current GPS position. Always follow local signs.</div>${ranked.map((p,i)=>`
    <div class="place">
-    <div><h3>${p.name}</h3><p>${p.note} · ${hav(userPos,p).toFixed(1)} km from you</p></div>
+    <div><h3>${p.name}</h3><p>${p.note} · ${hav(userPos,p).toFixed(1)} km from you${i===0?' · Nearest':''}</p></div>
     <button class="sbtn" onclick="routeToSmoking(${smokingPlaces.indexOf(p)})">Route</button>
    </div>`).join("")}</div>`;
 }
@@ -1049,9 +1549,9 @@ async function routeToSmoking(i){
  document.querySelector(".routefloat")?.classList.add("collapsed");
  if(typeof expandRouteBtn!=="undefined")if(typeof expandRouteBtn!=="undefined"&&expandRouteBtn)expandRouteBtn.textContent="Expand";
  const p=smokingPlaces[i];closeSheet("smokeSheet");
- if(!userPos){locateMe();setTimeout(()=>routeToSmoking(i),900);return}
- if(state.hot||state.mode==="Wet"){await drawTransitTo(userPos,p);routeStats.textContent="Smoking route · MRT / transport";return}
- try{const route=await footRoute([userPos,p]);if(routeLayer)map.removeLayer(routeLayer);routeLayer=L.geoJSON(route.geometry,{style:{color:"#1677ff",weight:6,opacity:.9}}).addTo(map);map.fitBounds(routeLayer.getBounds().pad(.18));routeStats.textContent=`Smoking route · ${(route.distance/1000).toFixed(1)} km · ${Math.round(route.duration/60)} min`}catch(e){map.setView([p.lat,p.lng],17);routeStats.textContent="Smoking location shown · route unavailable"}
+ if(!userPos){getGPS(()=>routeToSmoking(i));return}
+ if(nextMode==="transit" || (nextMode!=="walk" && hav(userPos,p)>0.85)){const j=preferredMRTJourney(userPos,p);await drawTransitTo(userPos,p,j);routeStats.textContent="Smoking route · MRT / transport";return}else hideMRTJourney()
+ try{const route=await footRoute([userPos,p]);if(routeLayer)map.removeLayer(routeLayer);routeLayer=L.geoJSON(route.geometry,{style:{color:"#1677ff",weight:6,opacity:.9}}).addTo(map);map.fitBounds(routeLayer.getBounds().pad(.10),{maxZoom:18});routeStats.textContent=`Smoking route · ${(route.distance/1000).toFixed(1)} km · ${Math.round(route.duration/60)} min`}catch(e){map.setView([p.lat,p.lng],17);routeStats.textContent="Smoking location shown · route unavailable"}
 }
 function renderAll(){ensureHotelReturn();applyPlanRules();renderHeader();renderDays();renderNext();renderSpend();renderMarkers()}
 document.addEventListener("click",e=>{
