@@ -464,6 +464,11 @@ input,select,textarea{width:100%;border:1px solid var(--line);background:#fff;bo
 
 <div class="sheetbg" id="moreSheet"><div class="sheet"><div class="handle"></div><div class="shead"><h2>Menu</h2><button class="close" onclick="closeSheet('moreSheet')">×</button></div>
 <div class="card">
+  <h3 style="margin-top:0">Fashion Shopping Break</h3>
+  <p class="muted">One person can shop while the other explores nearby photo locations. These are optional and are not forced into the day.</p>
+  <div id="shoppingBreakOptions"></div>
+</div>
+<div class="card">
   <h3 style="margin-top:0">Optional Alternatives</h3>
   <p class="muted">Show the location and route from your current GPS position, or add/remove it from today’s route.</p>
 
@@ -535,8 +540,11 @@ const stops=[
 {id:"haji",name:"Haji Lane",lat:1.3008,lng:103.8592,day:1,type:"Outdoor",priority:"Must See",desc:"Narrow lane of murals, small shops, cafés and colourful shopfronts.",photo:"Morning before it gets busy"},
 {id:"arab",name:"Arab Street",lat:1.3021,lng:103.8586,day:1,type:"Outdoor",priority:"Would Like",desc:"Historic street of fabric shops, cafés and views toward Sultan Mosque.",photo:"Morning / late afternoon"},
 {id:"bugis",name:"Bugis Street",lat:1.3008,lng:103.8552,day:1,type:"Indoor",priority:"Must See",desc:"Busy covered shopping area known for inexpensive clothes, snacks and souvenirs.",photo:"Daytime / busy street scenes"},
+{id:"bugisplus",name:"Bugis+",lat:1.2996,lng:103.8554,day:1,type:"Indoor",priority:"Optional",desc:"Modern fashion and lifestyle mall beside Bugis Street. Good Friday shopping break because it sits directly on the Kampong Glam / Bugis route.",photo:"Shopper: indoors. Explorer: Haji Lane, Arab Street, Bugis street scenes"},
+
 {id:"littleindia",name:"Little India Arcade",lat:1.3068,lng:103.8518,day:1,type:"Indoor",priority:"Must See",desc:"Colourful heritage shopping arcade in the heart of Little India.",photo:"Late morning / afternoon colour"},
 {id:"tekka",name:"Tekka Centre",lat:1.3062,lng:103.8504,day:1,type:"Indoor",priority:"Would Like",desc:"Local market and hawker centre, useful for inexpensive food and indoor shelter.",photo:"Daytime market scenes"},
+{id:"somerset313",name:"313@somerset",lat:1.3010,lng:103.8384,day:2,type:"Indoor",priority:"Optional",desc:"Large fashion-focused Orchard Road mall directly above Somerset MRT. Good Saturday shopping alternative while the other person explores nearby photo spots.",photo:"Explorer: Orchard Central rooftop, Orchard Road architecture, Emerald Hill shophouses"},
 {id:"fort",name:"Fort Canning Park",lat:1.2955,lng:103.8450,day:2,type:"Outdoor",priority:"Must See",desc:"Historic hilltop park with shaded paths, greenery and heritage features.",photo:"Morning for softer light"},
 {id:"hillstreet",name:"Old Hill Street Police Station",lat:1.2905,lng:103.8482,day:2,type:"Outdoor",priority:"Must See",desc:"Landmark building with hundreds of colourful window shutters beside the river district.",photo:"Good daylight colour; late afternoon softer"},
 {id:"cavenagh",name:"Cavenagh Bridge",lat:1.2869,lng:103.8524,day:2,type:"Outdoor",priority:"Would Like",desc:"Historic iron bridge across the Singapore River with Fullerton and river views.",photo:"Late afternoon / blue hour"},
@@ -607,6 +615,33 @@ const mrt=[
 {name:"Gardens by the Bay",code:"TE22",lat:1.2795,lng:103.8675},
 {name:"Tanjong Rhu",code:"TE23",lat:1.2990,lng:103.8730}
 ];
+
+const shoppingOptions={
+ bugisplus:{
+  day:1,
+  shopper:"Bugis+ · 201 Victoria Street · fashion, casual brands, lifestyle shops and food.",
+  explorer:"While one person shops: walk Bugis Street → Waterloo Street / street details → Haji Lane / Arab Street. All are close enough to keep this a useful photo break.",
+  time:"Allow about 60–90 minutes.",
+  routeNote:"Best Friday option because it is already on the Kampong Glam / Bugis route."
+ },
+ somerset313:{
+  day:2,
+  shopper:"313@somerset · 313 Orchard Road · mainstream fashion, sportswear, beauty and casual shopping.",
+  explorer:"While one person shops: walk to Orchard Central rooftop for elevated city photos, then toward Emerald Hill for colourful Peranakan shophouses and quieter street photography.",
+  time:"Allow about 90 minutes.",
+  routeNote:"Saturday optional detour; use MRT there and return to the river/heritage route afterwards."
+ }
+};
+function shoppingOptionCard(id){
+ const s=byId(id),o=shoppingOptions[id];
+ const available=state.day===o.day;
+ return `<div class="place"><div><h3>${s.name}</h3><p>${o.shopper}</p><p><b>For the non-shopper:</b> ${o.explorer}</p><p>${o.time} ${o.routeNote}</p></div></div>
+ <div class="option-actions">
+   <button class="sbtn" onclick="mapAndRouteOption('${id}')">Map + route from me</button>
+   <button class="sbtn" ${available?`data-option-id="${id}" onclick="toggleTodayRoute('${id}');event.stopPropagation()"`:"disabled"}>${available?(isInToday(id)?"Delete from today":"Add to today"):(o.day===1?"Friday option":"Saturday option")}</button>
+ </div>`;
+}
+
 const masterPlans=[
  ["airport","hotel","fullerton","merlion","jubilee","esplanade","helix","mbs","spectra","gardens","flowerdome","f1","hotel"],
  ["hotel","sultan","bussorah","muscat","baghdad","arab","haji","bugis","littleindia","tan","clive","serangoon","tekka","hotel"],
@@ -614,7 +649,7 @@ const masterPlans=[
  ["hotel","jewel","t4"]
 ];
 
-let state=JSON.parse(localStorage.getItem("sgTripV20")||localStorage.getItem("sgTripV16")||"null")||{
+let state=JSON.parse(localStorage.getItem("sgTripV21")||localStorage.getItem("sgTripV16")||"null")||{
  day:0,routes:masterPlans.map(x=>[...x]),missed:[],expenses:[],custom:[],mode:"Dry",hot:false,routeMode:"smart",fx:{gbp:.58,cad:.96},excluded:[[],[],[],[]]
 };
 if(typeof state.hot==="undefined") state.hot=false;
@@ -865,7 +900,7 @@ function ensureHotelReturn(){
 }
 ensureHotelReturn();
 
-function save(){localStorage.setItem("sgTripV20",JSON.stringify(state))}
+function save(){localStorage.setItem("sgTripV21",JSON.stringify(state))}
 function allStops(){return [...stops,...state.custom]}
 function byId(id){return allStops().find(s=>s.id===id)}
 function routeObjs(){return state.routes[state.day].map(byId).filter(Boolean)}
@@ -887,7 +922,11 @@ function openSheet(id){
  if(id==="coolSheet"){renderCool();showCoolPins()}
  if(id==="weatherSheet")loadWeather();
  if(id==="smokeSheet"){renderSmoking();showSmokingPins()}
- if(id==="moreSheet")setTimeout(refreshOptionButtons,0)
+ if(id==="moreSheet")setTimeout(()=>{
+   const box=document.getElementById("shoppingBreakOptions");
+   if(box)box.innerHTML=shoppingOptionCard("bugisplus")+shoppingOptionCard("somerset313");
+   refreshOptionButtons();
+ },0)
 }
 function enableSwipeSheet(bg){
  if(bg.dataset.swipeReady)return;bg.dataset.swipeReady="1";
@@ -1019,7 +1058,10 @@ function removeFromTodayRoute(id){
  }else state.routes[state.day]=state.routes[state.day].filter(x=>x!==id);
  ensureHotelReturn();save();renderAll();refreshOptionButtons();
 }
-function toggleTodayRoute(id){isInToday(id)?removeFromTodayRoute(id):addToTodayRoute(id)}
+function toggleTodayRoute(id){
+ if(shoppingOptions[id] && shoppingOptions[id].day!==state.day)return;
+ isInToday(id)?removeFromTodayRoute(id):addToTodayRoute(id)
+}
 
 function refreshOptionButtons(){
  document.querySelectorAll("[data-option-id]").forEach(btn=>{
