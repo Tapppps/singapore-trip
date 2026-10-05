@@ -413,7 +413,7 @@ input,select,textarea{width:100%;border:1px solid var(--line);background:#fff;bo
 
 /* V23 simplified journey dashboard */
 main{overflow-y:auto!important;background:#f4f5f7!important}
-#map,.tools,#hawkerChip,#hawkerPanel,#mrtJourneyPanel,#liveWeatherBadge,.routefloat{display:none!important}
+.tools,#hawkerChip,#hawkerPanel,#mrtJourneyPanel,#liveWeatherBadge,.routefloat{display:none!important}
 #journeyDashboard{padding:12px 10px 92px;max-width:760px;margin:0 auto}
 .journey-toolbar{display:flex;gap:7px;overflow-x:auto;padding:2px 0 10px;scrollbar-width:none}
 .journey-toolbar::-webkit-scrollbar{display:none}
@@ -515,6 +515,77 @@ main{scroll-padding-top:78px}
 }
 .toilet-dot{fill:#7b61ff}
 
+
+/* V28 continuous journey map */
+body,html,#app{height:100%;overflow:hidden}
+header{
+  position:fixed!important;top:0!important;left:0;right:0;
+  z-index:3000!important;height:58px;box-sizing:border-box;
+  background:rgba(255,255,255,.98)!important;
+}
+main{
+  position:fixed!important;
+  top:58px;left:0;right:0;bottom:58px;
+  overflow:hidden!important;
+  padding:0!important;margin:0!important;
+}
+#map{
+  display:block!important;
+  position:absolute!important;inset:0!important;
+  width:100%!important;height:100%!important;
+  background:#e7eaee!important;
+}
+#journeyDashboard,#journeyWeather{display:none!important}
+nav{
+  position:fixed!important;left:0;right:0;bottom:0;z-index:3000!important;
+  background:rgba(255,255,255,.98)!important;
+  backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);
+}
+#continuousInfo{
+  position:absolute;left:10px;right:10px;top:10px;z-index:900;
+  pointer-events:none;
+}
+.continuous-card{
+  display:inline-block;max-width:min(430px,85vw);
+  background:rgba(255,255,255,.95);border:1px solid var(--line);
+  border-radius:16px;padding:9px 11px;box-shadow:0 3px 14px rgba(0,0,0,.12);
+  pointer-events:auto;
+}
+.continuous-card h3{font-size:14px;margin:0 0 2px}
+.continuous-card p{font-size:12px;line-height:1.4;margin:0;color:var(--muted)}
+#routeLegend{
+  position:absolute;right:10px;bottom:12px;z-index:900;
+  background:rgba(255,255,255,.95);border:1px solid var(--line);
+  border-radius:14px;padding:8px 9px;font-size:11px;line-height:1.5;
+  box-shadow:0 3px 12px rgba(0,0,0,.1)
+}
+.legend-line{display:inline-block;width:25px;height:5px;border-radius:4px;vertical-align:middle;margin-right:5px}
+.map-action-cluster{
+  position:absolute;right:10px;top:84px;z-index:900;display:flex;flex-direction:column;gap:7px
+}
+.map-action-cluster button{
+  width:44px;height:44px;border-radius:14px;border:1px solid var(--line);
+  background:rgba(255,255,255,.96);font-size:15px;box-shadow:0 3px 10px rgba(0,0,0,.1)
+}
+.route-stop-icon{
+  width:28px;height:28px;border-radius:50%;background:#fff;border:4px solid #111;
+  display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:800;
+  box-shadow:0 2px 7px rgba(0,0,0,.28)
+}
+.route-poi-icon{
+  width:22px;height:22px;border-radius:50%;display:flex;align-items:center;justify-content:center;
+  color:#fff;font-size:11px;font-weight:800;border:2px solid #fff;box-shadow:0 2px 6px rgba(0,0,0,.3)
+}
+.leaflet-popup-content{font-size:14px;line-height:1.45}
+.leaflet-control-attribution{font-size:9px!important}
+@media(max-width:699px){
+  header{height:56px}
+  main{top:56px;bottom:58px}
+  #continuousInfo{left:8px;right:8px;top:8px}
+  .continuous-card{max-width:78vw}
+  .map-action-cluster{top:78px;right:8px}
+}
+
 </style>
 </head>
 <body>
@@ -534,21 +605,23 @@ main{scroll-padding-top:78px}
 
 <main>
   <div id="map"></div>
-  <div id="journeyDashboard">
-    <div class="journey-toolbar">
-      <button class="chip" onclick="openSheet('addSheet')">+ Add stop</button>
-      <button class="chip" onclick="toggleHot()">Too hot <span id="hotState" class="quick-state">Off</span></button>
-      <button class="chip" onclick="openSheet('coolSheet')">Cool nearby</button>
-      <button class="chip" onclick="openSheet('smokeSheet')">Smoking</button>
-      <button class="chip" onclick="toggleWet()"><span id="weatherMode">Dry plan</span></button>
+
+  <div id="continuousInfo">
+    <div class="continuous-card">
+      <h3 id="continuousTitle">Today’s continuous route</h3>
+      <p id="continuousSub">Start at the first numbered point and follow the coloured line.</p>
     </div>
-    <div class="journey-intro">
-      <h2 id="journeyTitle">Today</h2>
-      <p id="journeyIntro">Scroll down and follow one simple route card at a time.</p><p style="font-size:10px;color:#999;margin-top:3px">Dashboard V27</p>
-    </div>
-    <div id="journeyCards"><div class="journey-card"><div class="journey-band"></div><div class="journey-card-inner"><p class="journey-instruction">Loading today’s route…</p></div></div></div>
   </div>
-  <button id="journeyWeather" onclick="openSheet('weatherSheet')" aria-label="Live weather"><span class="temp">--°</span></button>
+
+  <div class="map-action-cluster">
+    <button onclick="locateMe()" aria-label="Find me" title="Find me">◎</button>
+    <button onclick="fitContinuousRoute()" aria-label="Show full route" title="Show full route">↗</button>
+  </div>
+
+  <div id="routeLegend">
+    <div><span id="legendLine" class="legend-line"></span>Today’s route</div>
+    <div>Pinch to zoom · drag any direction</div>
+  </div>
 </main>
 <div id="poiOverlay" role="dialog" aria-modal="true">
   <div class="poi-hero">
@@ -819,7 +892,7 @@ const masterPlans=[
  ["hotel","jewel","t4"]
 ];
 
-let state=JSON.parse(localStorage.getItem("sgTripV27")||localStorage.getItem("sgTripV16")||"null")||{
+let state=JSON.parse(localStorage.getItem("sgTripV28")||localStorage.getItem("sgTripV16")||"null")||{
  day:0,routes:masterPlans.map(x=>[...x]),missed:[],expenses:[],custom:[],mode:"Dry",hot:false,routeMode:"smart",fx:{gbp:.58,cad:.96},excluded:[[],[],[],[]]
 };
 if(typeof state.hot==="undefined") state.hot=false;
@@ -1070,7 +1143,7 @@ function ensureHotelReturn(){
 }
 ensureHotelReturn();
 
-function save(){localStorage.setItem("sgTripV27",JSON.stringify(state))}
+function save(){localStorage.setItem("sgTripV28",JSON.stringify(state))}
 function allStops(){return [...stops,...state.custom]}
 function byId(id){return allStops().find(s=>s.id===id)}
 function routeObjs(){return state.routes[state.day].map(byId).filter(Boolean)}
@@ -1107,9 +1180,124 @@ function enableSwipeSheet(bg){
  bg.addEventListener("click",e=>{if(e.target===bg)closeSheet(bg.id)});
 }
 function closeSheet(id){document.getElementById(id).classList.remove("open")}
+
+let continuousRouteGroup=null;
+let continuousPoiMarkers=[];
+let continuousStopMarkers=[];
+let continuousRouteBounds=null;
+
+function dayLineColour(){
+ return ["#0050A4","#E32017","#009645","#8B4513"][state.day]||"#0050A4";
+}
+function clearContinuousRoute(){
+ if(continuousRouteGroup){continuousRouteGroup.remove();continuousRouteGroup=null}
+ continuousPoiMarkers.forEach(m=>m.remove());continuousPoiMarkers=[];
+ continuousStopMarkers.forEach(m=>m.remove());continuousStopMarkers=[];
+ continuousRouteBounds=null;
+}
+function poiIcon(type){
+ const colour=type==="Food"?"#f6a800":type==="A/C"?"#1e88e5":type==="Smoking"?"#666":type==="Toilet"?"#7b61ff":"#e32017";
+ const label=type==="Food"?"F":type==="A/C"?"A":type==="Smoking"?"S":type==="Toilet"?"T":"★";
+ return L.divIcon({className:"",html:`<div class="route-poi-icon" style="background:${colour}">${label}</div>`,iconSize:[22,22],iconAnchor:[11,11]});
+}
+function stopIcon(i){
+ return L.divIcon({className:"",html:`<div class="route-stop-icon">${i+1}</div>`,iconSize:[28,28],iconAnchor:[14,14]});
+}
+function popupHtml(name,desc,lat,lng,type="Place"){
+ const gm=`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(lat+","+lng)}`;
+ return `<div><b style="font-size:16px">${name}</b><br>${desc||""}<br><a href="${gm}" target="_blank" rel="noopener">View in Google Maps</a><br><button style="margin-top:7px" onclick="openPoiOverlay(${JSON.stringify(name)},${JSON.stringify(desc||"")},${JSON.stringify(type)},${JSON.stringify(type)},${lat},${lng})">Full details</button></div>`;
+}
+function addContinuousPoi(p,type){
+ if(!map||!Number.isFinite(p.lat)||!Number.isFinite(p.lng))return;
+ const m=L.marker([p.lat,p.lng],{icon:poiIcon(type),title:p.name}).addTo(map)
+   .bindPopup(popupHtml(p.name,p.info||p.note||p.desc||"",p.lat,p.lng,type));
+ continuousPoiMarkers.push(m);
+}
+function addNearbyPoisForRoute(route){
+ const seen=new Set(),nearRoute=(p,maxKm)=>{
+   let best=Infinity;
+   route.forEach(s=>best=Math.min(best,hav(s,p)));
+   return best<=maxKm;
+ };
+ try{getCoolPlaces().forEach(p=>{if(nearRoute(p,.7)&&!seen.has(p.name)){seen.add(p.name);addContinuousPoi(p,"A/C")}})}catch{}
+ try{hawkerCentres.forEach(h=>{if(nearRoute(h,.85)&&!seen.has(h.name)){seen.add(h.name);addContinuousPoi({name:h.name,lat:h.lat,lng:h.lng,info:h.where},"Food")}})}catch{}
+ try{smokingPlaces.forEach(p=>{if(nearRoute(p,.7)&&!seen.has(p.name)){seen.add(p.name);addContinuousPoi(p,"Smoking")}})}catch{}
+ try{toiletPlaces.forEach(p=>{if(nearRoute(p,.7)&&!seen.has(p.name)){seen.add(p.name);addContinuousPoi(p,"Toilet")}})}catch{}
+ route.forEach(s=>{
+   if(!seen.has(s.name)){seen.add(s.name);addContinuousPoi({name:s.name,lat:s.lat,lng:s.lng,info:s.desc},"Attraction")}
+ });
+}
+async function buildLegGeometry(a,b){
+ const hint=smartTransportHint(a,b);
+ if(hint.mode==="Walk"){
+   try{
+     const r=await footRoute([a,b]);
+     return r.geometry.coordinates.map(c=>[c[1],c[0]]);
+   }catch(e){return [[a.lat,a.lng],[b.lat,b.lng]]}
+ }
+ try{
+   const j=preferredMRTJourney(a,b),pts=[[a.lat,a.lng]];
+   pts.push([j.s1.lat,j.s1.lng]);
+   j.segments.forEach(seg=>{
+     seg.stations.forEach(name=>{
+       const st=mrt.find(x=>x.name===name);
+       if(st)pts.push([st.lat,st.lng]);
+     })
+   });
+   pts.push([j.s2.lat,j.s2.lng],[b.lat,b.lng]);
+   return pts;
+ }catch(e){return [[a.lat,a.lng],[b.lat,b.lng]]}
+}
+async function renderContinuousRoute(){
+ if(!map)return;
+ clearContinuousRoute();
+ ensureHotelReturn();
+ const route=routeObjs();
+ if(route.length<2)return;
+ const colour=dayLineColour();
+ document.getElementById("legendLine").style.background=colour;
+ const allCoords=[];
+ const layers=[];
+ for(let i=0;i<route.length-1;i++){
+   const coords=await buildLegGeometry(route[i],route[i+1]);
+   if(i>0 && coords.length)coords.shift();
+   allCoords.push(...coords);
+ }
+ const shadow=L.polyline(allCoords,{color:"#fff",weight:11,opacity:.95,lineCap:"round",lineJoin:"round"}).addTo(map);
+ const line=L.polyline(allCoords,{color:colour,weight:7,opacity:.95,lineCap:"round",lineJoin:"round"}).addTo(map);
+ layers.push(shadow,line);
+ continuousRouteGroup=L.featureGroup(layers);
+
+ route.forEach((s,i)=>{
+   const m=L.marker([s.lat,s.lng],{icon:stopIcon(i),title:s.name}).addTo(map)
+    .bindPopup(popupHtml(`${i+1}. ${s.name}`,s.desc,s.lat,s.lng,"Route stop"));
+   continuousStopMarkers.push(m);
+ });
+ addNearbyPoisForRoute(route);
+
+ continuousRouteBounds=L.latLngBounds(allCoords);
+ fitContinuousRoute();
+ const first=route[0],second=route[1];
+ document.getElementById("continuousTitle").textContent=`Start: ${first.name}`;
+ document.getElementById("continuousSub").textContent=`Follow the coloured line toward ${second?.name||"the next stop"}. Pinch to zoom and drag the map in any direction.`;
+}
+function fitContinuousRoute(){
+ if(continuousRouteBounds&&map)map.fitBounds(continuousRouteBounds.pad(.08),{maxZoom:16});
+}
+
 function initMap(){
  if(typeof L==="undefined")return;
- map=L.map("map",{zoomControl:false}).setView([1.297,103.856],14);
+ map=L.map("map",{
+   zoomControl:false,
+   dragging:true,
+   touchZoom:true,
+   scrollWheelZoom:true,
+   doubleClickZoom:true,
+   boxZoom:true,
+   keyboard:true,
+   inertia:true,
+   zoomSnap:.25
+ }).setView([1.297,103.856],15);
  const tiles=L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",{
       maxZoom:19,
       attribution:'© OpenStreetMap contributors'
@@ -1136,7 +1324,7 @@ function renderDays(){
  const el=document.getElementById("daysList");if(!el)return;
  el.innerHTML=days.map((d,i)=>`<div class="place"><div><h3>${d.label}</h3><p>${d.title}</p></div><button class="sbtn" onclick="setDay(${i})">${i===state.day?"Current":"Open"}</button></div>`).join("");
 }
-function setDay(i){state.day=i;save();closeSheet("daysSheet");renderAll();window.scrollTo({top:0,behavior:"smooth"})}
+function setDay(i){state.day=i;save();closeSheet("daysSheet");renderAll();renderContinuousRoute()}
 const alongTheWay={
  "fullerton>merlion":[
   {name:"The Fullerton Hotel",info:"Former General Post Office and one of Singapore’s major colonial-era civic buildings."},
@@ -1862,9 +2050,7 @@ function toggleHot(){
  save();
  applyPlanRules();
  renderAll();
- if(state.hot){
-   getGPS(()=>zoomNearestCool(true));
- }
+ renderContinuousRoute();
 }
 function applyPlanRules(){
  const hs=document.getElementById("hotState");
@@ -1879,7 +2065,7 @@ function applyPlanRules(){
 function toggleWet(){
  state.mode=state.mode==="Dry"?"Wet":"Dry";
  nextMode=state.mode==="Wet"?"transit":"auto";
- save();applyPlanRules();renderAll();
+ save();applyPlanRules();renderAll();renderContinuousRoute();
 }
 function skipNext(){const id=state.routes[state.day].shift();if(id)state.missed.push({id,reason:"Skipped"});save();renderAll();rebuildRoute()}
 function setGpsStatus(msg,isError=false){
@@ -2167,7 +2353,7 @@ async function routeToSmoking(i){
  if(nextMode==="transit" || (nextMode!=="walk" && hav(userPos,p)>0.85)){const j=preferredMRTJourney(userPos,p);await drawTransitTo(userPos,p,j);routeStats.textContent="Smoking route · MRT / transport";return}else hideMRTJourney()
  try{const route=await footRoute([userPos,p]);if(routeLayer)map.removeLayer(routeLayer);routeLayer=L.geoJSON(route.geometry,{style:{color:"#1677ff",weight:6,opacity:.9}}).addTo(map);map.fitBounds(routeLayer.getBounds().pad(.10),{maxZoom:18});routeStats.textContent=`Smoking route · ${(route.distance/1000).toFixed(1)} km · ${Math.round(route.duration/60)} min`}catch(e){map.setView([p.lat,p.lng],17);routeStats.textContent="Smoking location shown · route unavailable"}
 }
-function renderAll(){ensureHotelReturn();applyPlanRules();renderHeader();renderDays();renderSpend();renderJourneyDashboard()}
+function renderAll(){ensureHotelReturn();applyPlanRules();renderHeader();renderDays();renderSpend()}
 document.addEventListener("click",e=>{
  const btn=e.target.closest(".sheet button");
  if(!btn)return;
@@ -2183,9 +2369,9 @@ document.addEventListener("click",e=>{
  }
 });
 
-try{initMap()}catch(e){console.warn("Hidden map init skipped:",e)}
-try{renderAll()}catch(e){console.error(e);showJourneyError(e.message||"Unable to build route cards")}
-loadTripHourlyWeather().then(()=>updateFloatingWeatherForCard(0));
+try{initMap()}catch(e){console.warn("Map init skipped:",e)}
+try{renderAll()}catch(e){console.error(e)}
+setTimeout(()=>renderContinuousRoute(),120);
 </script>
 <div id="appError" style="display:none;position:fixed;left:12px;right:12px;top:72px;z-index:99999;background:#fff3cd;border:1px solid #ffe69c;padding:10px 12px;border-radius:10px;font:13px Arial;color:#664d03"></div>
 

@@ -1,8 +1,14 @@
-Singapore Trip App V27
+Singapore Trip App V28
 
-Changes:
-- Added toilets to nearby clickable POIs on route-card maps.
-- Toilet points use a purple marker.
-- Full-screen place details now include a "View in Google Maps" button.
-- Route-card POIs pass coordinates into Google Maps when available.
-- Top menu/header is now sticky and stays visible while scrolling the route cards.
+Major direction change:
+- Home dashboard is now one continuous birds-eye map.
+- The entire day's route is drawn as one continuous coloured line from the first stop to the final stop.
+- Real OpenStreetMap streets and building footprints remain visible underneath.
+- Drag/pan freely in any direction to stay on the route.
+- Pinch-to-zoom, mouse-wheel zoom and double-click zoom are enabled.
+- Numbered route stops show the order to follow.
+- Nearby A/C, food/hawker, smoking, toilet and attraction markers remain clickable.
+- POIs open details and can be opened in Google Maps.
+- Top header is fixed and always visible while the map is moved.
+- Bottom navigation remains fixed.
+- Full-route button fits the entire route back on screen.
