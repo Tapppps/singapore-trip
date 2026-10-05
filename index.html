@@ -477,6 +477,44 @@ main{overflow-y:auto!important;background:#f4f5f7!important}
  .poi-content p{font-size:15px}
 }
 
+
+/* V26 richer route cards */
+.card-map-wrap{position:relative}
+.route-choice{display:flex;gap:6px;margin:8px 0 2px}
+.route-choice button{border:1px solid var(--line);background:#fff;border-radius:999px;padding:6px 10px;font-size:11px;font-weight:650}
+.route-choice button.active{background:#111;color:#fff;border-color:#111}
+.more-info{margin-top:8px;border-top:1px solid var(--line);padding-top:7px}
+.more-info summary{font-size:12px;font-weight:650;cursor:pointer;color:#444}
+.more-info p{font-size:13px;line-height:1.45;margin:6px 0 0;color:#555}
+.poi-map-label{font-size:9px;font-weight:700;fill:#111}
+.poi-map-dot{stroke:#fff;stroke-width:2}
+.building-block{fill:#e5e7ea;stroke:#d5d8dd;stroke-width:1}
+.route-line-shadow{fill:none;stroke:#fff;stroke-width:13;stroke-linecap:round;stroke-linejoin:round}
+.route-line-main{fill:none;stroke-width:8;stroke-linecap:round;stroke-linejoin:round}
+.card-weather{display:flex;align-items:center;gap:5px;font-size:11px;color:#555;margin-left:auto}
+.card-weather .weather-icon{margin:0;width:22px;height:22px}
+.poi-content .source-note{font-size:11px;color:#aaa}
+
+
+/* V27 */
+header{
+  position:sticky!important;
+  top:0!important;
+  z-index:2200!important;
+  background:rgba(255,255,255,.98)!important;
+  backdrop-filter:blur(10px);
+  -webkit-backdrop-filter:blur(10px);
+  box-shadow:0 1px 8px rgba(0,0,0,.08);
+}
+main{scroll-padding-top:78px}
+.poi-google-btn{
+  display:inline-flex;align-items:center;justify-content:center;
+  margin-top:12px;padding:10px 13px;border-radius:12px;
+  border:1px solid rgba(255,255,255,.28);background:#fff;color:#111;
+  text-decoration:none;font-size:14px;font-weight:700
+}
+.toilet-dot{fill:#7b61ff}
+
 </style>
 </head>
 <body>
@@ -506,7 +544,7 @@ main{overflow-y:auto!important;background:#f4f5f7!important}
     </div>
     <div class="journey-intro">
       <h2 id="journeyTitle">Today</h2>
-      <p id="journeyIntro">Scroll down and follow one simple route card at a time.</p><p style="font-size:10px;color:#999;margin-top:3px">Dashboard V25</p>
+      <p id="journeyIntro">Scroll down and follow one simple route card at a time.</p><p style="font-size:10px;color:#999;margin-top:3px">Dashboard V27</p>
     </div>
     <div id="journeyCards"><div class="journey-card"><div class="journey-band"></div><div class="journey-card-inner"><p class="journey-instruction">Loading today’s route…</p></div></div></div>
   </div>
@@ -781,7 +819,7 @@ const masterPlans=[
  ["hotel","jewel","t4"]
 ];
 
-let state=JSON.parse(localStorage.getItem("sgTripV25")||localStorage.getItem("sgTripV16")||"null")||{
+let state=JSON.parse(localStorage.getItem("sgTripV27")||localStorage.getItem("sgTripV16")||"null")||{
  day:0,routes:masterPlans.map(x=>[...x]),missed:[],expenses:[],custom:[],mode:"Dry",hot:false,routeMode:"smart",fx:{gbp:.58,cad:.96},excluded:[[],[],[],[]]
 };
 if(typeof state.hot==="undefined") state.hot=false;
@@ -1032,7 +1070,7 @@ function ensureHotelReturn(){
 }
 ensureHotelReturn();
 
-function save(){localStorage.setItem("sgTripV25",JSON.stringify(state))}
+function save(){localStorage.setItem("sgTripV27",JSON.stringify(state))}
 function allStops(){return [...stops,...state.custom]}
 function byId(id){return allStops().find(s=>s.id===id)}
 function routeObjs(){return state.routes[state.day].map(byId).filter(Boolean)}
@@ -1381,6 +1419,142 @@ function loadPhotoAiUrl(){
 }
 
 
+
+let hourlyWeatherCache=null;
+let visibleCardIndex=0;
+const cardModes={};
+
+function weatherClassAndIcon(rain,cloud){
+ return {cls:rain>=55?"rainy":cloud>65?"cloudy":"sunny",icon:wxIcon(rain,cloud)};
+}
+async function loadTripHourlyWeather(){
+ if(hourlyWeatherCache)return hourlyWeatherCache;
+ try{
+  const r=await fetch("https://api.open-meteo.com/v1/forecast?latitude=1.3521&longitude=103.8198&hourly=temperature_2m,precipitation_probability,cloud_cover&timezone=Asia%2FSingapore&forecast_days=16");
+  const j=await r.json();
+  hourlyWeatherCache=j.hourly||null;
+ }catch(e){hourlyWeatherCache=null}
+ return hourlyWeatherCache;
+}
+function routeCardDateTime(cardIndex){
+ const dates=["2026-10-15","2026-10-16","2026-10-17","2026-10-18"];
+ const baseHours=[17,10,10,7];
+ const stepHours=[0.55,0.75,0.75,0.7];
+ const hour=baseHours[state.day]+cardIndex*stepHours[state.day];
+ const h=Math.floor(hour),m=Math.round((hour-h)*60);
+ return `${dates[state.day]}T${String(h).padStart(2,"0")}:${String(m).padStart(2,"0")}`;
+}
+async function weatherForCard(cardIndex){
+ const hw=await loadTripHourlyWeather();
+ if(!hw||!hw.time)return null;
+ const target=new Date(routeCardDateTime(cardIndex));
+ let best=0,bestDiff=Infinity;
+ hw.time.forEach((t,i)=>{const d=Math.abs(new Date(t)-target);if(d<bestDiff){best=i;bestDiff=d}});
+ return {temp:Math.round(hw.temperature_2m?.[best]??0),rain:hw.precipitation_probability?.[best]??0,cloud:hw.cloud_cover?.[best]??0};
+}
+async function renderCardWeather(cardIndex){
+ const el=document.getElementById(`card-weather-${cardIndex}`);if(!el)return;
+ const w=await weatherForCard(cardIndex);if(!w){el.textContent="Forecast";return}
+ const v=weatherClassAndIcon(w.rain,w.cloud);
+ el.innerHTML=`<div class="weather-icon ${v.cls}">${v.icon}</div><span>${w.temp}° · ${w.rain}% rain</span>`;
+}
+async function updateFloatingWeatherForCard(cardIndex){
+ visibleCardIndex=cardIndex;
+ const w=await weatherForCard(cardIndex);if(!w)return;
+ const v=weatherClassAndIcon(w.rain,w.cloud),jw=document.getElementById("journeyWeather");
+ if(jw)jw.innerHTML=`<div class="weather-icon ${v.cls}">${v.icon}</div><span class="temp">${w.temp}°</span>`;
+}
+function observeJourneyCards(){
+ const cards=[...document.querySelectorAll(".journey-card[data-card-index]")];
+ if(!("IntersectionObserver" in window))return;
+ const obs=new IntersectionObserver(entries=>{
+  const visible=entries.filter(e=>e.isIntersecting).sort((a,b)=>b.intersectionRatio-a.intersectionRatio)[0];
+  if(visible){const i=Number(visible.target.dataset.cardIndex);updateFloatingWeatherForCard(i)}
+ },{threshold:[.25,.5,.75]});
+ cards.forEach(c=>obs.observe(c));
+}
+function setCardMode(index,mode){
+ cardModes[index]=mode;
+ const card=document.querySelector(`.journey-card[data-card-index="${index}"]`);
+ if(card)card.querySelectorAll(".route-choice button").forEach(b=>b.classList.toggle("active",b.dataset.mode===mode));
+ const route=routeObjs();if(route[index]&&route[index+1])buildJourneyCard(index,route[index],route[index+1],mode);
+}
+
+const toiletPlaces=[
+ {name:"Bugis Junction Toilets",lat:1.2995,lng:103.8550,info:"Public toilets inside Bugis Junction. Use the mall directory for the nearest level.",tip:"Useful during the Bugis / Kampong Glam route."},
+ {name:"Tekka Centre Toilets",lat:1.3062,lng:103.8504,info:"Public toilets inside Tekka Centre.",tip:"Follow signs inside the food centre / market."},
+ {name:"Fort Canning Centre Toilets",lat:1.2959,lng:103.8455,info:"Public toilets near Fort Canning Centre / park facilities.",tip:"Useful before continuing toward Clarke Quay."},
+ {name:"Chinatown Complex Toilets",lat:1.2825,lng:103.8432,info:"Public toilets inside Chinatown Complex.",tip:"Use the signs inside the complex; facilities are on public levels."},
+ {name:"Lau Pa Sat Toilets",lat:1.2806,lng:103.8504,info:"Public toilets inside Lau Pa Sat.",tip:"Look for facility signs around the interior perimeter."},
+ {name:"Marina Bay Sands Toilets",lat:1.2834,lng:103.8607,info:"Public toilets inside The Shoppes at Marina Bay Sands.",tip:"Easy A/C and toilet stop on the Marina route."},
+ {name:"Gardens by the Bay Toilets",lat:1.2816,lng:103.8636,info:"Public toilets around the visitor areas at Gardens by the Bay.",tip:"Follow the official facility signs near the main attractions."},
+ {name:"VivoCity Toilets",lat:1.2644,lng:103.8222,info:"Public toilets throughout VivoCity.",tip:"Good stop before heading to Sentosa."},
+ {name:"Jewel Changi Toilets",lat:1.3602,lng:103.9897,info:"Public toilets on multiple levels inside Jewel Changi Airport.",tip:"Use Jewel directory signs for the closest facilities."}
+];
+
+function cardPoiCandidates(a,b){
+ const mid={lat:(a.lat+b.lat)/2,lng:(a.lng+b.lng)/2},candidates=[];
+ stops.filter(s=>s.id!==a.id&&s.id!==b.id&&typeof s.lat==="number").forEach(s=>{
+   const d=hav(mid,s); if(d<=0.65)candidates.push({name:s.name,lat:s.lat,lng:s.lng,type:"Attraction",info:s.desc||"",tip:s.photo||""});
+ });
+ try{getCoolPlaces().forEach(c=>{if(hav(mid,c)<=0.65)candidates.push({name:c.name,lat:c.lat,lng:c.lng,type:"A/C",info:c.note||"Cool indoor stop",tip:"Useful for a heat break."})})}catch{}
+ try{hawkerCentres.forEach(h=>{if(hav(mid,h)<=0.8)candidates.push({name:h.name,lat:h.lat,lng:h.lng,type:"Food",info:h.where||"Hawker centre",tip:"Good place for a cheap local meal."})})}catch{}
+ try{smokingPlaces.forEach(s=>{if(hav(mid,s)<=0.7)candidates.push({name:s.name,lat:s.lat,lng:s.lng,type:"Smoking",info:s.note||"Listed smoking point",tip:"Always follow current local signage."})})}catch{}
+ try{toiletPlaces.forEach(t=>{if(hav(mid,t)<=0.7)candidates.push({name:t.name,lat:t.lat,lng:t.lng,type:"Toilet",info:t.info||"Public toilet",tip:t.tip||"Follow local signs."})})}catch{}
+ const seen=new Set();
+ return candidates.sort((x,y)=>hav(mid,x)-hav(mid,y)).filter(x=>{if(seen.has(x.name))return false;seen.add(x.name);return true}).slice(0,7);
+}
+function poiColour(type){return type==="Food"?"#f6a800":type==="A/C"?"#1e88e5":type==="Smoking"?"#666":type==="Toilet"?"#7b61ff":type==="Attraction"?"#e32017":"#8e44ad"}
+function escHtml(s){return String(s??"").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;").replace(/'/g,"&#39;")}
+async function wikiPhotoAndSummary(name){
+ try{
+   const u=`https://en.wikipedia.org/w/api.php?action=query&generator=search&gsrsearch=${encodeURIComponent(name+" Singapore")}&gsrlimit=1&prop=pageimages|extracts&exintro=1&explaintext=1&piprop=thumbnail&pithumbsize=1200&format=json&origin=*`;
+   const j=await (await fetch(u)).json(),page=Object.values(j.query?.pages||{})[0];
+   return {image:page?.thumbnail?.source||"",summary:page?.extract||""};
+ }catch(e){return {image:"",summary:""}}
+}
+
+function googleMapsUrl(name,lat=null,lng=null){
+ const q=(lat!==null&&lng!==null)?`${lat},${lng}`:name;
+ return `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(q)}`;
+}
+
+async function openPoiOverlay(name,info,tip,type="Place",lat=null,lng=null){
+ poiTitle.textContent=name;
+ poiInfo.textContent=info||"Interesting place near this route.";
+ poiTip.innerHTML=`<b>${type}</b><br>${tip||"Useful stop close to the route."}<br><a class="poi-google-btn" href="${googleMapsUrl(name,lat,lng)}" target="_blank" rel="noopener">View in Google Maps</a>`;
+ poiFallback.textContent=name;
+ poiImage.style.display="none";
+ poiOverlay.classList.add("open");
+ document.body.style.overflow="hidden";
+ const w=await wikiPhotoAndSummary(name);
+ if(w.image){poiImage.src=w.image;poiImage.alt=name;poiImage.style.display="block"}
+ if(w.summary && (!info || info.length<80))poiInfo.textContent=w.summary.slice(0,850);
+}
+async function fetchBuildingsForLeg(a,b){
+ const minLat=Math.min(a.lat,b.lat)-.0012,maxLat=Math.max(a.lat,b.lat)+.0012;
+ const minLng=Math.min(a.lng,b.lng)-.0012,maxLng=Math.max(a.lng,b.lng)+.0012;
+ const q=`[out:json][timeout:8];way["building"](${minLat},${minLng},${maxLat},${maxLng});out geom 80;`;
+ try{
+   const r=await fetch("https://overpass-api.de/api/interpreter",{method:"POST",body:q});
+   const j=await r.json();
+   return (j.elements||[]).filter(e=>e.geometry?.length>=3).slice(0,55);
+ }catch(e){return []}
+}
+function projectPoint(lat,lng,bounds,w=320,h=170,pad=14){
+ const [minLng,minLat,maxLng,maxLat]=bounds,dx=Math.max(maxLng-minLng,.00001),dy=Math.max(maxLat-minLat,.00001);
+ return [pad+(lng-minLng)/dx*(w-2*pad),h-pad-(lat-minLat)/dy*(h-2*pad)];
+}
+function buildingSvg(buildings,bounds){
+ return buildings.map(b=>`<polygon class="building-block" points="${b.geometry.map(g=>projectPoint(g.lat,g.lon,bounds).map(n=>n.toFixed(1)).join(",")).join(" ")}"/>`).join("");
+}
+function poiSvg(pois,bounds){
+ return pois.map(p=>{
+  const [x,y]=projectPoint(p.lat,p.lng,bounds),c=poiColour(p.type);
+  return `<g style="cursor:pointer" onclick="openPoiOverlay('${escHtml(p.name)}','${escHtml(p.info)}','${escHtml(p.tip)}','${escHtml(p.type)}',${p.lat},${p.lng})"><circle class="poi-map-dot" cx="${x}" cy="${y}" r="7" fill="${c}"/><text class="poi-map-label" x="${x+10}" y="${y+3}">${escHtml(p.name.length>18?p.name.slice(0,18)+"…":p.name)}</text></g>`;
+ }).join("");
+}
+
 const dayRouteColours=["#0050A4","#E32017","#009645","#8B4513"];
 let journeyWeatherTimer=null;
 
@@ -1417,23 +1591,12 @@ function routePois(a,b){
   .map(s=>({s,d:Math.min(hav(a,s),hav(b,s))}))
   .filter(x=>x.d<=0.55)
   .sort((x,y)=>x.d-y.d).slice(0,2)
-  .map(x=>({name:x.s.name,info:x.s.desc||"",photo:x.s.photo||"",kind:"stop"}));
+  .map(x=>({name:x.s.name,info:x.s.desc||"",photo:x.s.photo||"",kind:"stop",lat:x.s.lat,lng:x.s.lng}));
  return [...along.slice(0,2).map(x=>({name:x.name,info:x.info,photo:"Look out for it as you pass.",kind:"along"})),...nearby].slice(0,3);
 }
 function poiImageUrl(name){
  const q=encodeURIComponent(("Singapore "+name).replace(/[^\w\s-]/g," "));
  return `https://loremflickr.com/1200/900/${q}`;
-}
-function openPoiOverlay(name,info,tip){
- poiTitle.textContent=name;
- poiInfo.textContent=info||"Interesting place along this route.";
- poiTip.textContent=tip||"Look for a clear angle before taking the photo.";
- poiFallback.textContent=name;
- poiImage.style.display="block";
- poiImage.src=poiImageUrl(name);
- poiImage.alt=name;
- poiOverlay.classList.add("open");
- document.body.style.overflow="hidden";
 }
 function closePoiOverlay(){
  poiOverlay.classList.remove("open");
@@ -1441,54 +1604,32 @@ function closePoiOverlay(){
 }
 function poisHtml(pois){
  if(!pois.length)return "";
- return `<div class="poi-row">${pois.map((p,i)=>`<button class="poi-btn" onclick='openPoiOverlay(${JSON.stringify(p.name)},${JSON.stringify(p.info)},${JSON.stringify(p.photo)})'><span class="poi-dot"></span>${p.name}</button>`).join("")}</div>`;
+ return `<div class="poi-row">${pois.map(p=>`<button class="poi-btn" onclick='openPoiOverlay(${JSON.stringify(p.name)},${JSON.stringify(p.info)},${JSON.stringify(p.photo)},"Nearby",${Number.isFinite(p.lat)?p.lat:"null"},${Number.isFinite(p.lng)?p.lng:"null"})'><span class="poi-dot"></span>${p.name}</button>`).join("")}</div>`;
 }
-function mrtSchematic(j,colour){
- const segs=j?.segments||[];
- let stations=[];
- segs.forEach((seg,si)=>{
-   seg.stations.forEach((name,i)=>{
-     if(si>0&&i===0)return;
-     stations.push({name,line:seg.line,change:i===0&&si>0});
-   });
- });
- const h=160,w=320,x=52;
- if(!stations.length)return "";
- const top=22,bottom=h-22,step=stations.length>1?(bottom-top)/(stations.length-1):0;
- let lines="",dots="",labels="";
- for(let i=0;i<stations.length-1;i++){
-   const y1=top+i*step,y2=top+(i+1)*step;
-   const lineKey=stations[i+1].line||stations[i].line;
-   const c=(mrtLineInfo[lineKey]||{}).color||colour;
-   lines+=`<line x1="${x}" y1="${y1}" x2="${x}" y2="${y2}" stroke="${c}" stroke-width="7" stroke-linecap="round"/>`;
- }
- stations.forEach((st,i)=>{
-   const y=top+i*step,c=(mrtLineInfo[st.line]||{}).color||colour;
-   dots+=`<circle cx="${x}" cy="${y}" r="${i===0||i===stations.length-1?7:5}" fill="white" stroke="${c}" stroke-width="4"/>`;
-   labels+=`<text x="${x+18}" y="${y+4}" font-size="11" fill="#202020">${st.name}</text>`;
- });
- return `<svg viewBox="0 0 ${w} ${h}" aria-label="MRT schematic">${lines}${dots}${labels}</svg>`;
-}
-async function buildJourneyCard(index,a,b){
+async function buildJourneyCard(index,a,b,forcedMode=null){
  const box=document.getElementById(`schematic-${index}`),stats=document.getElementById(`stats-${index}`);
  if(!box||!stats)return;
- const hint=smartTransportHint(a,b),km=hav(a,b),dir=bearingText(a,b);
+ const km=hav(a,b),dir=bearingText(a,b),autoHint=smartTransportHint(a,b);
+ const mode=forcedMode||cardModes[index]||"smart";
+ const useWalk=mode==="walk" || (mode==="smart" && autoHint.mode==="Walk");
  try{
-   if(hint.mode==="Walk"){
-     const r=await footRoute([a,b]);
-     const coords=simplifyCoords(r.geometry.coordinates,20),pts=projectCoords(coords);
-     const colour=dayRouteColours[state.day%dayRouteColours.length];
-     box.innerHTML=`<svg viewBox="0 0 320 160"><path d="${svgPath(pts)}" fill="none" stroke="${colour}" stroke-width="8" stroke-linecap="round" stroke-linejoin="round"/><circle cx="${pts[0][0]}" cy="${pts[0][1]}" r="8" fill="white" stroke="${colour}" stroke-width="4"/><circle cx="${pts[pts.length-1][0]}" cy="${pts[pts.length-1][1]}" r="8" fill="${colour}"/></svg>`;
+   if(useWalk){
+     const [r,buildings]=await Promise.all([footRoute([a,b]),fetchBuildingsForLeg(a,b)]);
+     const coords=simplifyCoords(r.geometry.coordinates,28);
+     const lngs=coords.map(c=>c[0]),lats=coords.map(c=>c[1]);
+     const bounds=[Math.min(...lngs)-.00045,Math.min(...lats)-.00045,Math.max(...lngs)+.00045,Math.max(...lats)+.00045];
+     const pts=coords.map(([lng,lat])=>projectPoint(lat,lng,bounds));
+     const colour=dayRouteColours[state.day%dayRouteColours.length],pois=cardPoiCandidates(a,b);
+     box.innerHTML=`<svg viewBox="0 0 320 170"><rect width="320" height="170" fill="#f3f4f5"/>${buildingSvg(buildings,bounds)}<path class="route-line-shadow" d="${svgPath(pts)}"/><path class="route-line-main" d="${svgPath(pts)}" stroke="${colour}"/><circle cx="${pts[0][0]}" cy="${pts[0][1]}" r="8" fill="white" stroke="${colour}" stroke-width="4"/><circle cx="${pts[pts.length-1][0]}" cy="${pts[pts.length-1][1]}" r="8" fill="${colour}"/>${poiSvg(pois,bounds)}</svg>`;
      stats.textContent=`Walk ${(r.distance/1000).toFixed(1)} km · about ${Math.round(r.duration/60)} min · generally ${dir}`;
    }else{
-     const j=preferredMRTJourney(a,b);
-     const colour=(mrtLineInfo[j.segments?.[0]?.line]||{}).color||dayRouteColours[state.day%dayRouteColours.length];
+     const j=preferredMRTJourney(a,b),colour=(mrtLineInfo[j.segments?.[0]?.line]||{}).color||dayRouteColours[state.day%dayRouteColours.length];
      box.innerHTML=mrtSchematic(j,colour);
      stats.textContent=`MRT · approx. ${km.toFixed(1)} km · about ${Math.round(estimateTransitMinutes(a,b,j))} min`;
    }
  }catch(e){
    const colour=dayRouteColours[state.day%dayRouteColours.length];
-   box.innerHTML=`<svg viewBox="0 0 320 160"><path d="M40,120 L120,100 L190,62 L280,42" fill="none" stroke="${colour}" stroke-width="8" stroke-linecap="round"/><circle cx="40" cy="120" r="8" fill="white" stroke="${colour}" stroke-width="4"/><circle cx="280" cy="42" r="8" fill="${colour}"/></svg>`;
+   box.innerHTML=`<svg viewBox="0 0 320 170"><rect width="320" height="170" fill="#f3f4f5"/><path d="M40,128 L120,103 L190,67 L280,42" fill="none" stroke="#fff" stroke-width="13"/><path d="M40,128 L120,103 L190,67 L280,42" fill="none" stroke="${colour}" stroke-width="8" stroke-linecap="round"/><circle cx="40" cy="128" r="8" fill="white" stroke="${colour}" stroke-width="4"/><circle cx="280" cy="42" r="8" fill="${colour}"/></svg>`;
    stats.textContent=`Approx. ${km.toFixed(1)} km · head ${dir}`;
  }
 }
@@ -1510,23 +1651,33 @@ function renderJourneyDashboard(){
  let out="";
  for(let i=0;i<route.length-1;i++){
    const a=route[i],b=route[i+1],pois=routePois(a,b),colour=dayRouteColours[state.day%dayRouteColours.length],hint=smartTransportHint(a,b);
-   out+=`<section class="journey-card" style="--route-colour:${colour}">
+   out+=`<section class="journey-card" data-card-index="${i}" style="--route-colour:${colour}">
      <div class="journey-band"></div>
      <div class="journey-card-inner">
        <div class="journey-step">
          <div><div class="step-no">Step ${i+1}</div><h3>${a.name} → ${b.name}</h3></div>
-         <div class="mode">${hint.mode==="MRT"?"MRT":"WALK"}</div>
+         <div id="card-weather-${i}" class="card-weather">Forecast</div>
        </div>
        <p class="journey-instruction">${journeyInstruction(a,b)}</p>
-       <div class="schematic" id="schematic-${i}"><div class="loading">Drawing route…</div></div>
+       <div class="route-choice">
+         <button class="active" data-mode="smart" onclick="setCardMode(${i},'smart')">Smart</button>
+         <button data-mode="walk" onclick="setCardMode(${i},'walk')">Walk only</button>
+       </div>
+       <div class="card-map-wrap"><div class="schematic" id="schematic-${i}"><div class="loading">Drawing local blocks…</div></div></div>
        <div class="route-stats" id="stats-${i}">Calculating…</div>
        ${poisHtml(pois)}
+       <details class="more-info">
+         <summary>More about this step</summary>
+         <p><b>${a.name}:</b> ${a.desc||""}</p>
+         <p><b>${b.name}:</b> ${b.desc||""}</p>
+         ${b.photo?`<p><b>Photo tip:</b> ${b.photo}</p>`:""}
+       </details>
        <div class="next-arrow">Scroll for next step ↓</div>
      </div>
    </section>`;
  }
  jc.innerHTML=out||'<div class="card">No route for this day.</div>';
- setTimeout(()=>route.slice(0,-1).forEach((a,i)=>buildJourneyCard(i,a,route[i+1])),40);
+ setTimeout(()=>{route.slice(0,-1).forEach((a,i)=>{buildJourneyCard(i,a,route[i+1]);renderCardWeather(i)});observeJourneyCards();updateFloatingWeatherForCard(0)},40);
 }
 async function loadJourneyWeather(){
  try{
@@ -2034,7 +2185,7 @@ document.addEventListener("click",e=>{
 
 try{initMap()}catch(e){console.warn("Hidden map init skipped:",e)}
 try{renderAll()}catch(e){console.error(e);showJourneyError(e.message||"Unable to build route cards")}
-loadJourneyWeather();journeyWeatherTimer=setInterval(loadJourneyWeather,900000);
+loadTripHourlyWeather().then(()=>updateFloatingWeatherForCard(0));
 </script>
 <div id="appError" style="display:none;position:fixed;left:12px;right:12px;top:72px;z-index:99999;background:#fff3cd;border:1px solid #ffe69c;padding:10px 12px;border-radius:10px;font:13px Arial;color:#664d03"></div>
 

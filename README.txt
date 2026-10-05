@@ -1,11 +1,8 @@
-Singapore Trip App V25
+Singapore Trip App V27
 
-Critical fix:
-- V24 still referenced removed legacy Route Now elements, especially planBanner, during startup.
-- Those references are now guarded or removed.
-- The new journey dashboard uses explicit DOM lookups rather than browser-created ID globals.
-- Startup isolates hidden-map problems so they cannot stop the route cards loading.
-- Too Hot and Wet/Dry no longer call removed Route Now functions.
-- GPS no longer calls removed renderNext.
-- Added visible 'Dashboard V25' label so you can confirm the new version is deployed.
-- JavaScript syntax validated before packaging.
+Changes:
+- Added toilets to nearby clickable POIs on route-card maps.
+- Toilet points use a purple marker.
+- Full-screen place details now include a "View in Google Maps" button.
+- Route-card POIs pass coordinates into Google Maps when available.
+- Top menu/header is now sticky and stays visible while scrolling the route cards.
