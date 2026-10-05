@@ -506,7 +506,7 @@ main{overflow-y:auto!important;background:#f4f5f7!important}
     </div>
     <div class="journey-intro">
       <h2 id="journeyTitle">Today</h2>
-      <p id="journeyIntro">Scroll down and follow one simple route card at a time.</p>
+      <p id="journeyIntro">Scroll down and follow one simple route card at a time.</p><p style="font-size:10px;color:#999;margin-top:3px">Dashboard V25</p>
     </div>
     <div id="journeyCards"><div class="journey-card"><div class="journey-band"></div><div class="journey-card-inner"><p class="journey-instruction">Loading today’s route…</p></div></div></div>
   </div>
@@ -781,7 +781,7 @@ const masterPlans=[
  ["hotel","jewel","t4"]
 ];
 
-let state=JSON.parse(localStorage.getItem("sgTripV24")||localStorage.getItem("sgTripV16")||"null")||{
+let state=JSON.parse(localStorage.getItem("sgTripV25")||localStorage.getItem("sgTripV16")||"null")||{
  day:0,routes:masterPlans.map(x=>[...x]),missed:[],expenses:[],custom:[],mode:"Dry",hot:false,routeMode:"smart",fx:{gbp:.58,cad:.96},excluded:[[],[],[],[]]
 };
 if(typeof state.hot==="undefined") state.hot=false;
@@ -1032,7 +1032,7 @@ function ensureHotelReturn(){
 }
 ensureHotelReturn();
 
-function save(){localStorage.setItem("sgTripV24",JSON.stringify(state))}
+function save(){localStorage.setItem("sgTripV25",JSON.stringify(state))}
 function allStops(){return [...stops,...state.custom]}
 function byId(id){return allStops().find(s=>s.id===id)}
 function routeObjs(){return state.routes[state.day].map(byId).filter(Boolean)}
@@ -1070,6 +1070,7 @@ function enableSwipeSheet(bg){
 }
 function closeSheet(id){document.getElementById(id).classList.remove("open")}
 function initMap(){
+ if(typeof L==="undefined")return;
  map=L.map("map",{zoomControl:false}).setView([1.297,103.856],14);
  const tiles=L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",{
       maxZoom:19,
@@ -1087,8 +1088,16 @@ function initMap(){
       }
     },3500);
 }
-function renderHeader(){dayTitle.textContent=days[state.day].title;daySub.textContent=`${days[state.day].label} · ${state.mode} plan`;weatherMode.textContent=state.mode+" plan"}
-function renderDays(){daysList.innerHTML=days.map((d,i)=>`<div class="place"><div><h3>${d.label}</h3><p>${d.title}</p></div><button class="sbtn" onclick="setDay(${i})">${i===state.day?"Current":"Open"}</button></div>`).join("")}
+function renderHeader(){
+ const a=document.getElementById("dayTitle"),b=document.getElementById("daySub"),w=document.getElementById("weatherMode");
+ if(a)a.textContent=days[state.day].title;
+ if(b)b.textContent=`${days[state.day].label} · ${state.mode} plan`;
+ if(w)w.textContent=state.mode+" plan";
+}
+function renderDays(){
+ const el=document.getElementById("daysList");if(!el)return;
+ el.innerHTML=days.map((d,i)=>`<div class="place"><div><h3>${d.label}</h3><p>${d.title}</p></div><button class="sbtn" onclick="setDay(${i})">${i===state.day?"Current":"Open"}</button></div>`).join("");
+}
 function setDay(i){state.day=i;save();closeSheet("daysSheet");renderAll();window.scrollTo({top:0,behavior:"smooth"})}
 const alongTheWay={
  "fullerton>merlion":[
@@ -1494,8 +1503,10 @@ function renderJourneyDashboard(){
  if(!document.getElementById("journeyCards"))return;
  ensureHotelReturn();
  const route=routeObjs();
- journeyTitle.textContent=days[state.day].title;
- journeyIntro.textContent=state.day===0?"Arrival and first evening. Follow one simple card at a time.":"Scroll down. Each card shows only the direction you need for the next part of the day.";
+ const jt=document.getElementById("journeyTitle"),ji=document.getElementById("journeyIntro"),jc=document.getElementById("journeyCards");
+ if(!jc)return;
+ if(jt)jt.textContent=days[state.day].title;
+ if(ji)ji.textContent=state.day===0?"Arrival and first evening. Follow one simple card at a time.":"Scroll down. Each card shows only the direction you need for the next part of the day.";
  let out="";
  for(let i=0;i<route.length-1;i++){
    const a=route[i],b=route[i+1],pois=routePois(a,b),colour=dayRouteColours[state.day%dayRouteColours.length],hint=smartTransportHint(a,b);
@@ -1514,15 +1525,15 @@ function renderJourneyDashboard(){
      </div>
    </section>`;
  }
- journeyCards.innerHTML=out||'<div class="card">No route for this day.</div>';
+ jc.innerHTML=out||'<div class="card">No route for this day.</div>';
  setTimeout(()=>route.slice(0,-1).forEach((a,i)=>buildJourneyCard(i,a,route[i+1])),40);
 }
 async function loadJourneyWeather(){
  try{
    const r=await fetch("https://api.open-meteo.com/v1/forecast?latitude=1.3521&longitude=103.8198&current=temperature_2m,precipitation,cloud_cover&timezone=Asia%2FSingapore");
    const j=await r.json(),c=j.current||{},rain=(c.precipitation||0)>0?80:0,cloud=c.cloud_cover||0;
-   journeyWeather.innerHTML=`<div class="weather-icon ${rain>=55?'rainy':cloud>65?'cloudy':'sunny'}">${wxIcon(rain,cloud)}</div><span class="temp">${Math.round(c.temperature_2m||0)}°</span>`;
- }catch(e){journeyWeather.innerHTML='<span class="temp">Weather</span>'}
+   const jw=document.getElementById("journeyWeather");if(jw)jw.innerHTML=`<div class="weather-icon ${rain>=55?'rainy':cloud>65?'cloudy':'sunny'}">${wxIcon(rain,cloud)}</div><span class="temp">${Math.round(c.temperature_2m||0)}°</span>`;
+ }catch(e){const jw=document.getElementById("journeyWeather");if(jw)jw.innerHTML='<span class="temp">Weather</span>'}
 }
 
 
@@ -1702,21 +1713,22 @@ function toggleHot(){
  renderAll();
  if(state.hot){
    getGPS(()=>zoomNearestCool(true));
- }else{
-   renderUpcoming();
-   rebuildRoute();
  }
 }
 function applyPlanRules(){
- hotState.textContent=state.hot?"On":"Off";
- if(state.hot){planBanner.textContent="Too hot · MRT and shorter walking preferred";planBanner.className="plan-banner hot"}
- else if(state.mode==="Wet"){planBanner.textContent="Wet plan · MRT and indoor activities preferred";planBanner.className="plan-banner wet"}
- else{planBanner.textContent="Dry plan · outdoor walking preferred";planBanner.className="plan-banner"}
+ const hs=document.getElementById("hotState");
+ if(hs)hs.textContent=state.hot?"On":"Off";
+ const pb=document.getElementById("planBanner");
+ if(pb){
+   if(state.hot){pb.textContent="Too hot · MRT and shorter walking preferred";pb.className="plan-banner hot"}
+   else if(state.mode==="Wet"){pb.textContent="Wet plan · MRT and indoor activities preferred";pb.className="plan-banner wet"}
+   else{pb.textContent="Dry plan · outdoor walking preferred";pb.className="plan-banner"}
+ }
 }
 function toggleWet(){
  state.mode=state.mode==="Dry"?"Wet":"Dry";
  nextMode=state.mode==="Wet"?"transit":"auto";
- save();applyPlanRules();renderHeader();renderAll();renderUpcoming();rebuildRoute();
+ save();applyPlanRules();renderAll();
 }
 function skipNext(){const id=state.routes[state.day].shift();if(id)state.missed.push({id,reason:"Skipped"});save();renderAll();rebuildRoute()}
 function setGpsStatus(msg,isError=false){
@@ -1737,7 +1749,6 @@ function getGPS(onSuccess,onError){
      .addTo(map).bindPopup("You are here");
    map.setView([userPos.lat,userPos.lng],18);
    userMarker.openPopup();
-   renderNext();
    checkNearbyHawker();
    startLocationWatch();
    if(onSuccess)onSuccess(userPos);
@@ -1746,7 +1757,7 @@ function getGPS(onSuccess,onError){
     ?"Location permission is blocked. Allow location for this site, then try again."
     :"I couldn’t get your GPS location. Try again outdoors or with location services on.";
    setGpsStatus(msg,true);
-   routeStats.textContent=msg;
+   const rs=document.getElementById("routeStats");if(rs)rs.textContent=msg;
    if(onError)onError(err);
  },{enableHighAccuracy:true,timeout:10000,maximumAge:15000});
 }
@@ -1883,7 +1894,14 @@ function showReturnOptions(){
  alert(`Back to Hotel Boss\n\nWalk: approx. ${km.toFixed(1)} km / ${walkMins(km)} min\n\nPublic transport: walk to ${s1.name} ${s1.code}, take MRT toward ${s2.name} ${s2.code}, then walk to Hotel Boss.`);
 }
 
-function renderSpend(){const t=state.expenses.reduce((a,b)=>a+b.amount,0);spendTotal.textContent=`S$${t.toFixed(2)}`;spendFx.textContent=`≈ £${(t*state.fx.gbp).toFixed(2)} · C$${(t*state.fx.cad).toFixed(2)}`;expenseList.innerHTML=state.expenses.slice().reverse().map(e=>`<div class="card"><div style="display:flex;justify-content:space-between;gap:10px"><div><div>${e.desc}</div><div class="muted">${e.cat} · ${e.who}</div></div><div style="text-align:right">S$${e.amount.toFixed(2)}<div class="muted">£${(e.amount*state.fx.gbp).toFixed(2)} · C$${(e.amount*state.fx.cad).toFixed(2)}</div></div></div></div>`).join("")}
+function renderSpend(){
+ const totalEl=document.getElementById("spendTotal"),fxEl=document.getElementById("spendFx"),listEl=document.getElementById("expenseList");
+ if(!totalEl||!fxEl||!listEl)return;
+ const t=state.expenses.reduce((a,b)=>a+b.amount,0);
+ totalEl.textContent=`S$${t.toFixed(2)}`;
+ fxEl.textContent=`≈ £${(t*state.fx.gbp).toFixed(2)} · C$${(t*state.fx.cad).toFixed(2)}`;
+ listEl.innerHTML=state.expenses.slice().reverse().map(e=>`<div class="card"><div style="display:flex;justify-content:space-between;gap:10px"><div><div>${e.desc}</div><div class="muted">${e.cat} · ${e.who}</div></div><div style="text-align:right">S$${e.amount.toFixed(2)}<div class="muted">£${(e.amount*state.fx.gbp).toFixed(2)} · C$${(e.amount*state.fx.cad).toFixed(2)}</div></div></div></div>`).join("");
+}
 function saveExpense(){const a=+expAmount.value;if(!a)return;state.expenses.push({desc:expDesc.value||expCat.value,amount:a,cat:expCat.value,who:expWho.value,pay:expPay.value,ts:new Date().toISOString()});expDesc.value=expAmount.value="";save();renderSpend()}
 let actionMarkers=[];
 function clearActionMarkers(){actionMarkers.forEach(m=>map.removeLayer(m));actionMarkers=[]}
@@ -2014,7 +2032,9 @@ document.addEventListener("click",e=>{
  }
 });
 
-initMap();renderAll();loadJourneyWeather();journeyWeatherTimer=setInterval(loadJourneyWeather,900000);
+try{initMap()}catch(e){console.warn("Hidden map init skipped:",e)}
+try{renderAll()}catch(e){console.error(e);showJourneyError(e.message||"Unable to build route cards")}
+loadJourneyWeather();journeyWeatherTimer=setInterval(loadJourneyWeather,900000);
 </script>
 <div id="appError" style="display:none;position:fixed;left:12px;right:12px;top:72px;z-index:99999;background:#fff3cd;border:1px solid #ffe69c;padding:10px 12px;border-radius:10px;font:13px Arial;color:#664d03"></div>
 
