@@ -1,4 +1,4 @@
-const C="sg-trip-v32";
+const C="sg-trip-v33";
 const CORE=["./index.html","./manifest.webmanifest"];
 self.addEventListener("install",e=>{self.skipWaiting();e.waitUntil(caches.open(C).then(c=>c.addAll(CORE)))});
 self.addEventListener("activate",e=>{e.waitUntil(Promise.all([self.clients.claim(),caches.keys().then(keys=>Promise.all(keys.filter(k=>k!==C).map(k=>caches.delete(k))))]))});

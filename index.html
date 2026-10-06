@@ -71,51 +71,56 @@ button{font:inherit}
  #topbar{height:111px} #map{top:111px} #mapStatus{top:121px} #mapTools{top:121px}
  #drawer.collapsed{height:138px}
 }
+
+/* V33 */
+#mapStatus{pointer-events:none}
+#actions button,#mapTools button,.iconbtn,.more,.handle{cursor:pointer}
+
 </style>
 </head>
 <body>
 <header id="topbar">
  <div class="topline">
-   <button class="iconbtn" onclick="locateMe()" aria-label="Locate me">◎</button>
+   <button class="iconbtn" id="btnLocateTop" aria-label="Locate me">◎</button>
    <div class="title"><h1 id="dayTitle">Singapore Trip</h1><div id="daySub"></div></div>
-   <button class="iconbtn" onclick="fitRoute()" aria-label="Show full route">↗</button>
+   <button class="iconbtn" id="btnFitTop" aria-label="Show full route">↗</button>
  </div>
  <div id="actions">
-   <button class="pill dark" onclick="toggleDrawer(true)">Today's route</button>
-   <button class="pill" onclick="openDays()">Choose day</button>
-   <button class="pill" onclick="locateMe()">GPS</button>
-   <button class="pill" onclick="goCurrent()">Current step</button>
-   <button class="pill" onclick="fitRoute()">Full route</button>
-   <button class="pill" onclick="zoomIn()">Zoom +</button>
-   <button class="pill" onclick="zoomOut()">Zoom −</button>
+   <button class="pill dark" id="btnTodayRoute">Today's route</button>
+   <button class="pill" id="btnChooseDay">Choose day</button>
+   <button class="pill" id="btnGps">GPS</button>
+   <button class="pill" id="btnCurrent">Current step</button>
+   <button class="pill" id="btnFullRoute">Full route</button>
+   <button class="pill" id="btnZoomIn">Zoom +</button>
+   <button class="pill" id="btnZoomOut">Zoom −</button>
  </div>
 </header>
 
 <div id="map"></div>
 <div id="mapStatus"><b id="statusTitle">Loading route…</b><div id="statusSub">Simplified real map: streets, building shapes and street names.</div></div>
 <div id="mapTools">
- <button class="mapbtn" onclick="goCurrent()" title="Current step">◎</button>
- <button class="mapbtn" onclick="fitRoute()" title="Full route">↗</button>
+ <button class="mapbtn" id="btnCurrentMap" title="Current step">◎</button>
+ <button class="mapbtn" id="btnFitMap" title="Full route">↗</button>
 </div>
 
 <div id="drawer" class="collapsed">
- <div class="handle" onclick="toggleDrawer()"><span></span></div>
+ <div class="handle" id="drawerHandle"><span></span></div>
  <div class="summary">
   <div class="copy">
    <div class="small" id="summarySmall">Route</div>
    <h2 id="summaryTitle">Loading current step…</h2>
    <p id="summaryText">Street and direction details will appear here.</p>
   </div>
-  <button class="more" onclick="event.stopPropagation();toggleDrawer()">More</button>
+  <button class="more" id="drawerMore">More</button>
  </div>
  <div id="drawerBody"></div>
 </div>
 
-<div id="daySheet" onclick="if(event.target===this)closeDays()">
+<div id="daySheet">
  <div class="sheet">
   <h2>Choose day</h2>
   <div id="dayRows"></div>
-  <button class="pill" style="width:100%;margin-top:8px" onclick="closeDays()">Close</button>
+  <button class="pill" id="btnCloseDays" style="width:100%;margin-top:8px">Close</button>
  </div>
 </div>
 
@@ -279,12 +284,12 @@ const mrtNetworks={
  ]
 };
 
-let state=JSON.parse(localStorage.getItem("sgTripV32")||"null")||{day:0,routes:masterPlans.map(x=>[...x])};
+let state=JSON.parse(localStorage.getItem("sgTripV33")||"null")||{day:0,routes:masterPlans.map(x=>[...x])};
 if(!Array.isArray(state.routes)||state.routes.length<4)state.routes=masterPlans.map(x=>[...x]);
 let map=null,routeCoords=[],routeFeature=null,currentIndex=0,userPos=null,userMarker=null,watchId=null,drawerOpen=false,stopCoordIndex=[];
 let lastTouchY=null,routeScrollFloat=0;
 
-function save(){localStorage.setItem("sgTripV32",JSON.stringify(state))}
+function save(){localStorage.setItem("sgTripV33",JSON.stringify(state))}
 function byId(id){return stops.find(s=>s.id===id)}
 function routeStops(){return state.routes[state.day].map(byId).filter(Boolean)}
 function hav(a,b){const R=6371,p=Math.PI/180,dLat=(b.lat-a.lat)*p,dLon=(b.lng-a.lng)*p,la1=a.lat*p,la2=b.lat*p,x=Math.sin(dLat/2)**2+Math.cos(la1)*Math.cos(la2)*Math.sin(dLon/2)**2;return 2*R*Math.asin(Math.sqrt(x))}
@@ -342,32 +347,83 @@ async function init(){
  map.on("load",async()=>{await buildRoute();setupGesture();renderDays()});
 }
 async function buildRoute(){
- statusTitle.textContent="Building today's route…";statusSub.textContent="Loading real streets and building shapes.";
- const rs=routeStops();routeCoords=[];stopCoordIndex=[];let idx=0;
+ const statusTitleEl=document.getElementById("statusTitle");
+ const statusSubEl=document.getElementById("statusSub");
+ if(statusTitleEl)statusTitleEl.textContent="Building today's route…";
+ if(statusSubEl)statusSubEl.textContent="Drawing the route line on the simplified real map.";
+
+ const rs=routeStops();
+ routeCoords=[];stopCoordIndex=[];let idx=0;
+
  for(let i=0;i<rs.length-1;i++){
   stopCoordIndex[i]=idx;
   const a=rs[i],b=rs[i+1];let coords;
-  try{coords=smartLeg(a,b)==="walk"?(await footRoute(a,b)).geometry.coordinates:mrtCoords(a,b)}catch(e){coords=[[a.lng,a.lat],[b.lng,b.lat]]}
-  if(i>0)coords=coords.slice(1);
-  routeCoords.push(...coords);idx=routeCoords.length-1;
+  try{
+   coords=smartLeg(a,b)==="walk" ? (await footRoute(a,b)).geometry.coordinates : mrtCoords(a,b);
+  }catch(e){
+   coords=[[a.lng,a.lat],[b.lng,b.lat]];
+  }
+  coords=(coords||[]).filter(c=>Array.isArray(c)&&Number.isFinite(c[0])&&Number.isFinite(c[1]));
+  if(i>0&&coords.length)coords=coords.slice(1);
+  routeCoords.push(...coords);
+  idx=Math.max(0,routeCoords.length-1);
  }
  stopCoordIndex[rs.length-1]=Math.max(0,routeCoords.length-1);
- const data={type:"Feature",geometry:{type:"LineString",coordinates:routeCoords},properties:{}};
- if(map.getSource("route"))map.getSource("route").setData(data);
- else{
-   map.addSource("route",{type:"geojson",data});
-   map.addLayer({id:"route-halo",type:"line",source:"route",paint:{"line-color":"#fff","line-width":12,"line-opacity":.95,"line-join":"round","line-cap":"round"}});
-   map.addLayer({id:"route-main",type:"line",source:"route",paint:{"line-color":["#0050A4","#E32017","#009645","#8B4513"][state.day],"line-width":7,"line-opacity":.96,"line-join":"round","line-cap":"round"}});
+
+ if(routeCoords.length<2){
+  if(statusTitleEl)statusTitleEl.textContent="Route unavailable";
+  return;
  }
+
+ const data={type:"Feature",properties:{},geometry:{type:"LineString",coordinates:routeCoords}};
+ ["route-arrows","route-main","route-halo"].forEach(id=>{if(map.getLayer(id))map.removeLayer(id)});
+ if(map.getSource("route"))map.removeSource("route");
+
+ map.addSource("route",{type:"geojson",data});
+ map.addLayer({
+   id:"route-halo",type:"line",source:"route",
+   layout:{"line-join":"round","line-cap":"round"},
+   paint:{"line-color":"#ffffff","line-width":17,"line-opacity":.98}
+ });
+ map.addLayer({
+   id:"route-main",type:"line",source:"route",
+   layout:{"line-join":"round","line-cap":"round"},
+   paint:{
+     "line-color":["#0050A4","#E32017","#009645","#8B4513"][state.day]||"#1677ff",
+     "line-width":9,"line-opacity":1
+   }
+ });
+ map.addLayer({
+   id:"route-arrows",type:"symbol",source:"route",
+   layout:{
+     "symbol-placement":"line",
+     "symbol-spacing":90,
+     "text-field":"➤",
+     "text-size":15,
+     "text-rotation-alignment":"map",
+     "text-keep-upright":false,
+     "text-allow-overlap":true
+   },
+   paint:{"text-color":"#111111","text-halo-color":"#ffffff","text-halo-width":2}
+ });
+
  clearStopMarkers();
  rs.forEach((s,i)=>{
-  const el=document.createElement("div");el.className="route-marker";el.textContent=i+1;
-  el.onclick=()=>selectStep(Math.min(i,rs.length-2),true);
-  const m=new maplibregl.Marker({element:el,anchor:"center"}).setLngLat([s.lng,s.lat]).addTo(map);stopMarkers.push(m)
+  const el=document.createElement("div");
+  el.className="route-marker";el.textContent=i+1;
+  el.addEventListener("click",()=>selectStep(Math.min(i,rs.length-2),true));
+  stopMarkers.push(new maplibregl.Marker({element:el,anchor:"center"}).setLngLat([s.lng,s.lat]).addTo(map));
  });
- currentIndex=Math.min(currentIndex,Math.max(0,routeCoords.length-2));routeScrollFloat=currentIndex;
- fitRoute();renderDrawer();statusTitle.textContent="Simplified real map";statusSub.textContent="Start near the bottom. Swipe upward to move forward; pinch to zoom.";
+
+ currentIndex=0;routeScrollFloat=0;
+ renderDrawer();
+ updateSummary(0);
+ cameraToIndex(0,false);
+
+ if(statusTitleEl)statusTitleEl.textContent="Follow the coloured route line";
+ if(statusSubEl)statusSubEl.textContent="Start here. Swipe upward to move forward; arrows show direction. Pinch to zoom.";
 }
+
 let stopMarkers=[];
 function clearStopMarkers(){stopMarkers.forEach(m=>m.remove());stopMarkers=[]}
 function fitRoute(){
@@ -394,7 +450,7 @@ function advanceRoute(delta){
 function cameraToIndex(i,animate=true){
  if(!routeCoords.length)return;i=Math.max(0,Math.min(routeCoords.length-1,i));
  const p=routeCoords[i],q=routeCoords[Math.min(routeCoords.length-1,i+8)]||p,br=bearing(p,q);
- map.easeTo({center:p,bearing:br,zoom:Math.max(map.getZoom(),16),offset:[0,120],duration:animate?350:0});
+ map.easeTo({center:p,bearing:br,zoom:Math.max(map.getZoom(),16.8),offset:[0,125],duration:animate?350:0});
 }
 function updateStepFromCoord(){
  let step=0;for(let i=0;i<stopCoordIndex.length-1;i++)if(currentIndex>=stopCoordIndex[i])step=i;
@@ -405,23 +461,39 @@ function selectStep(step,animate=true){
 }
 function updateSummary(step){
  const rs=routeStops();if(!rs[step]||!rs[step+1])return;
- summarySmall.textContent=`Step ${step+1} of ${rs.length-1}`;
- summaryTitle.textContent=`${rs[step].name} → ${rs[step+1].name}`;
+ const small=document.getElementById("summarySmall");
+ const title=document.getElementById("summaryTitle");
+ const text=document.getElementById("summaryText");
+ if(small)small.textContent=`Step ${step+1} of ${rs.length-1}`;
+ if(title)title.textContent=`${rs[step].name} → ${rs[step+1].name}`;
  const mode=smartLeg(rs[step],rs[step+1])==="walk"?"Walk":"MRT / transport";
- summaryText.textContent=`${mode} · ${hav(rs[step],rs[step+1]).toFixed(1)} km straight-line between stops`;
+ if(text)text.textContent=`${mode} · follow the highlighted route line`;
 }
 function renderDrawer(){
- const rs=routeStops();drawerBody.innerHTML=rs.slice(0,-1).map((a,i)=>`<div class="stepcard" data-step="${i}"><div class="stephead"><div class="num">${i+1}</div><div><h3>${a.name} → ${rs[i+1].name}</h3><p>${a.desc||""}</p><button onclick="selectStep(${i},true)">Show this step</button></div></div></div>`).join("");
- updateSummary(0);highlightDrawer(0)
+ const rs=routeStops(),body=document.getElementById("drawerBody");
+ if(!body)return;
+ body.innerHTML=rs.slice(0,-1).map((a,i)=>`<div class="stepcard" data-step="${i}">
+  <div class="stephead"><div class="num">${i+1}</div><div>
+   <h3>${a.name} → ${rs[i+1].name}</h3>
+   <p>${a.desc||""}</p>
+   <button type="button" data-show-step="${i}">Show this step</button>
+  </div></div></div>`).join("");
+ body.querySelectorAll("[data-show-step]").forEach(btn=>btn.addEventListener("click",()=>selectStep(Number(btn.dataset.showStep),true)));
+ updateSummary(0);highlightDrawer(0);
 }
 function highlightDrawer(step){document.querySelectorAll(".stepcard").forEach(c=>c.classList.toggle("active",Number(c.dataset.step)===step))}
-function toggleDrawer(force){drawerOpen=typeof force==="boolean"?force:!drawerOpen;drawer.classList.toggle("expanded",drawerOpen);drawer.classList.toggle("collapsed",!drawerOpen)}
-function openDays(){daySheet.classList.add("open")} function closeDays(){daySheet.classList.remove("open")}
-function renderDays(){
- dayRows.innerHTML=days.map((d,i)=>`<div class="dayrow"><div><b>${d.label}</b><div style="font-size:12px;color:#667">${d.title}</div></div><button onclick="setDay(${i})">${i===state.day?"Current":"Open"}</button></div>`).join("")
+function toggleDrawer(force){
+ drawerOpen=typeof force==="boolean"?force:!drawerOpen;
+ const d=document.getElementById("drawer");if(!d)return;
+ d.classList.toggle("expanded",drawerOpen);d.classList.toggle("collapsed",!drawerOpen);
+ const more=document.getElementById("drawerMore");if(more)more.textContent=drawerOpen?"Hide":"More";
 }
 async function setDay(i){
- state.day=i;save();currentIndex=0;routeScrollFloat=0;dayTitle.textContent=days[i].title;daySub.textContent=`${days[i].label} · simplified route`;closeDays();await buildRoute()
+ state.day=i;save();currentIndex=0;routeScrollFloat=0;
+ const title=document.getElementById("dayTitle"),sub=document.getElementById("daySub");
+ if(title)title.textContent=days[i].title;
+ if(sub)sub.textContent=`${days[i].label} · simplified route`;
+ closeDays();await buildRoute();renderDays();
 }
 function goCurrent(){if(userPos)syncGps(true);else locateMe()}
 function locateMe(){
@@ -446,7 +518,17 @@ function syncGps(animate){
 }
 function zoomIn(){map.zoomIn()} function zoomOut(){map.zoomOut()}
 function renderHeader(){dayTitle.textContent=days[state.day].title;daySub.textContent=`${days[state.day].label} · simplified route`}
-renderHeader();init();
+function wireButtons(){
+ const on=(id,fn)=>document.getElementById(id)?.addEventListener("click",fn);
+ on("btnLocateTop",locateMe);on("btnFitTop",fitRoute);on("btnTodayRoute",()=>toggleDrawer(true));
+ on("btnChooseDay",openDays);on("btnGps",locateMe);on("btnCurrent",goCurrent);on("btnFullRoute",fitRoute);
+ on("btnZoomIn",zoomIn);on("btnZoomOut",zoomOut);on("btnCurrentMap",goCurrent);on("btnFitMap",fitRoute);
+ on("drawerHandle",()=>toggleDrawer());on("drawerMore",e=>{e.stopPropagation();toggleDrawer()});on("btnCloseDays",closeDays);
+ document.getElementById("daySheet")?.addEventListener("click",e=>{if(e.target.id==="daySheet")closeDays()});
+}
+wireButtons();
+renderHeader();
+init();
 </script>
 </body>
 </html>

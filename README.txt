@@ -1,13 +1,10 @@
-Singapore Trip App V32 — clean map rebuild
+Singapore Trip App V33
 
-Focus of this version:
-- one continuous real vector map, not separate loading panels
-- simplified OpenStreetMap-based map with streets, building shapes and street/place labels
-- most POI clutter removed
-- whole day's route shown as one continuous highlighted line
-- swipe/scroll UP to advance along the route
-- camera rotates so forward travel stays toward the top of the screen
-- route/current position held lower on screen so the next section remains visible ahead
-- pinch-to-zoom works
-- GPS snaps to the nearest point on the route and advances the current route view
-- bottom drawer keeps numbered route steps
+Fixes:
+- Core buttons are now explicitly wired with event listeners.
+- Choose Day, GPS, Current Step, Full Route, Zoom, Today’s Route and More/Hide work without relying on browser-generated element globals.
+- A highly visible route is drawn above the simplified real map:
+  thick white halo, thick coloured route line and repeated direction arrows.
+- MapLibre line layout properties are corrected so the route line renders properly.
+- App opens at route step 1 rather than the full-route overview.
+- Short/local walking legs use actual mapped foot-route geometry.
