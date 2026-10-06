@@ -2,919 +2,123 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,maximum-scale=1,user-scalable=no">
-<meta name="theme-color" content="#fafafa">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<meta name="theme-color" content="#ffffff">
 <title>Singapore Trip</title>
-<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+<link rel="stylesheet" href="https://unpkg.com/maplibre-gl@5.6.2/dist/maplibre-gl.css">
+<script src="https://unpkg.com/maplibre-gl@5.6.2/dist/maplibre-gl.js"></script>
 <style>
-:root{
-  --bg:#fafafa;--panel:#fff;--text:#1f2328;--muted:#73777d;--line:#e7e9ec;
-  --blue:#1677ff;--blueSoft:#edf5ff;--shadow:0 7px 24px rgba(0,0,0,.11)
-}
+:root{--line:#dfe3e8;--muted:#65707c;--blue:#1677ff;--bg:#eef1f4}
 *{box-sizing:border-box}
-html,body{margin:0;height:100%;overflow:hidden;background:var(--bg);color:var(--text);font-family:Inter,Roboto,"Segoe UI",Arial,sans-serif;font-weight:400}
-button,input,select,textarea{font:inherit;font-weight:400}
-button{cursor:pointer}
-#app{height:100dvh;display:grid;grid-template-rows:54px 1fr 64px}
-header{display:flex;align-items:center;gap:10px;padding:7px 10px;background:#fff;border-bottom:1px solid var(--line);z-index:20}
-.title{flex:1;min-width:0}
-.title h1{font-size:17px;line-height:1.15;margin:0;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+html,body{margin:0;height:100%;font-family:Inter,system-ui,-apple-system,Segoe UI,Arial,sans-serif;background:var(--bg);color:#17191c;overflow:hidden}
+button{font:inherit}
+#topbar{
+ position:fixed;left:0;right:0;top:0;z-index:50;height:108px;background:rgba(255,255,255,.97);
+ border-bottom:1px solid var(--line);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);
+ padding:7px 9px 8px;box-shadow:0 2px 10px rgba(0,0,0,.06)
+}
+.topline{height:42px;display:flex;align-items:center;gap:9px}
+.iconbtn{width:39px;height:39px;border:0;border-radius:14px;background:#f5f6f8;font-size:19px}
+.title{min-width:0;flex:1}
+.title h1{font-size:18px;line-height:1.1;margin:0;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .title div{font-size:11px;color:var(--muted);margin-top:3px}
-.ibtn{width:40px;height:40px;border:0;border-radius:14px;background:#f4f5f7;display:grid;place-items:center}
-.ico{width:21px;height:21px;fill:none;stroke:currentColor;stroke-width:1.65;stroke-linecap:round;stroke-linejoin:round}
-main{position:relative;overflow:hidden;background:#e9eaec}
-#map{position:absolute;inset:0}
-.leaflet-control-attribution{font-size:9px!important}
-.tools{position:absolute;top:10px;left:10px;right:10px;z-index:500;display:flex;gap:8px;overflow-x:auto;scrollbar-width:none}
-.tools::-webkit-scrollbar{display:none}
-.chip{height:42px;white-space:nowrap;border:1px solid #dedfe2;background:rgba(255,255,255,.97);border-radius:18px;padding:0 13px;display:flex;align-items:center;gap:8px;box-shadow:0 2px 9px rgba(0,0,0,.07);font-size:12px}
-.chip .ico{width:18px;height:18px}
-.routefloat{position:absolute;left:10px;right:10px;bottom:10px;z-index:500;background:rgba(255,255,255,.985);border:1px solid var(--line);border-radius:22px;padding:12px;box-shadow:var(--shadow)}
-.routehead{display:flex;align-items:center;gap:10px}
-.routehead .name{flex:1;font-size:15px;font-weight:500}
-.routehead .stats{font-size:11px;color:var(--muted)}
-.routehead button{border:1px solid var(--line);background:#fff;border-radius:12px;padding:8px 10px;font-size:12px}
-.next{display:grid;grid-template-columns:1fr auto;gap:10px;align-items:center;margin-top:10px;padding:10px 11px;background:#f7f8fa;border-radius:16px}
-.next h2{margin:0 0 4px;font-size:15px;font-weight:500}
-.next p{margin:0;color:var(--muted);font-size:11px}
-.actions{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:9px}
-.actions button{border:0;border-radius:14px;height:44px;font-size:13px}
-.actions .go{background:var(--blue);color:#fff}
-.actions .skip{background:#f1f2f4;color:#27292c}
-nav{display:grid;grid-template-columns:repeat(5,1fr);background:#fff;border-top:1px solid var(--line);padding:4px 4px calc(4px + env(safe-area-inset-bottom));z-index:20}
-.nav{border:0;background:transparent;color:#72757a;font-size:10px;display:grid;place-items:center;gap:2px;padding:3px 0}
-.nav .ico{width:22px;height:22px}.nav.active{color:var(--blue)}
-.sheetbg{position:fixed;inset:0;background:rgba(0,0,0,.34);z-index:1000;display:none;align-items:flex-end}
-.sheetbg.open{display:flex}
-.sheet{width:100%;max-width:760px;margin:auto;background:var(--bg);border-radius:25px 25px 0 0;max-height:88dvh;overflow:auto;padding:8px 12px 18px}
-.handle{width:40px;height:4px;border-radius:99px;background:#c8c9cc;margin:0 auto 8px}
-.shead{position:sticky;top:0;background:var(--bg);z-index:2;display:flex;align-items:center;gap:8px;padding:4px 0 9px}
-.shead h2{font-size:18px;font-weight:500;margin:0;flex:1}
-.close{border:0;background:#eceef1;border-radius:50%;width:34px;height:34px;display:grid;place-items:center}
-.card{background:#fff;border:1px solid var(--line);border-radius:18px;padding:12px;margin:8px 0}
-.place{padding:11px 0;border-bottom:1px solid var(--line);display:grid;grid-template-columns:1fr auto;gap:10px;align-items:center}
-.place:last-child{border-bottom:0}
-.place h3{font-size:14px;font-weight:400;margin:0 0 4px}
-.place p{font-size:11px;color:var(--muted);margin:0;line-height:1.45}
-.sbtn{border:1px solid var(--line);background:#fff;border-radius:12px;padding:8px 10px;font-size:12px}
-.primary{border:0;background:var(--blue);color:#fff;border-radius:13px;padding:11px 12px}
-.grid2{display:grid;grid-template-columns:1fr 1fr;gap:8px}
-input,select,textarea{width:100%;border:1px solid var(--line);background:#fff;border-radius:13px;padding:11px 12px}
-.full{grid-column:1/-1}
-.warning{border:1px solid #efd4a5;background:#fff8ea;border-radius:15px;padding:11px;font-size:12px;line-height:1.45}
-.good{border:1px solid #cbe7d0;background:#f1fbf3;border-radius:15px;padding:11px;font-size:12px;line-height:1.45}
-.money{font-size:28px;font-weight:500}
-.muted{color:var(--muted);font-size:11px}
-.segment{display:grid;grid-template-columns:1fr 1fr;border:1px solid var(--line);border-radius:14px;overflow:hidden}
-.segment button{border:0;background:#fff;padding:10px}.segment button.on{background:var(--blueSoft);color:var(--blue)}
-.leg{padding:10px 0;border-bottom:1px solid var(--line)}
-.leg:last-child{border-bottom:0}
-.legtitle{font-size:13px;margin-bottom:3px}
-.legmeta{font-size:11px;color:var(--muted)}
-.status{font-size:11px;padding:5px 8px;border-radius:99px;background:#f0f2f4}
-.status.blue{background:var(--blueSoft);color:var(--blue)}
-
-.map-label{
-  background:rgba(255,255,255,.94)!important;
-  border:1px solid #dfe3e7!important;
-  border-radius:7px!important;
-  box-shadow:0 1px 5px rgba(0,0,0,.08)!important;
-  color:#1f2328!important;
-  font-size:11px!important;
-  font-weight:400!important;
-  padding:2px 5px!important;
+#actions{display:flex;gap:7px;overflow-x:auto;scrollbar-width:none;padding-top:5px}
+#actions::-webkit-scrollbar{display:none}
+.pill{flex:0 0 auto;border:1px solid var(--line);background:white;border-radius:999px;padding:9px 12px;font-size:12px;white-space:nowrap}
+.pill.dark{background:#111;color:#fff;border-color:#111}
+#map{position:fixed;left:0;right:0;top:108px;bottom:0;background:#e9edf1}
+#mapStatus{
+ position:fixed;left:10px;top:118px;z-index:20;max-width:min(72vw,440px);background:rgba(255,255,255,.95);
+ border:1px solid var(--line);border-radius:14px;padding:8px 10px;box-shadow:0 2px 9px rgba(0,0,0,.09)
 }
-.map-label:before{display:none!important}
-.mrt-dot{
-  width:12px;height:12px;border-radius:50%;
-  background:#fff;border:3px solid #6b7280;box-shadow:0 1px 4px rgba(0,0,0,.18)
+#mapStatus b{font-size:13px}
+#mapStatus div{font-size:11px;color:var(--muted);line-height:1.35;margin-top:2px}
+#mapTools{position:fixed;right:10px;top:118px;z-index:22;display:flex;flex-direction:column;gap:7px}
+.mapbtn{width:42px;height:42px;border:1px solid var(--line);background:rgba(255,255,255,.96);border-radius:13px;font-size:18px;box-shadow:0 2px 8px rgba(0,0,0,.08)}
+#drawer{
+ position:fixed;left:9px;right:9px;bottom:9px;z-index:30;background:rgba(255,255,255,.98);border:1px solid var(--line);
+ border-radius:21px;box-shadow:0 15px 38px rgba(0,0,0,.18);overflow:hidden;transition:height .22s ease
 }
-.mrt-label{font-size:10px;color:#4b5563;white-space:nowrap;background:rgba(255,255,255,.90);padding:1px 4px;border-radius:5px;border:1px solid #e3e5e8}
-.transport-switch{display:grid;grid-template-columns:1fr 1fr;gap:7px;margin-top:9px}
-.transport-switch button{height:40px;border:1px solid var(--line);border-radius:13px;background:#fff;font-size:12px}
-.transport-switch button.active{background:var(--blueSoft);color:var(--blue);border-color:#cfe2ff}
-.upcoming{display:none;margin-top:8px;border-top:1px solid var(--line);padding-top:8px}
-.upcoming.open{display:block}
-.upcoming-row{display:grid;grid-template-columns:1fr auto;gap:8px;align-items:center;padding:7px 0;border-bottom:1px solid var(--line)}
-.upcoming-row:last-child{border-bottom:0}
-.upcoming-row .u-name{font-size:12px}
-.upcoming-row .u-meta{font-size:10px;color:var(--muted);margin-top:2px}
-.weather-icon{width:34px;height:34px;border-radius:12px;background:#f3f5f7;display:grid;place-items:center}
-.wx-svg{width:22px;height:22px;fill:none;stroke:#30343a;stroke-width:1.6;stroke-linecap:round;stroke-linejoin:round}
-
-
-/* V8 additions */
-.sheetbg{touch-action:none}
-.sheet{touch-action:pan-y;transition:transform .18s ease}
-.sheet.dragging{transition:none}
-.close{display:none!important}
-.handle{height:5px;width:46px;background:#c2c5ca;margin:2px auto 10px}
-.weather-icon.sunny{background:#fff7cc}
-.weather-icon.rainy{background:#e7f2ff}
-.weather-icon.cloudy{background:#eef0f2}
-.wx-sun{stroke:#e3a400!important}
-.wx-rain{stroke:#1976d2!important}
-.wx-cloud{stroke:#72777d!important}
-.quick-state{font-size:10px;color:var(--muted);margin-left:3px}
-.plan-banner{font-size:11px;padding:7px 9px;border-radius:10px;margin-top:7px;background:#f4f5f7;color:#555}
-.plan-banner.wet{background:#eaf4ff;color:#2a5f8d}
-.plan-banner.hot{background:#fff4df;color:#875600}
-.upcoming-row{cursor:pointer;border-radius:10px;padding-left:5px;padding-right:5px}
-.upcoming-row:active,.upcoming-row.selected{background:#eef5ff}
-.live-dot{display:inline-block;width:8px;height:8px;border-radius:50%;background:#21a453;margin-right:5px}
-.route-detail-line{font-size:11px;color:var(--muted);margin-top:4px;line-height:1.45}
-.route-theme{font-size:10px;color:#555;margin:5px 0 1px;font-weight:500}
-.photo-badge{display:inline-block;font-size:10px;padding:3px 6px;border-radius:8px;background:#fff7dd;color:#866000;margin-top:4px}
-.along-card{margin-top:7px;padding:8px 9px;border-left:3px solid var(--line);background:#fafafa;border-radius:8px}
-.along-title{font-size:10px;font-weight:600;color:#555;margin-bottom:3px}
-.along-item{font-size:11px;line-height:1.4;color:var(--muted);margin:2px 0}
-
-
-.leg-card{background:#fff;border:1px solid var(--line);border-radius:16px;padding:10px;margin:8px 0}
-.leg-top{display:grid;grid-template-columns:1fr auto;gap:8px}
-.leg-name{font-size:13px}
-.leg-detail{font-size:11px;color:var(--muted);margin-top:4px;line-height:1.45}
-.leg-modes{display:flex;gap:6px;margin-top:8px}
-.leg-modes button{border:1px solid var(--line);background:#fff;border-radius:10px;padding:7px 9px;font-size:11px}
-.leg-modes button.on{background:var(--blueSoft);color:var(--blue);border-color:#cfe2ff}
-.map-action-pin{width:30px;height:30px;border-radius:50%;display:grid;place-items:center;border:2px solid #fff;box-shadow:0 2px 8px rgba(0,0,0,.25);font-size:12px;font-weight:500}
-.pin-cool{background:#4aa8ff;color:#fff}
-.pin-smoke{background:#676b72;color:#fff}
-
-@media(min-width:700px){.routefloat{width:390px;left:18px;right:auto}.tools{left:18px;right:auto;max-width:650px}}
-
-/* V15 card behaviour */
-.routefloat{
-  max-height:min(46vh,430px);
-  overflow:hidden;
-  transition:max-height .22s ease, padding .22s ease;
-}
-.routefloat.collapsed{
-  max-height:64px;
-}
-.routefloat.collapsed #planBanner,
-.routefloat.collapsed #routeTheme,
-.routefloat.collapsed #nextCard,
-.routefloat.collapsed .transport-switch,
-.routefloat.collapsed .actions,
-.routefloat.collapsed #upcomingList{
-  display:none!important;
-}
-.routefloat.collapsed .routehead{margin-bottom:0}
-.routefloat .next{max-height:170px;overflow:auto}
-.route-detail-line{font-size:14px!important;line-height:1.55!important}
-.upcoming-row .u-name{font-size:14px!important}
-.upcoming-row .u-meta{font-size:13px!important;line-height:1.45!important}
-.leg-name{font-size:15px!important;font-weight:600}
-.leg-detail{font-size:14px!important;line-height:1.55!important}
-.along-title{font-size:13px!important}
-.along-item{font-size:14px!important;line-height:1.5!important}
-.photo-badge{font-size:12px!important;padding:4px 7px!important}
-.sheet .muted,.sheet p,.sheet .place p{font-size:14px!important;line-height:1.5!important}
-.sheet .place h3,.sheet h3{font-size:16px!important}
-.sheet .sbtn,.sheet button{font-size:14px!important}
-.sheet{max-height:72vh!important}
-.sheet.compact{max-height:56vh!important}
+#drawer.collapsed{height:132px}
+#drawer.expanded{height:min(68vh,680px)}
+.handle{height:24px;display:grid;place-items:center;cursor:pointer}
+.handle span{width:41px;height:5px;border-radius:99px;background:#d4d9df}
+.summary{padding:0 13px 11px;display:flex;gap:10px;align-items:flex-start}
+.summary .copy{min-width:0;flex:1}
+.summary .small{font-size:11px;color:var(--muted);margin-bottom:3px}
+.summary h2{font-size:16px;line-height:1.2;margin:0}
+.summary p{font-size:12px;line-height:1.35;color:#4d5661;margin:4px 0 0}
+.more{border:1px solid var(--line);background:#fff;border-radius:999px;padding:7px 11px;font-size:12px}
+#drawerBody{height:calc(100% - 78px);overflow:auto;padding:2px 12px 14px}
+.stepcard{border:1px solid var(--line);border-radius:16px;padding:12px;margin:8px 0;background:#fafbfc}
+.stepcard.active{border-color:#b8d2ff;background:#fff;box-shadow:0 0 0 2px #e0ebff}
+.stephead{display:flex;align-items:flex-start;gap:9px}
+.num{width:31px;height:31px;border-radius:50%;background:#111;color:#fff;display:grid;place-items:center;font-weight:700;flex:none}
+.stepcard.active .num{background:var(--blue)}
+.stepcard h3{font-size:15px;margin:1px 0 2px;line-height:1.2}
+.stepcard p{font-size:12px;color:#505966;line-height:1.45;margin:5px 0 0}
+.stepcard button{margin-top:8px;border:1px solid var(--line);background:#fff;border-radius:999px;padding:7px 10px;font-size:12px}
+#daySheet{position:fixed;inset:0;z-index:80;background:rgba(0,0,0,.35);display:none;align-items:flex-end}
+#daySheet.open{display:flex}
+.sheet{width:100%;background:#fff;border-radius:22px 22px 0 0;padding:12px;max-height:70vh;overflow:auto}
+.sheet h2{font-size:18px;margin:5px 0 10px}
+.dayrow{display:flex;justify-content:space-between;align-items:center;border-top:1px solid var(--line);padding:11px 2px}
+.dayrow:first-of-type{border-top:0}
+.dayrow button{border:1px solid var(--line);background:#fff;border-radius:999px;padding:7px 11px}
+.route-marker{width:28px;height:28px;border-radius:50%;background:#fff;border:4px solid #111;display:grid;place-items:center;font-size:10px;font-weight:800;box-shadow:0 2px 6px rgba(0,0,0,.25)}
+.maplibregl-ctrl-bottom-left,.maplibregl-ctrl-bottom-right{font-size:9px}
 @media(max-width:699px){
-  .routefloat{left:8px!important;right:8px!important;bottom:76px!important;width:auto!important;max-height:43vh}
-  .routefloat.collapsed{max-height:58px}
+ #topbar{height:111px} #map{top:111px} #mapStatus{top:121px} #mapTools{top:121px}
+ #drawer.collapsed{height:138px}
 }
-
-
-/* V16 route-card behaviour */
-.routefloat{max-height:min(52vh,520px)!important}
-.routefloat.collapsed{max-height:62px!important;padding-bottom:10px}
-.routefloat.collapsed #planBanner,
-.routefloat.collapsed #routeTheme,
-.routefloat.collapsed #nextCard,
-.routefloat.collapsed .transport-switch,
-.routefloat.collapsed .actions,
-.routefloat.collapsed #upcomingList{display:none!important}
-.routehead{cursor:pointer;user-select:none}
-.routehead .tap-hint{font-size:11px;color:var(--muted);margin-left:auto}
-#upcomingList{
-  display:block!important;
-  max-height:230px;
-  overflow-y:auto;
-  overscroll-behavior:contain;
-  padding-right:2px;
-}
-.routefloat:not(.collapsed) #upcomingList{display:block!important}
-.routefloat:not(.collapsed) .routehead .tap-hint::after{content:" · tap to close"}
-.routefloat.collapsed .routehead .tap-hint::after{content:" · tap to open"}
-.nearby-gps-note{font-size:12px;color:var(--muted);margin:6px 0 8px}
-.photo-result{margin-top:10px;padding:11px;border:1px solid var(--line);border-radius:14px;background:#fafafa}
-.photo-result h3{font-size:16px;margin:0 0 5px}
-.photo-result p{font-size:14px;line-height:1.5;margin:4px 0}
-.option-actions{display:flex;gap:7px;flex-wrap:wrap;margin-top:7px}
-.option-actions .sbtn{flex:1;min-width:120px}
-
-
-/* V17 full-day route list */
-#upcomingList{max-height:300px!important;overflow-y:auto!important;padding-right:3px}
-.upcoming-row{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:8px;align-items:start}
-.upcoming-row.route-off{opacity:.55;background:#f5f5f5}
-.route-row-actions{display:flex;gap:5px;flex-direction:column}
-.route-row-actions .sbtn{min-width:58px;padding:6px 8px}
-.route-toggle{font-size:18px!important;line-height:1!important;font-weight:400;min-width:42px!important}
-.airport-transfer{margin:8px 0;padding:11px;border:1px solid var(--line);border-radius:14px;background:#f8fbff}
-.airport-transfer h3{font-size:16px;margin:0 0 6px}
-.airport-step{font-size:14px;line-height:1.5;margin:4px 0}
-.airport-stations{font-size:13px;line-height:1.55;color:var(--muted);margin-top:7px}
-.route-mode-note{font-size:12px;margin:5px 0;color:var(--muted)}
-
-/* V18 Route Now usability */
-.routefloat:not(.collapsed){
-  max-height:72vh!important;
-  overflow:hidden!important;
-}
-.routefloat:not(.collapsed) #nextCard,
-.routefloat:not(.collapsed) .actions{
-  display:none!important;
-}
-.routefloat:not(.collapsed) #routeTheme{
-  font-size:13px!important;
-  line-height:1.35!important;
-  margin:4px 0 6px!important;
-  max-height:38px;
-  overflow:hidden;
-}
-.routefloat:not(.collapsed) #planBanner{margin:4px 0 5px!important}
-.routefloat:not(.collapsed) .transport-switch{margin:5px 0!important}
-#upcomingList{
-  max-height:52vh!important;
-  overflow-y:auto!important;
-  -webkit-overflow-scrolling:touch;
-  overscroll-behavior:contain;
-  padding-right:4px;
-}
-.airport-transfer details summary{
-  font-size:14px;
-  font-weight:600;
-  cursor:pointer;
-  padding:3px 0 5px;
-}
-.airport-transfer details[open] summary{margin-bottom:6px}
-.gps-error{font-size:13px;line-height:1.45;color:#8a3b12;background:#fff3e8;border:1px solid #ffd5b5;border-radius:10px;padding:8px;margin:6px 0}
-.nearest-badge{font-size:12px;color:#2e6a47;margin-top:4px}
-
-
-/* V19 MRT-first routing + line diagram */
-#mrtJourneyPanel{
-  position:absolute;
-  top:112px;
-  right:8px;
-  z-index:650;
-  width:min(250px,46vw);
-  max-height:68vh;
-  overflow-y:auto;
-  background:rgba(255,255,255,.97);
-  border:1px solid var(--line);
-  border-radius:16px;
-  padding:10px 10px 12px;
-  box-shadow:0 4px 18px rgba(0,0,0,.14);
-  display:none;
-}
-#mrtJourneyPanel.open{display:block}
-#mrtJourneyPanel h3{font-size:15px;margin:0 0 3px}
-#mrtJourneyPanel .mrt-sub{font-size:12px;color:var(--muted);line-height:1.4;margin-bottom:8px}
-.mrt-close{float:right;border:0;background:transparent;font-size:12px;color:var(--muted);padding:2px 4px}
-.mrt-segment{position:relative;margin:4px 0 10px;padding-left:28px}
-.mrt-segment:before{
-  content:"";
-  position:absolute;
-  left:10px;
-  top:13px;
-  bottom:13px;
-  width:5px;
-  border-radius:4px;
-  background:var(--mrt-line,#777);
-}
-.mrt-line-name{font-size:12px;font-weight:700;margin:2px 0 7px;color:var(--mrt-line,#555)}
-.mrt-station{
-  position:relative;
-  min-height:28px;
-  padding:2px 0 6px;
-  font-size:12px;
-  line-height:1.25;
-}
-.mrt-station:before{
-  content:"";
-  position:absolute;
-  left:-22px;
-  top:6px;
-  width:10px;
-  height:10px;
-  border:3px solid var(--mrt-line,#777);
-  border-radius:50%;
-  background:white;
-  box-sizing:border-box;
-}
-.mrt-station.start:before,.mrt-station.end:before{
-  width:12px;height:12px;left:-23px;top:5px;background:var(--mrt-line,#777);
-}
-.mrt-code{font-size:10px;color:var(--muted);margin-left:3px}
-.mrt-change{
-  font-size:11px;
-  font-weight:700;
-  padding:5px 7px;
-  background:#f5f5f5;
-  border-radius:8px;
-  margin:2px 0 8px;
-}
-.route-mode-note strong{font-weight:700}
-@media(max-width:699px){
- #mrtJourneyPanel{top:108px;width:min(260px,58vw);max-height:66vh}
-}
-
-
-/* V20 nearby hawker suggestions */
-#hawkerChip{
-  position:absolute;
-  top:112px;
-  left:8px;
-  z-index:655;
-  display:none;
-  border:1px solid var(--line);
-  background:rgba(255,255,255,.96);
-  border-radius:999px;
-  padding:8px 11px;
-  font-size:13px;
-  font-weight:600;
-  box-shadow:0 3px 12px rgba(0,0,0,.12);
-}
-#hawkerChip.show{display:block}
-#hawkerPanel{
-  position:absolute;
-  top:154px;
-  left:8px;
-  z-index:656;
-  width:min(310px,72vw);
-  max-height:58vh;
-  overflow-y:auto;
-  display:none;
-  background:rgba(255,255,255,.98);
-  border:1px solid var(--line);
-  border-radius:16px;
-  padding:10px;
-  box-shadow:0 4px 18px rgba(0,0,0,.16);
-}
-#hawkerPanel.open{display:block}
-.hawker-head{display:flex;justify-content:space-between;gap:8px;align-items:start;margin-bottom:7px}
-.hawker-head h3{font-size:16px;margin:0}
-.hawker-head button{border:0;background:transparent;font-size:12px;color:var(--muted)}
-.hawker-sub{font-size:12px;color:var(--muted);line-height:1.4;margin-bottom:7px}
-.food-pick{padding:8px 0;border-top:1px solid var(--line)}
-.food-pick:first-of-type{border-top:0}
-.food-pick h4{font-size:14px;margin:0 0 3px}
-.food-pick p{font-size:13px;line-height:1.45;margin:2px 0}
-.food-rating{font-weight:700}
-.food-find{color:var(--muted)}
-@media(max-width:699px){
-  #hawkerChip{top:106px}
-  #hawkerPanel{top:148px;width:min(310px,82vw);max-height:54vh}
-}
-
-
-/* V22 */
-#liveWeatherBadge{
-  position:absolute; right:10px; bottom:86px; z-index:640;
-  min-width:52px; height:52px; border:1px solid var(--line);
-  background:rgba(255,255,255,.96); border-radius:16px;
-  display:flex; align-items:center; justify-content:center; gap:4px;
-  padding:6px 8px; box-shadow:0 3px 14px rgba(0,0,0,.12); cursor:pointer;
-}
-#liveWeatherBadge .weather-icon{margin:0}
-#liveWeatherBadge .temp{font-size:12px;font-weight:600}
-#miniRouteWrap{display:none;margin:6px 0 8px}
-.routefloat:not(.collapsed) #miniRouteWrap{display:block}
-#miniRouteMap{height:145px;border-radius:14px;overflow:hidden;border:1px solid var(--line)}
-#miniRouteInfo{font-size:12px;color:var(--muted);line-height:1.4;margin-top:5px}
-.route-inline-detail{padding:8px 9px;background:#fafafa;border:1px solid var(--line);border-radius:12px;margin-bottom:7px}
-.route-inline-detail h3{font-size:15px;margin:0 0 4px}
-.route-inline-detail p{font-size:13px;line-height:1.45;margin:3px 0}
-.detail-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:8px}
-.detail-box{border:1px solid var(--line);border-radius:12px;padding:8px;background:#fff}
-.detail-box h4{font-size:13px;margin:0 0 4px}
-.detail-box p{font-size:13px;line-height:1.45;margin:2px 0}
-.evening-pick{padding:8px 0;border-top:1px solid var(--line)}
-.evening-pick:first-of-type{border-top:0}
-.evening-pick h4{font-size:14px;margin:0 0 3px}
-.evening-pick p{font-size:13px;line-height:1.45;margin:2px 0}
-.photo-ai-status{font-size:13px;line-height:1.45;margin-top:8px}
-.photo-ai-good{color:#1f6b3b}
-.photo-ai-warn{color:#8a5a00}
-@media(max-width:699px){
- #liveWeatherBadge{bottom:78px;right:8px}
- #miniRouteMap{height:135px}
- .detail-grid{grid-template-columns:1fr}
-}
-
-
-/* V23 simplified journey dashboard */
-main{overflow-y:auto!important;background:#f4f5f7!important}
-.tools,#hawkerChip,#hawkerPanel,#mrtJourneyPanel,#liveWeatherBadge,.routefloat{display:none!important}
-#journeyDashboard{padding:12px 10px 92px;max-width:760px;margin:0 auto}
-.journey-toolbar{display:flex;gap:7px;overflow-x:auto;padding:2px 0 10px;scrollbar-width:none}
-.journey-toolbar::-webkit-scrollbar{display:none}
-.journey-toolbar .chip{flex:0 0 auto;background:#fff}
-.journey-intro{padding:4px 2px 10px}
-.journey-intro h2{font-size:18px;margin:0 0 3px;font-weight:650}
-.journey-intro p{font-size:13px;color:var(--muted);margin:0;line-height:1.45}
-.journey-card{
-  background:#fff;border:1px solid var(--line);border-radius:22px;
-  margin:0 0 13px;overflow:hidden;box-shadow:0 3px 14px rgba(0,0,0,.06)
-}
-.journey-band{height:7px;background:var(--route-colour,#0b5cab)}
-.journey-card-inner{padding:12px}
-.journey-step{display:flex;justify-content:space-between;gap:10px;align-items:flex-start;margin-bottom:7px}
-.journey-step .step-no{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.04em}
-.journey-step h3{font-size:17px;line-height:1.25;margin:2px 0 0}
-.journey-step .mode{font-size:11px;font-weight:700;border:1px solid var(--line);padding:5px 7px;border-radius:999px;white-space:nowrap}
-.journey-instruction{font-size:14px;line-height:1.5;margin:0 0 9px;color:#262626}
-.schematic{
-  position:relative;height:170px;border-radius:17px;background:#fbfbfb;
-  border:1px solid #ececec;overflow:hidden
-}
-.schematic svg{width:100%;height:100%;display:block}
-.schematic .loading{position:absolute;inset:0;display:grid;place-items:center;font-size:12px;color:var(--muted)}
-.route-stats{font-size:13px;color:var(--muted);margin-top:7px}
-.poi-row{display:flex;gap:7px;overflow-x:auto;padding-top:9px;scrollbar-width:none}
-.poi-row::-webkit-scrollbar{display:none}
-.poi-btn{
-  flex:0 0 auto;border:1px solid var(--line);background:#fff;border-radius:12px;
-  padding:7px 9px;font-size:12px;max-width:180px;text-align:left
-}
-.poi-dot{display:inline-block;width:8px;height:8px;border-radius:50%;background:#e32017;margin-right:5px}
-.next-arrow{font-size:12px;color:var(--muted);margin:7px 0 0;text-align:right}
-#journeyWeather{
-  position:fixed;right:12px;bottom:82px;z-index:700;background:#fff;border:1px solid var(--line);
-  border-radius:16px;padding:7px 9px;display:flex;align-items:center;gap:5px;box-shadow:0 3px 12px rgba(0,0,0,.12)
-}
-#journeyWeather .weather-icon{margin:0}
-#journeyWeather .temp{font-size:12px;font-weight:700}
-#poiOverlay{
-  position:fixed;inset:0;z-index:3000;background:#101010;color:#fff;display:none;overflow-y:auto
-}
-#poiOverlay.open{display:block}
-.poi-hero{position:relative;height:min(56vh,520px);background:#222;overflow:hidden}
-.poi-hero img{width:100%;height:100%;object-fit:cover;display:block}
-.poi-hero:after{content:"";position:absolute;left:0;right:0;bottom:0;height:45%;background:linear-gradient(transparent,rgba(0,0,0,.72))}
-.poi-close{
-  position:absolute;z-index:2;top:14px;left:14px;border:0;border-radius:999px;background:rgba(0,0,0,.58);
-  color:#fff;padding:10px 13px;font-size:14px
-}
-.poi-content{padding:17px 16px 30px;max-width:720px;margin:0 auto}
-.poi-content h2{font-size:24px;line-height:1.2;margin:0 0 8px}
-.poi-content p{font-size:16px;line-height:1.55;margin:7px 0;color:#e8e8e8}
-.poi-content .poi-tip{padding:11px 12px;background:#1e1e1e;border-radius:14px;margin-top:12px}
-.poi-fallback{position:absolute;inset:0;display:grid;place-items:center;font-size:18px;color:#ddd;background:linear-gradient(135deg,#1a3150,#722f37)}
-@media(max-width:699px){
- #journeyDashboard{padding-left:8px;padding-right:8px}
- .journey-card-inner{padding:11px}
- .schematic{height:158px}
- .poi-content h2{font-size:22px}
- .poi-content p{font-size:15px}
-}
-
-
-/* V26 richer route cards */
-.card-map-wrap{position:relative}
-.route-choice{display:flex;gap:6px;margin:8px 0 2px}
-.route-choice button{border:1px solid var(--line);background:#fff;border-radius:999px;padding:6px 10px;font-size:11px;font-weight:650}
-.route-choice button.active{background:#111;color:#fff;border-color:#111}
-.more-info{margin-top:8px;border-top:1px solid var(--line);padding-top:7px}
-.more-info summary{font-size:12px;font-weight:650;cursor:pointer;color:#444}
-.more-info p{font-size:13px;line-height:1.45;margin:6px 0 0;color:#555}
-.poi-map-label{font-size:9px;font-weight:700;fill:#111}
-.poi-map-dot{stroke:#fff;stroke-width:2}
-.building-block{fill:#e5e7ea;stroke:#d5d8dd;stroke-width:1}
-.route-line-shadow{fill:none;stroke:#fff;stroke-width:13;stroke-linecap:round;stroke-linejoin:round}
-.route-line-main{fill:none;stroke-width:8;stroke-linecap:round;stroke-linejoin:round}
-.card-weather{display:flex;align-items:center;gap:5px;font-size:11px;color:#555;margin-left:auto}
-.card-weather .weather-icon{margin:0;width:22px;height:22px}
-.poi-content .source-note{font-size:11px;color:#aaa}
-
-
-/* V27 */
-header{
-  position:sticky!important;
-  top:0!important;
-  z-index:2200!important;
-  background:rgba(255,255,255,.98)!important;
-  backdrop-filter:blur(10px);
-  -webkit-backdrop-filter:blur(10px);
-  box-shadow:0 1px 8px rgba(0,0,0,.08);
-}
-main{scroll-padding-top:78px}
-.poi-google-btn{
-  display:inline-flex;align-items:center;justify-content:center;
-  margin-top:12px;padding:10px 13px;border-radius:12px;
-  border:1px solid rgba(255,255,255,.28);background:#fff;color:#111;
-  text-decoration:none;font-size:14px;font-weight:700
-}
-.toilet-dot{fill:#7b61ff}
-
-
-/* V28 continuous journey map */
-body,html,#app{height:100%;overflow:hidden}
-header{
-  position:fixed!important;top:0!important;left:0;right:0;
-  z-index:3000!important;height:58px;box-sizing:border-box;
-  background:rgba(255,255,255,.98)!important;
-}
-main{
-  position:fixed!important;
-  top:58px;left:0;right:0;bottom:58px;
-  overflow:hidden!important;
-  padding:0!important;margin:0!important;
-}
-#map{
-  display:block!important;
-  position:absolute!important;inset:0!important;
-  width:100%!important;height:100%!important;
-  background:#e7eaee!important;
-}
-#journeyDashboard,#journeyWeather{display:none!important}
-nav{
-  position:fixed!important;left:0;right:0;bottom:0;z-index:3000!important;
-  background:rgba(255,255,255,.98)!important;
-  backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);
-}
-#continuousInfo{
-  position:absolute;left:10px;right:10px;top:10px;z-index:900;
-  pointer-events:none;
-}
-.continuous-card{
-  display:inline-block;max-width:min(430px,85vw);
-  background:rgba(255,255,255,.95);border:1px solid var(--line);
-  border-radius:16px;padding:9px 11px;box-shadow:0 3px 14px rgba(0,0,0,.12);
-  pointer-events:auto;
-}
-.continuous-card h3{font-size:14px;margin:0 0 2px}
-.continuous-card p{font-size:12px;line-height:1.4;margin:0;color:var(--muted)}
-#routeLegend{
-  position:absolute;right:10px;bottom:12px;z-index:900;
-  background:rgba(255,255,255,.95);border:1px solid var(--line);
-  border-radius:14px;padding:8px 9px;font-size:11px;line-height:1.5;
-  box-shadow:0 3px 12px rgba(0,0,0,.1)
-}
-.legend-line{display:inline-block;width:25px;height:5px;border-radius:4px;vertical-align:middle;margin-right:5px}
-.map-action-cluster{
-  position:absolute;right:10px;top:84px;z-index:900;display:flex;flex-direction:column;gap:7px
-}
-.map-action-cluster button{
-  width:44px;height:44px;border-radius:14px;border:1px solid var(--line);
-  background:rgba(255,255,255,.96);font-size:15px;box-shadow:0 3px 10px rgba(0,0,0,.1)
-}
-.route-stop-icon{
-  width:28px;height:28px;border-radius:50%;background:#fff;border:4px solid #111;
-  display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:800;
-  box-shadow:0 2px 7px rgba(0,0,0,.28)
-}
-.route-poi-icon{
-  width:22px;height:22px;border-radius:50%;display:flex;align-items:center;justify-content:center;
-  color:#fff;font-size:11px;font-weight:800;border:2px solid #fff;box-shadow:0 2px 6px rgba(0,0,0,.3)
-}
-.leaflet-popup-content{font-size:14px;line-height:1.45}
-.leaflet-control-attribution{font-size:9px!important}
-@media(max-width:699px){
-  header{height:56px}
-  main{top:56px;bottom:58px}
-  #continuousInfo{left:8px;right:8px;top:8px}
-  .continuous-card{max-width:78vw}
-  .map-action-cluster{top:78px;right:8px}
-}
-
-
-/* V29 restarted layout */
-body,html,#app{height:100%;overflow:hidden;background:#eef1f4}
-header#fixedTop{
-  position:fixed!important;top:0;left:0;right:0;z-index:4000!important;
-  height:108px;display:block!important;padding:8px 10px 10px;
-  background:rgba(255,255,255,.97)!important;
-  backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);
-  box-shadow:0 2px 10px rgba(0,0,0,.08)
-}
-#fixedTop .top-row{display:flex;align-items:center;gap:10px;margin-bottom:8px}
-#fixedTop .title h1{font-size:19px}
-#fixedTop .title div{font-size:12px}
-#topActions{display:flex;gap:8px;overflow-x:auto;overflow-y:hidden;padding-bottom:2px;-webkit-overflow-scrolling:touch;scrollbar-width:none}
-#topActions::-webkit-scrollbar{display:none}
-.top-pill{flex:0 0 auto;border:1px solid var(--line);background:#fff;border-radius:999px;padding:10px 13px;font-size:13px;white-space:nowrap;box-shadow:0 1px 5px rgba(0,0,0,.04)}
-.top-pill.primary{background:#111;color:#fff;border-color:#111}
-.top-pill.blue{background:#eaf2ff;color:#1558d6;border-color:#cfe0ff}
-.top-pill.on{background:#111;color:#fff;border-color:#111}
-main{
-  position:fixed!important;top:108px;left:0;right:0;bottom:0;overflow:hidden!important;
-  background:#eef1f4!important;padding:0!important;margin:0!important
-}
-#map{position:absolute!important;left:-9999px!important;top:-9999px!important;width:1px!important;height:1px!important;opacity:0!important;pointer-events:none!important}
-#routeStats{display:none}
-#schematicScroller{position:absolute;inset:0;overflow-y:auto;overflow-x:hidden;-webkit-overflow-scrolling:touch;scroll-behavior:smooth;padding:16px 0 190px;background:linear-gradient(180deg,#eef1f4 0%,#f6f7f9 100%)}
-#routeTrackWrap{width:min(100%,520px);margin:0 auto;position:relative;padding:0 10px 28px}
-#routeSvg{display:block;width:100%;height:auto}
-#gpsBadge{position:sticky;top:10px;z-index:20;width:fit-content;max-width:calc(100% - 20px);margin:0 10px 10px auto;background:rgba(255,255,255,.95);border:1px solid var(--line);border-radius:999px;padding:7px 12px;font-size:12px;box-shadow:0 2px 8px rgba(0,0,0,.08)}
-.route-stop-label{font-size:12px;font-weight:700;fill:#111}
-.route-stop-sub{font-size:10px;fill:#59606a}
-.route-main-line{fill:none;stroke-linecap:round;stroke-linejoin:round;stroke:#fff;stroke-width:18}
-.route-main-line-colour{fill:none;stroke-linecap:round;stroke-linejoin:round;stroke-width:10}
-.route-node-base{fill:#fff;stroke:#111;stroke-width:3}
-.route-node-num{font-size:12px;font-weight:800;fill:#111;text-anchor:middle;dominant-baseline:middle}
-.route-node.active .route-node-base{stroke:#1677ff;stroke-width:5}
-.route-node.active .route-stop-label{fill:#1677ff}
-.route-branch{stroke:#9aa3ad;stroke-width:2}
-.route-poi-dot{stroke:#fff;stroke-width:2}
-.route-poi-text{font-size:10px;font-weight:700;fill:#333}
-.route-street-chip{font-size:10px;fill:#68707b}
-#routeDrawer{
-  position:fixed;left:10px;right:10px;bottom:10px;z-index:3500;
-  background:rgba(255,255,255,.98);border:1px solid var(--line);border-radius:22px;
-  box-shadow:0 18px 40px rgba(0,0,0,.16);overflow:hidden;
-  transition:height .25s ease, transform .25s ease;
-}
-#routeDrawer.collapsed{height:140px}
-#routeDrawer.expanded{height:min(72vh,760px)}
-#routeDrawer .drag-handle{display:flex;justify-content:center;padding:9px 0 6px;cursor:pointer}
-#routeDrawer .drag-handle span{display:block;width:42px;height:5px;border-radius:999px;background:#d5d9df}
-#routeDrawer .drawer-summary{display:flex;align-items:flex-start;gap:10px;padding:2px 14px 12px;cursor:pointer}
-#routeDrawer .drawer-summary h3{margin:0;font-size:18px;line-height:1.15}
-#routeDrawer .drawer-summary .small{font-size:12px;color:var(--muted);margin-bottom:4px}
-#routeDrawer .drawer-summary .sub{font-size:13px;color:#555;line-height:1.35;margin-top:4px}
-#routeDrawer .drawer-summary .morebtn{margin-left:auto;border:1px solid var(--line);background:#fff;border-radius:999px;padding:8px 12px;font-size:13px;white-space:nowrap}
-#routeDrawer .drawer-body{height:calc(100% - 78px);overflow-y:auto;padding:2px 12px 16px;-webkit-overflow-scrolling:touch}
-#drawerCards{padding-top:4px}
-.drawer-card{position:relative;background:#f8f9fb;border:1px solid #e0e3e8;border-radius:20px;padding:14px;margin-top:-8px;box-shadow:0 3px 8px rgba(0,0,0,.04)}
-.drawer-card:first-child{margin-top:0}
-.drawer-card.active{border-color:#bfd4ff;box-shadow:0 0 0 2px #dce8ff,0 5px 12px rgba(0,0,0,.06);background:#fff}
-.drawer-card-head{display:flex;gap:10px;align-items:flex-start}
-.card-no{width:34px;height:34px;border-radius:50%;display:grid;place-items:center;font-weight:800;background:#111;color:#fff;flex:none}
-.drawer-card.active .card-no{background:#1677ff}
-.drawer-card h4{margin:0;font-size:17px;line-height:1.2}
-.drawer-card .streetline{font-size:13px;color:#555;margin:8px 0 8px;line-height:1.4}
-.drawer-card .card-text{font-size:14px;line-height:1.5;color:#222;margin:0 0 10px}
-.drawer-card .card-map-wrap{border-radius:16px;overflow:hidden;background:#eceff3;margin-bottom:8px}
-.drawer-card .route-stats{font-size:13px;color:#444;margin:8px 0 8px}
-.drawer-card .card-actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:6px}
-.drawer-card .card-actions button{border:1px solid var(--line);background:#fff;border-radius:999px;padding:8px 12px;font-size:13px}
-.drawer-card .route-choice{display:flex;gap:8px;margin-bottom:10px}
-.drawer-card .route-choice button{flex:1;border:1px solid var(--line);background:#fff;border-radius:12px;padding:9px 10px;font-size:13px}
-.drawer-card .route-choice button.active{background:#eaf2ff;color:#1558d6;border-color:#cfe0ff}
-.drawer-card .poi-row{display:flex;gap:8px;overflow-x:auto;padding-bottom:2px}
-.drawer-card .poi-btn{flex:0 0 auto}
-.drawer-card .poi-btn,.drawer-card .show-btn{border:1px solid var(--line);background:#fff;border-radius:999px;padding:8px 11px;font-size:12px}
-.drawer-card .small-map-note{font-size:12px;color:#666;margin-top:4px}
-@media(max-width:699px){
- header#fixedTop{height:112px}
- main{top:112px}
- #routeDrawer.collapsed{height:148px}
- #routeDrawer.expanded{left:8px;right:8px;bottom:8px;height:73vh}
- .drawer-card h4{font-size:16px}
-}
-
-
-/* V30 route-detail fixes */
-.drawer-summary .morebtn{position:relative;z-index:5}
-.drawer-card .schematic svg{width:100%;height:auto;display:block}
-.drawer-card .route-line-main{stroke-width:7!important}
-.drawer-card .route-line-shadow{stroke-width:11!important}
-
-
-/* V31 real simplified-map stack */
-#schematicScroller{
-  position:absolute;inset:0;overflow-y:auto;overflow-x:hidden;
-  -webkit-overflow-scrolling:touch;scroll-behavior:smooth;
-  padding:20px 0 190px;background:#eef1f4;
-}
-#routeTrackWrap{
-  width:min(100%,560px);margin:0 auto;position:relative;
-  padding:18px 10px 36px;display:flex;flex-direction:column;
-}
-#routeSvg{display:none!important}
-#routeMapStack{display:flex;flex-direction:column;gap:0}
-.real-map-card{
-  position:relative;
-  width:100%;
-  height:420px;
-  background:#eef1f4;
-  overflow:hidden;
-  border-left:1px solid #dfe3e8;
-  border-right:1px solid #dfe3e8;
-  margin-top:-34px;
-}
-.real-map-card:first-child{margin-top:0}
-.real-map-card svg{display:block;width:100%;height:100%}
-.real-map-card .map-bg{fill:#eef1f4}
-.real-map-card .building{fill:#d7dce2;stroke:#c7cdd5;stroke-width:.8}
-.real-map-card .road-casing{fill:none;stroke:#c9cfd7;stroke-width:13;stroke-linecap:round;stroke-linejoin:round}
-.real-map-card .road-fill{fill:none;stroke:#fff;stroke-width:9;stroke-linecap:round;stroke-linejoin:round}
-.real-map-card .minor-road-casing{fill:none;stroke:#d2d7dd;stroke-width:8;stroke-linecap:round}
-.real-map-card .minor-road-fill{fill:none;stroke:#fff;stroke-width:5.5;stroke-linecap:round}
-.real-map-card .street-name{
-  font-size:10px;fill:#5e6670;font-weight:600;
-  paint-order:stroke;stroke:#eef1f4;stroke-width:3px;stroke-linejoin:round;
-}
-.real-map-card .route-halo{fill:none;stroke:#fff;stroke-width:15;stroke-linecap:round;stroke-linejoin:round}
-.real-map-card .route-path{fill:none;stroke-width:9;stroke-linecap:round;stroke-linejoin:round}
-.real-map-card .route-node{fill:#fff;stroke:#111;stroke-width:3}
-.real-map-card .route-node.end{fill:#111}
-.real-map-card .route-num{font-size:12px;font-weight:800;fill:#111;text-anchor:middle;dominant-baseline:middle}
-.real-map-card .route-label{
-  font-size:12px;font-weight:800;fill:#111;
-  paint-order:stroke;stroke:#fff;stroke-width:4px;
-}
-.real-map-card .route-sub{
-  font-size:10px;fill:#4f5965;
-  paint-order:stroke;stroke:#fff;stroke-width:3px;
-}
-.real-map-card .next-arrow{
-  fill:#111;opacity:.9
-}
-.real-map-card .loading{
-  position:absolute;inset:0;display:grid;place-items:center;
-  font-size:13px;color:#6d7580;background:#eef1f4
-}
-.real-map-card .step-badge{
-  position:absolute;left:10px;top:10px;z-index:3;
-  background:rgba(255,255,255,.94);border:1px solid #d9dde3;
-  border-radius:999px;padding:6px 9px;font-size:11px;font-weight:700;
-}
-.real-map-card.current-step{
-  box-shadow:inset 0 0 0 3px #b7d0ff;
-}
-#gpsBadge{
-  position:sticky;top:8px;z-index:25;
-}
-#routeMapHint{
-  width:min(100% - 20px,540px);margin:0 auto 12px;
-  font-size:12px;line-height:1.4;color:#59606a;
-  background:rgba(255,255,255,.92);border:1px solid #dfe3e8;
-  border-radius:14px;padding:8px 10px;
-}
-@media(max-width:699px){
-  .real-map-card{height:390px}
-  #routeTrackWrap{padding-left:6px;padding-right:6px}
-}
-
 </style>
 </head>
 <body>
-<div id="app">
-<header id="fixedTop">
-  <div class="top-row">
-    <button class="ibtn" onclick="locateMe()" aria-label="Locate me">
-      <svg class="ico" viewBox="0 0 24 24"><circle cx="12" cy="12" r="4"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3"/></svg>
-    </button>
-    <div class="title"><h1 id="dayTitle">Singapore Trip</h1><div id="daySub">15–18 Oct 2026</div></div>
-    <button class="ibtn" onclick="openSheet('weatherSheet')" aria-label="Weather">
-      <svg class="ico" viewBox="0 0 24 24"><path d="M7 18h10a4 4 0 0 0 .4-8A6 6 0 0 0 6 9.5 4.3 4.3 0 0 0 7 18Z"/></svg>
-    </button>
-    <button class="ibtn" onclick="openCameraCheck()" aria-label="Camera">
-      <svg class="ico" viewBox="0 0 24 24"><path d="M4 7h4l1.5-2h5L16 7h4v12H4Z"/><circle cx="12" cy="13" r="4"/></svg>
-    </button>
-  </div>
-  <div id="topActions">
-    <button class="top-pill primary" onclick="toggleDrawer(true)">Today's route</button>
-    <button class="top-pill" onclick="openSheet('daysSheet')">Choose day</button>
-    <button class="top-pill" id="hotPill" onclick="toggleHot()">Too hot: Off</button>
-    <button class="top-pill" id="planPill" onclick="toggleWet()">Dry plan</button>
-    <button class="top-pill" onclick="openSheet('coolSheet')">Cool nearby</button>
-    <button class="top-pill" onclick="openSheet('smokeSheet')">Smoking</button>
-    <button class="top-pill" onclick="openSheet('addSheet')">Add stop</button>
-    <button class="top-pill" onclick="openSheet('moreSheet')">Options</button>
-    <button class="top-pill" onclick="openSheet('spendSheet')">Spend</button>
-    <button class="top-pill" onclick="fitSchematicToCurrent()">Current step</button>
-  </div>
+<header id="topbar">
+ <div class="topline">
+   <button class="iconbtn" onclick="locateMe()" aria-label="Locate me">◎</button>
+   <div class="title"><h1 id="dayTitle">Singapore Trip</h1><div id="daySub"></div></div>
+   <button class="iconbtn" onclick="fitRoute()" aria-label="Show full route">↗</button>
+ </div>
+ <div id="actions">
+   <button class="pill dark" onclick="toggleDrawer(true)">Today's route</button>
+   <button class="pill" onclick="openDays()">Choose day</button>
+   <button class="pill" onclick="locateMe()">GPS</button>
+   <button class="pill" onclick="goCurrent()">Current step</button>
+   <button class="pill" onclick="fitRoute()">Full route</button>
+   <button class="pill" onclick="zoomIn()">Zoom +</button>
+   <button class="pill" onclick="zoomOut()">Zoom −</button>
+ </div>
 </header>
 
-<main>
-  <div id="map"></div>
-  <div id="routeStats"></div>
-  <div id="gpsBadge">Start at the bottom · scroll upward to move forward</div>
-  <div id="schematicScroller"><div id="routeMapHint">Start at the bottom. Walk “forward” up the screen; scroll upward to reveal the next part of the route.</div><div id="routeTrackWrap"><div id="routeMapStack"></div><svg id="routeSvg" viewBox="0 0 380 900" preserveAspectRatio="xMidYMin meet"></svg></div></div>
-</main>
-
-<div id="routeDrawer" class="collapsed">
-  <div class="drag-handle" onclick="toggleDrawer()"><span></span></div>
-  <div class="drawer-summary" onclick="if(!drawerExpanded)toggleDrawer(true)">
-    <div style="min-width:0">
-      <div class="small" id="drawerModeText">Today’s route</div>
-      <h3 id="drawerTitle">Tap to view the current route step</h3>
-      <div class="sub" id="drawerStreet">Street names and local map will appear here.</div>
-    </div>
-    <button class="morebtn" id="drawerToggleBtn" onclick="event.stopPropagation();toggleDrawer()">More</button>
-  </div>
-  <div class="drawer-body"><div id="drawerCards"></div></div>
-</div>
+<div id="map"></div>
+<div id="mapStatus"><b id="statusTitle">Loading route…</b><div id="statusSub">Simplified real map: streets, building shapes and street names.</div></div>
+<div id="mapTools">
+ <button class="mapbtn" onclick="goCurrent()" title="Current step">◎</button>
+ <button class="mapbtn" onclick="fitRoute()" title="Full route">↗</button>
 </div>
 
-<div class="sheetbg" id="daysSheet"><div class="sheet"><div class="handle"></div><div class="shead"><h2>Choose day</h2><button class="close" onclick="closeSheet('daysSheet')">×</button></div><div id="daysList"></div></div></div>
-
-<div class="sheetbg" id="routeSheet"><div class="sheet"><div class="handle"></div><div class="shead"><h2>Today's route</h2><button class="close" onclick="closeSheet('routeSheet')">×</button></div>
-<div class="card"><div class="segment"><button id="smartBtn" class="on" onclick="setRouteMode('smart')">Smart</button><button id="walkBtn" onclick="setRouteMode('walk')">Walk only</button></div></div>
-<div id="routeList"></div>
-<div class="card"><div class="row"><span class="status blue">Walking routes use mapped footpaths</span><button class="sbtn" onclick="rebuildRoute()">Refresh</button></div></div>
-<div class="card"><h3 style="font-size:15px;font-weight:500;margin:0 0 6px">Missed / later</h3><div id="missedList"></div></div>
-</div></div>
-
-<div class="sheetbg" id="addSheet"><div class="sheet"><div class="handle"></div><div class="shead"><h2>Add somewhere now</h2><button class="close" onclick="closeSheet('addSheet')">×</button></div>
-<div class="card"><input id="searchPlaces" placeholder="Search saved places" oninput="renderAddList()"></div><div id="addList"></div>
-</div></div>
-
-<div class="sheetbg" id="spendSheet"><div class="sheet"><div class="handle"></div><div class="shead"><h2>Trip spend</h2><button class="close" onclick="closeSheet('spendSheet')">×</button></div>
-<div class="card"><div class="money" id="spendTotal">S$0.00</div><div class="muted" id="spendFx">≈ £0.00 · C$0.00</div></div>
-<div class="card"><div class="grid2"><input class="full" id="expDesc" placeholder="What was it?"><input id="expAmount" type="number" step="0.01" placeholder="S$ amount"><select id="expCat"><option>Food</option><option>Drinks</option><option>Transport</option><option>Attraction</option><option>Shopping</option><option>SIM</option><option>Hotel</option><option>Other</option></select><select id="expWho"><option>For both</option><option>Me</option><option>Other person</option></select><select id="expPay"><option>Google Wallet / Card</option><option>Cash</option></select></div><button class="primary" style="width:100%;margin-top:8px" onclick="saveExpense()">Save expense</button></div><div id="expenseList"></div>
-</div></div>
-
-<div class="sheetbg" id="photoSheet"><div class="sheet"><div class="handle"></div><div class="shead"><h2>Photo check</h2><button class="close" onclick="closeSheet('photoSheet')">×</button></div>
-<div class="card"><p style="font-size:13px;line-height:1.5;margin-top:0">Take or choose a photo, then tap <b>Identify & info</b>. This now sends the image to the connected secure Photo AI backend for visual landmark identification.</p><input id="photoInput" type="file" accept="image/*" capture="environment" onchange="previewPhoto(event)"><img id="photoPreview" style="width:100%;max-height:320px;object-fit:cover;border-radius:16px;display:none;margin-top:8px"><button id="usePhotoBtn" class="primary" style="width:100%;margin-top:8px;display:none" onclick="usePhoto()">Identify & info</button><div id="photoUsed" class="muted" style="margin-top:8px"></div></div>
-</div></div>
-
-<div class="sheetbg" id="locationDetailSheet"><div class="sheet"><div class="handle"></div><div class="shead"><h2 id="locationDetailTitle">Location</h2><button class="close" onclick="closeSheet('locationDetailSheet')">×</button></div><div id="locationDetailBody"></div></div></div>
-
-<div class="sheetbg" id="weatherSheet"><div class="sheet"><div class="handle"></div><div class="shead"><h2>Weather</h2><button class="close" onclick="closeSheet('weatherSheet')">×</button></div><div id="weatherBody"></div></div></div>
-
-<div class="sheetbg" id="coolSheet"><div class="sheet"><div class="handle"></div><div class="shead"><h2>Cool nearby</h2><button class="close" onclick="closeSheet('coolSheet')">×</button></div><div id="coolList"></div></div></div>
-
-<div class="sheetbg" id="smokeSheet"><div class="sheet"><div class="handle"></div><div class="shead"><h2>Smoking nearby</h2><button class="close" onclick="closeSheet('smokeSheet')">×</button></div>
-<div class="warning">Use only places clearly permitted on site. Singapore has many smoke-free areas; signs at the location take priority.</div>
-<div id="smokeList"></div>
-</div></div>
-
-<div class="sheetbg" id="moreSheet"><div class="sheet"><div class="handle"></div><div class="shead"><h2>Menu</h2><button class="close" onclick="closeSheet('moreSheet')">×</button></div>
-<div class="card">
-  <h3 style="margin-top:0">Evening View / Rooftop Options</h3>
-  <p class="muted">Cheapest useful options first. Deals change, so confirm before ordering.</p>
-  <div class="evening-pick">
-    <h4>Lumina Rooftop Bar by White Shades</h4>
-    <p><b>Best cheap rooftop deal:</b> Sunset Hour daily 5–7pm — draught beer from S$10, highball S$11, tap cocktails S$13.</p>
-    <p>Near Telok Ayer. Good for sunset / CBD rooftop views.</p>
-    <div class="option-actions"><button class="sbtn" onclick="showEveningSpot(1.2827,103.8475,'Lumina Rooftop Bar')">Map + route</button></div>
+<div id="drawer" class="collapsed">
+ <div class="handle" onclick="toggleDrawer()"><span></span></div>
+ <div class="summary">
+  <div class="copy">
+   <div class="small" id="summarySmall">Route</div>
+   <h2 id="summaryTitle">Loading current step…</h2>
+   <p id="summaryText">Street and direction details will appear here.</p>
   </div>
-  <div class="evening-pick">
-    <h4>Southbridge Rooftop</h4>
-    <p>80 Boat Quay, Level 5. Excellent river / skyline view. Happy-hour prices are best Mon–Thu; Friday/Saturday use it mainly for the view.</p>
-    <p>Classic cocktails start around S$18; entrance is from South Bridge Road near Elgin Bridge.</p>
-    <div class="option-actions"><button class="sbtn" onclick="showEveningSpot(1.2879,103.8490,'Southbridge Rooftop')">Map + route</button></div>
-  </div>
-  <div class="evening-pick">
-    <h4>LeVeL33</h4>
-    <p>Marina Bay Financial Centre, Level 33. House-brewed beer with a strong Marina Bay view; generally pricier than Lumina.</p>
-    <div class="option-actions"><button class="sbtn" onclick="showEveningSpot(1.2808,103.8545,'LeVeL33')">Map + route</button></div>
-  </div>
-</div>
-<div class="card">
-  <h3 style="margin-top:0">Photo Check AI</h3>
-  <p class="muted">For accurate image identification, connect the secure Photo AI backend once it is deployed.</p>
-  <input id="photoAiUrlInput" placeholder="Photo AI backend URL" style="width:100%;margin-bottom:7px">
-  <button class="sbtn" style="width:100%" onclick="savePhotoAiUrl()">Save backend URL</button>
-</div>
-<div class="card">
-  <h3 style="margin-top:0">Fashion Shopping Break</h3>
-  <p class="muted">One person can shop while the other explores nearby photo locations. These are optional and are not forced into the day.</p>
-  <div id="shoppingBreakOptions"></div>
-</div>
-<div class="card">
-  <h3 style="margin-top:0">Optional Alternatives</h3>
-  <p class="muted">Show the location and route from your current GPS position, or add/remove it from today’s route.</p>
-
-  <div class="place"><div><h3>Singapore Flyer</h3><p>Elevated Marina Bay views; best around sunset / blue hour.</p></div></div>
-  <div class="option-actions">
-    <button class="sbtn" onclick="mapAndRouteOption('flyer')">Map + route from me</button>
-    <button class="sbtn" data-option-id="flyer" onclick="toggleTodayRoute('flyer');event.stopPropagation()">Add to today</button>
-  </div>
-
-  <div class="place"><div><h3>Sentosa</h3><p>VivoCity → Sensoryscape → Beach Station → Palawan Beach. Better as a half-day alternative.</p></div></div>
-  <div class="option-actions">
-    <button class="sbtn" onclick="mapAndRouteOption('sensoryscape')">Map + route from me</button>
-    <button class="sbtn" data-option-id="sensoryscape" onclick="toggleTodayRoute('sensoryscape');event.stopPropagation()">Add to today</button>
-  </div>
-
-  <div class="place"><div><h3>Flower Dome</h3><p>Cooled conservatory at Gardens by the Bay; useful in heat or rain.</p></div></div>
-  <div class="option-actions">
-    <button class="sbtn" onclick="mapAndRouteOption('flowerdome')">Map + route from me</button>
-    <button class="sbtn" data-option-id="flowerdome" onclick="toggleTodayRoute('flowerdome');event.stopPropagation()">Add to today</button>
-  </div>
+  <button class="more" onclick="event.stopPropagation();toggleDrawer()">More</button>
+ </div>
+ <div id="drawerBody"></div>
 </div>
 
-<div class="card">
-  <h3 style="margin-top:0">Singapore River Cruise</h3>
-  <p class="muted">Optional loop from Clarke Quay Jetty: Clarke Quay → Boat Quay → Merlion / Marina Bay → Marina Bay Sands / Esplanade → Clarke Quay.</p>
-  <p class="muted">Best fitted into a late-afternoon/evening river day so you get daylight, sunset and night views.</p>
-  <div class="option-actions">
-    <button class="sbtn" onclick="mapAndRouteOption('rivercruise')">Map + route from me</button>
-    <button class="sbtn" data-option-id="rivercruise" onclick="toggleTodayRoute('rivercruise');event.stopPropagation()">Add to today</button>
-  </div>
-  <button class="sbtn" style="width:100%" onclick="closeSheet('moreSheet');focusStop('rivercruise')">Show on map</button>
+<div id="daySheet" onclick="if(event.target===this)closeDays()">
+ <div class="sheet">
+  <h2>Choose day</h2>
+  <div id="dayRows"></div>
+  <button class="pill" style="width:100%;margin-top:8px" onclick="closeDays()">Close</button>
+ </div>
 </div>
-<div class="card"><button class="sbtn" style="width:100%;text-align:left" onclick="closeSheet('moreSheet');openCameraCheck()">Photo check</button></div>
-<div class="card"><button class="sbtn" style="width:100%;text-align:left" onclick="closeSheet('moreSheet');openSheet('weatherSheet')">Weather</button></div>
-<div class="card"><button class="sbtn" style="width:100%;text-align:left" onclick="closeSheet('moreSheet');openSheet('spendSheet')">Trip spend</button></div>
-</div></div>
 
-<div class="sheetbg" id="detourSheet"><div class="sheet"><div class="handle"></div><div class="shead"><h2>Add this stop?</h2><button class="close" onclick="closeSheet('detourSheet')">×</button></div><div id="detourBody"></div></div></div>
-
-<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <script>
 const days=[
  {date:"2026-10-15",label:"Thu 15",title:"Arrival + Marina Bay lights"},
@@ -969,6 +173,12 @@ const stops=[
 {id:"jewel",name:"Jewel Changi Airport",lat:1.3603,lng:103.9898,day:3,type:"Indoor",priority:"Must See",desc:"Indoor airport complex centred on the Rain Vortex and tropical garden.",photo:"Morning / indoor light"},
 {id:"t4",name:"Changi Terminal 4",lat:1.3384,lng:103.9832,day:3,type:"Indoor",priority:"Must See",desc:"Your departure terminal for the flight home.",photo:"Travel/documentary shots"}
 ];
+const masterPlans=[
+ ["airport","hotel","fullerton","merlion","jubilee","esplanade","helix","mbs","spectra","gardens","flowerdome","f1","hotel"],
+ ["hotel","sultan","bussorah","muscat","baghdad","arab","haji","bugis","littleindia","tan","clive","serangoon","tekka","hotel"],
+ ["hotel","fort","hillstreet","chinatown","annsiang","telokayer","laupasat","cavenagh","anderson","boat","clarke","rivercruise","hotel"],
+ ["hotel","jewel","t4"]
+];
 const mrt=[
 {name:"Changi Airport",code:"CG2",lat:1.3572,lng:103.9880},
 {name:"Expo",code:"CG1/DT35",lat:1.3350,lng:103.9615},
@@ -1021,124 +231,6 @@ const mrt=[
 {name:"Gardens by the Bay",code:"TE22",lat:1.2795,lng:103.8675},
 {name:"Tanjong Rhu",code:"TE23",lat:1.2990,lng:103.8730}
 ];
-
-const shoppingOptions={
- bugisplus:{
-  day:1,
-  shopper:"Bugis+ · 201 Victoria Street · fashion, casual brands, lifestyle shops and food.",
-  explorer:"While one person shops: walk Bugis Street → Waterloo Street / street details → Haji Lane / Arab Street. All are close enough to keep this a useful photo break.",
-  time:"Allow about 60–90 minutes.",
-  routeNote:"Best Friday option because it is already on the Kampong Glam / Bugis route."
- },
- somerset313:{
-  day:2,
-  shopper:"313@somerset · 313 Orchard Road · mainstream fashion, sportswear, beauty and casual shopping.",
-  explorer:"While one person shops: walk to Orchard Central rooftop for elevated city photos, then toward Emerald Hill for colourful Peranakan shophouses and quieter street photography.",
-  time:"Allow about 90 minutes.",
-  routeNote:"Saturday optional detour; use MRT there and return to the river/heritage route afterwards."
- }
-};
-function shoppingOptionCard(id){
- const s=byId(id),o=shoppingOptions[id];
- const available=state.day===o.day;
- return `<div class="place"><div><h3>${s.name}</h3><p>${o.shopper}</p><p><b>For the non-shopper:</b> ${o.explorer}</p><p>${o.time} ${o.routeNote}</p></div></div>
- <div class="option-actions">
-   <button class="sbtn" onclick="mapAndRouteOption('${id}')">Map + route from me</button>
-   <button class="sbtn" ${available?`data-option-id="${id}" onclick="toggleTodayRoute('${id}');event.stopPropagation()"`:"disabled"}>${available?(isInToday(id)?"Delete from today":"Add to today"):(o.day===1?"Friday option":"Saturday option")}</button>
- </div>`;
-}
-
-const masterPlans=[
- ["airport","hotel","fullerton","merlion","jubilee","esplanade","helix","mbs","spectra","gardens","flowerdome","f1","hotel"],
- ["hotel","sultan","bussorah","muscat","baghdad","arab","haji","bugis","littleindia","tan","clive","serangoon","tekka","hotel"],
- ["hotel","fort","hillstreet","chinatown","annsiang","telokayer","laupasat","cavenagh","anderson","boat","clarke","rivercruise","hotel"],
- ["hotel","jewel","t4"]
-];
-
-let state=JSON.parse(localStorage.getItem("sgTripV31")||localStorage.getItem("sgTripV16")||"null")||{
- day:0,routes:masterPlans.map(x=>[...x]),missed:[],expenses:[],custom:[],mode:"Dry",hot:false,routeMode:"smart",fx:{gbp:.58,cad:.96},excluded:[[],[],[],[]]
-};
-if(typeof state.hot==="undefined") state.hot=false;
-if(!Array.isArray(state.excluded))state.excluded=[[],[],[],[]];
-while(state.excluded.length<4)state.excluded.push([]);
-if(!Array.isArray(state.routes)||state.routes.length<4)state.routes=masterPlans.map(x=>[...x]);
-
-let map, routeLayer=null, userPos=null,userMarker=null,markers=[],pendingAdd=null,lastRoute=null,mrtMarkers=[],nextMode="auto";
-
-
-
-const hawkerCentres=[
- {
-  id:"goldenmile",name:"Golden Mile Food Centre",lat:1.3030,lng:103.8642,radius:650,
-  where:"505 Beach Road. Multi-level hawker centre; stall numbers tell you the floor: B1 is basement, 01 is level 1.",
-  picks:[
-   {name:"Hainan Fried Hokkien Mee",rating:"Well reviewed",dish:"Dry-style Hokkien prawn mee with wok hei.",find:"Go to B1, stall #B1-34."},
-   {name:"Yew Chuan Claypot Rice",rating:"Popular",dish:"Charcoal claypot rice with crispy rice crust.",find:"Level 1, stall #01-73. Cooked to order, so expect a wait."},
-   {name:"Ashes Burnnit",rating:"Popular",dish:"Halal gourmet burgers at hawker prices.",find:"Basement B1, stall #B1-24."}
-  ]
- },
- {
-  id:"tekka",name:"Tekka Centre",lat:1.3062,lng:103.8504,radius:500,
-  where:"665 Buffalo Road beside Little India MRT. The food stalls are on level 1; use the stall number printed above each unit.",
-  picks:[
-   {name:"Poona Punjabi Dhaba",rating:"4.8 ★",dish:"Punjabi / North Indian food with strong current reviews.",find:"Look for stall #01-302 inside Tekka Centre."},
-   {name:"Ar-Rahman Cafe",rating:"4.6 ★",dish:"Indian-Muslim hawker food; good current review score.",find:"Stall #01-247 on level 1."},
-   {name:"545 Whampoa Prawn Noodles",rating:"4.3 ★",dish:"Prawn noodles; a popular breakfast/lunch choice.",find:"Stall #01-326 on level 1."}
-  ]
- },
- {
-  id:"chinatowncomplex",name:"Chinatown Complex Food Centre",lat:1.2825,lng:103.8432,radius:550,
-  where:"Smith Street. The wet market is downstairs; the hawker food centre is on level 2 (#02).",
-  picks:[
-   {name:"Lian He Ben Ji Claypot Rice",rating:"4.6 ★ / Bib Gourmand",dish:"Charcoal-cooked claypot rice made from scratch.",find:"Go to level 2, units #02-198 / #02-199."},
-   {name:"Zhong Guo La Mian Xiao Long Bao",rating:"4.4 ★",dish:"Handmade xiao long bao and la mian.",find:"Level 2, stall #02-135."},
-   {name:"Ann Chin Popiah",rating:"Michelin-selected",dish:"Classic handmade popiah and kueh pie tee.",find:"Level 2, stall #02-112."}
-  ]
- },
- {
-  id:"laupasat",name:"Lau Pa Sat",lat:1.2806,lng:103.8504,radius:550,
-  where:"18 Raffles Quay. Most stalls are inside the octagonal market; Satay Street is immediately outside on Boon Tat Street.",
-  picks:[
-   {name:"Lao Fu Zi Fried Kway Teow",rating:"4.5 ★",dish:"Char kway teow with wok hei; also serves laksa.",find:"Inside Lau Pa Sat, stalls #74–75."},
-   {name:"LiXin Teochew Fishball Noodles",rating:"4.4 ★",dish:"Fishball noodles with handmade fishballs and wantons.",find:"Inside Lau Pa Sat, stall #32."},
-   {name:"Best Satay 7 & 8",rating:"Very popular",dish:"Chicken, beef, mutton and prawn satay over charcoal.",find:"Go outside to Boon Tat Street after the road closes; look for the large stall numbers 7 and 8."}
-  ]
- }
-];
-let activeHawker=null;
-function nearestHawker(){
- if(!userPos)return null;
- const ranked=hawkerCentres.map(h=>({h,d:hav(userPos,h)})).sort((a,b)=>a.d-b.d);
- return ranked[0]&&ranked[0].d<=ranked[0].h.radius/1000?ranked[0]:null;
-}
-function checkNearbyHawker(){
- const hit=nearestHawker();
- const chip=document.getElementById("hawkerChip");
- const panel=document.getElementById("hawkerPanel");
- if(!hit){activeHawker=null;chip.classList.remove("show");panel.classList.remove("open");return}
- activeHawker=hit;
- chip.textContent=`Food nearby · ${hit.h.name}`;
- chip.classList.add("show");
- renderHawkerPanel(hit);
-}
-function renderHawkerPanel(hit){
- const p=document.getElementById("hawkerPanel");
- p.innerHTML=`<div class="hawker-head">
-   <div><h3>${hit.h.name}</h3><div class="hawker-sub">${hit.d.toFixed(1)} km from you · ${hit.h.where}</div></div>
-   <button onclick="toggleHawkerPanel(false)">Close</button>
- </div>
- ${hit.h.picks.map(x=>`<div class="food-pick">
-   <h4>${x.name} <span class="food-rating">· ${x.rating}</span></h4>
-   <p>${x.dish}</p>
-   <p class="food-find"><b>How to find it:</b> ${x.find}</p>
- </div>`).join("")}`;
-}
-function toggleHawkerPanel(force){
- const p=document.getElementById("hawkerPanel");
- const open=typeof force==="boolean"?force:!p.classList.contains("open");
- p.classList.toggle("open",open);
-}
-
 const mrtLineInfo={
  EW:{name:"East–West Line",color:"#009645"},
  CG:{name:"Changi Airport Branch",color:"#009645"},
@@ -1187,1718 +279,174 @@ const mrtNetworks={
  ]
 };
 
-function stationCode(name,lineKey){
- const line=mrtNetworks[lineKey]||[];
- const row=line.find(x=>x[0]===name);
- return row?row[1]:"";
-}
-function stationLines(name){
- return Object.entries(mrtNetworks).filter(([k,v])=>v.some(x=>x[0]===name)).map(([k])=>k);
-}
-function buildMRTGraph(){
- const g={};
- for(const [lineKey,stations] of Object.entries(mrtNetworks)){
-  for(let i=0;i<stations.length;i++){
-   const name=stations[i][0]; if(!g[name])g[name]=[];
-   if(i>0)g[name].push({to:stations[i-1][0],line:lineKey});
-   if(i<stations.length-1)g[name].push({to:stations[i+1][0],line:lineKey});
-  }
- }
- return g;
-}
-const mrtGraph=buildMRTGraph();
+let state=JSON.parse(localStorage.getItem("sgTripV32")||"null")||{day:0,routes:masterPlans.map(x=>[...x])};
+if(!Array.isArray(state.routes)||state.routes.length<4)state.routes=masterPlans.map(x=>[...x]);
+let map=null,routeCoords=[],routeFeature=null,currentIndex=0,userPos=null,userMarker=null,watchId=null,drawerOpen=false,stopCoordIndex=[];
+let lastTouchY=null,routeScrollFloat=0;
 
-function shortestMRTPath(startName,endName){
- if(startName===endName)return {stations:[startName],edges:[]};
- const q=[startName],prev={[startName]:null},prevEdge={};
- while(q.length){
-  const n=q.shift();
-  for(const e of (mrtGraph[n]||[])){
-   if(Object.prototype.hasOwnProperty.call(prev,e.to))continue;
-   prev[e.to]=n; prevEdge[e.to]=e;
-   if(e.to===endName){q.length=0;break}
-   q.push(e.to);
-  }
- }
- if(!Object.prototype.hasOwnProperty.call(prev,endName))return null;
- const stations=[];const edges=[];
- let cur=endName;
- while(cur!==null){
-  stations.push(cur);
-  const p=prev[cur];
-  if(p!==null)edges.push({from:p,to:cur,line:prevEdge[cur].line});
-  cur=p;
- }
- stations.reverse();edges.reverse();
- return {stations,edges};
-}
-function pathToSegments(path){
- if(!path||!path.edges.length)return [];
- const segs=[];let cur={line:path.edges[0].line,stations:[path.edges[0].from,path.edges[0].to]};
- for(let i=1;i<path.edges.length;i++){
-  const e=path.edges[i];
-  if(e.line===cur.line)cur.stations.push(e.to);
-  else{segs.push(cur);cur={line:e.line,stations:[e.from,e.to]}}
- }
- segs.push(cur);return segs;
-}
-function preferredMRTJourney(a,b){
- const s1=nearestMRT(a),s2=nearestMRT(b);
- const path=shortestMRTPath(s1.name,s2.name);
- return {s1,s2,path,segments:pathToSegments(path)};
-}
-function mrtJourneyText(j){
- if(!j||!j.path)return "";
- if(j.s1.name===j.s2.name)return `Use ${j.s1.name} ${j.s1.code}`;
- const parts=j.segments.map(seg=>{
-   const info=mrtLineInfo[seg.line]||{name:seg.line};
-   return `${info.name}: ${seg.stations[0]} → ${seg.stations[seg.stations.length-1]}`;
- });
- return parts.join(" · Change · ");
-}
-function mrtJourneyHtml(j,a,b){
- if(!j||!j.path)return "";
- const access=hav(a,j.s1),egress=hav(b,j.s2);
- let out=`<button class="mrt-close" onclick="hideMRTJourney()">Hide</button>
- <h3>MRT route</h3>
- <div class="mrt-sub">Walk ${access.toFixed(1)} km to ${j.s1.name} · MRT · walk ${egress.toFixed(1)} km to destination</div>`;
- if(j.s1.name===j.s2.name){
-  out+=`<div class="mrt-change">Same nearest station: ${j.s1.name} ${j.s1.code}. Walking may be quicker.</div>`;
-  return out;
- }
- j.segments.forEach((seg,idx)=>{
-   const info=mrtLineInfo[seg.line]||{name:seg.line,color:"#777"};
-   out+=`<div class="mrt-segment" style="--mrt-line:${info.color}">
-     <div class="mrt-line-name">${info.name}</div>`;
-   seg.stations.forEach((name,si)=>{
-     const cls=si===0?"start":(si===seg.stations.length-1?"end":"");
-     out+=`<div class="mrt-station ${cls}"><span>${name}</span><span class="mrt-code">${stationCode(name,seg.line)}</span></div>`;
-   });
-   out+=`</div>`;
-   if(idx<j.segments.length-1){
-     const change=seg.stations[seg.stations.length-1];
-     out+=`<div class="mrt-change">Change at ${change}</div>`;
-   }
- });
- return out;
-}
-function showMRTJourney(j,a,b){
- const p=document.getElementById("mrtJourneyPanel");
- p.innerHTML=mrtJourneyHtml(j,a,b);p.classList.add("open");
-}
-function hideMRTJourney(){document.getElementById("mrtJourneyPanel")?.classList.remove("open")}
-
-function fixedRouteItem(day,id,index,plan){
- if(day===0&&(index===0||index===1||index===plan.length-1))return true;
- if((day===1||day===2)&&(index===0||index===plan.length-1))return true;
- if(day===3&&(index===0||index===plan.length-1))return true;
- return false;
-}
-function ensureHotelReturn(){
- for(let d=0;d<4;d++){
-   const base=masterPlans[d],excluded=new Set(state.excluded[d]||[]);
-   const extras=(state.routes[d]||[]).filter(id=>!base.includes(id));
-   let route=base.filter((id,i)=>fixedRouteItem(d,id,i,base)||!excluded.has(id));
-   const final=route.pop();
-   route=[...route,...extras.filter(id=>!excluded.has(id)),final];
-   state.routes[d]=route;
- }
-}
-ensureHotelReturn();
-
-function save(){localStorage.setItem("sgTripV31",JSON.stringify(state))}
-function allStops(){return [...stops,...state.custom]}
-function byId(id){return allStops().find(s=>s.id===id)}
-function routeObjs(){return state.routes[state.day].map(byId).filter(Boolean)}
+function save(){localStorage.setItem("sgTripV32",JSON.stringify(state))}
+function byId(id){return stops.find(s=>s.id===id)}
+function routeStops(){return state.routes[state.day].map(byId).filter(Boolean)}
 function hav(a,b){const R=6371,p=Math.PI/180,dLat=(b.lat-a.lat)*p,dLon=(b.lng-a.lng)*p,la1=a.lat*p,la2=b.lat*p,x=Math.sin(dLat/2)**2+Math.cos(la1)*Math.cos(la2)*Math.sin(dLon/2)**2;return 2*R*Math.asin(Math.sqrt(x))}
-function walkMins(km){return Math.round(km/4.7*60)}
 function nearestMRT(p){return mrt.slice().sort((a,b)=>hav(p,a)-hav(p,b))[0]}
-function closeParentSheet(el){
- const bg=el?.closest?.(".sheetbg");
- if(bg)closeSheet(bg.id);
-}
-function closeAllSheets(){
- document.querySelectorAll(".sheetbg.open").forEach(bg=>closeSheet(bg.id));
-}
-function openSheet(id){
- const bg=document.getElementById(id);bg.classList.add("open");enableSwipeSheet(bg);
- if(id==="routeSheet"){renderRouteSheet();renderMissed()}
- if(id==="addSheet")renderAddList();
- if(id==="spendSheet")renderSpend();
- if(id==="coolSheet"){renderCool();showCoolPins()}
- if(id==="weatherSheet")loadWeather();
- if(id==="smokeSheet"){renderSmoking();showSmokingPins()}
- if(id==="moreSheet")setTimeout(()=>{loadPhotoAiUrl();
-   const box=document.getElementById("shoppingBreakOptions");
-   if(box)box.innerHTML=shoppingOptionCard("bugisplus")+shoppingOptionCard("somerset313");
-   refreshOptionButtons();
- },0)
-}
-function enableSwipeSheet(bg){
- if(bg.dataset.swipeReady)return;bg.dataset.swipeReady="1";
- const sheet=bg.querySelector(".sheet");let y0=0,dy=0,drag=false;
- sheet.addEventListener("touchstart",e=>{if(sheet.scrollTop>0)return;y0=e.touches[0].clientY;dy=0;drag=true;sheet.classList.add("dragging")},{passive:true});
- sheet.addEventListener("touchmove",e=>{if(!drag)return;dy=e.touches[0].clientY-y0;if(dy>0)sheet.style.transform=`translateY(${dy}px)`},{passive:true});
- sheet.addEventListener("touchend",()=>{sheet.classList.remove("dragging");if(drag&&dy>85){sheet.style.transform="";closeSheet(bg.id)}else sheet.style.transform="";drag=false;dy=0});
- bg.addEventListener("click",e=>{if(e.target===bg)closeSheet(bg.id)});
-}
-function closeSheet(id){document.getElementById(id).classList.remove("open")}
-
-let continuousRouteGroup=null;
-let continuousPoiMarkers=[];
-let continuousStopMarkers=[];
-let continuousRouteBounds=null;
-
-function dayLineColour(){
- return ["#0050A4","#E32017","#009645","#8B4513"][state.day]||"#0050A4";
-}
-function clearContinuousRoute(){
- if(continuousRouteGroup){continuousRouteGroup.remove();continuousRouteGroup=null}
- continuousPoiMarkers.forEach(m=>m.remove());continuousPoiMarkers=[];
- continuousStopMarkers.forEach(m=>m.remove());continuousStopMarkers=[];
- continuousRouteBounds=null;
-}
-function poiIcon(type){
- const colour=type==="Food"?"#f6a800":type==="A/C"?"#1e88e5":type==="Smoking"?"#666":type==="Toilet"?"#7b61ff":"#e32017";
- const label=type==="Food"?"F":type==="A/C"?"A":type==="Smoking"?"S":type==="Toilet"?"T":"★";
- return L.divIcon({className:"",html:`<div class="route-poi-icon" style="background:${colour}">${label}</div>`,iconSize:[22,22],iconAnchor:[11,11]});
-}
-function stopIcon(i){
- return L.divIcon({className:"",html:`<div class="route-stop-icon">${i+1}</div>`,iconSize:[28,28],iconAnchor:[14,14]});
-}
-function popupHtml(name,desc,lat,lng,type="Place"){
- const gm=`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(lat+","+lng)}`;
- return `<div><b style="font-size:16px">${name}</b><br>${desc||""}<br><a href="${gm}" target="_blank" rel="noopener">View in Google Maps</a><br><button style="margin-top:7px" onclick="openPoiOverlay(${JSON.stringify(name)},${JSON.stringify(desc||"")},${JSON.stringify(type)},${JSON.stringify(type)},${lat},${lng})">Full details</button></div>`;
-}
-function addContinuousPoi(p,type){
- if(!map||!Number.isFinite(p.lat)||!Number.isFinite(p.lng))return;
- const m=L.marker([p.lat,p.lng],{icon:poiIcon(type),title:p.name}).addTo(map)
-   .bindPopup(popupHtml(p.name,p.info||p.note||p.desc||"",p.lat,p.lng,type));
- continuousPoiMarkers.push(m);
-}
-function addNearbyPoisForRoute(route){
- const seen=new Set(),nearRoute=(p,maxKm)=>{
-   let best=Infinity;
-   route.forEach(s=>best=Math.min(best,hav(s,p)));
-   return best<=maxKm;
- };
- try{getCoolPlaces().forEach(p=>{if(nearRoute(p,.7)&&!seen.has(p.name)){seen.add(p.name);addContinuousPoi(p,"A/C")}})}catch{}
- try{hawkerCentres.forEach(h=>{if(nearRoute(h,.85)&&!seen.has(h.name)){seen.add(h.name);addContinuousPoi({name:h.name,lat:h.lat,lng:h.lng,info:h.where},"Food")}})}catch{}
- try{smokingPlaces.forEach(p=>{if(nearRoute(p,.7)&&!seen.has(p.name)){seen.add(p.name);addContinuousPoi(p,"Smoking")}})}catch{}
- try{toiletPlaces.forEach(p=>{if(nearRoute(p,.7)&&!seen.has(p.name)){seen.add(p.name);addContinuousPoi(p,"Toilet")}})}catch{}
- route.forEach(s=>{
-   if(!seen.has(s.name)){seen.add(s.name);addContinuousPoi({name:s.name,lat:s.lat,lng:s.lng,info:s.desc},"Attraction")}
- });
-}
-async function buildLegGeometry(a,b){
- const hint=smartTransportHint(a,b);
- if(hint.mode==="Walk"){
-   try{
-     const r=await footRoute([a,b]);
-     return r.geometry.coordinates.map(c=>[c[1],c[0]]);
-   }catch(e){return [[a.lat,a.lng],[b.lat,b.lng]]}
+function stationCode(name,lineKey){const row=(mrtNetworks[lineKey]||[]).find(x=>x[0]===name);return row?row[1]:""}
+function buildGraph(){
+ const g={};
+ for(const [line,sts] of Object.entries(mrtNetworks)){
+  sts.forEach((s,i)=>{if(!g[s[0]])g[s[0]]=[];if(i)g[s[0]].push({to:sts[i-1][0],line});if(i<sts.length-1)g[s[0]].push({to:sts[i+1][0],line})})
  }
+ return g
+}
+const mrtGraph=buildGraph();
+function shortestMRTPath(a,b){
+ if(a===b)return [a];const q=[a],prev={[a]:null};
+ while(q.length){const n=q.shift();for(const e of (mrtGraph[n]||[])){if(Object.prototype.hasOwnProperty.call(prev,e.to))continue;prev[e.to]=n;if(e.to===b){q.length=0;break}q.push(e.to)}}
+ if(!Object.prototype.hasOwnProperty.call(prev,b))return [a,b];
+ const out=[];let c=b;while(c!==null){out.push(c);c=prev[c]}return out.reverse()
+}
+function smartLeg(a,b){return hav(a,b)<=.85?"walk":"mrt"}
+async function footRoute(a,b){
+ const url=`https://routing.openstreetmap.de/routed-foot/route/v1/driving/${a.lng},${a.lat};${b.lng},${b.lat}?overview=full&geometries=geojson&steps=true`;
+ const r=await fetch(url);if(!r.ok)throw new Error("route");
+ const j=await r.json();if(j.code!=="Ok"||!j.routes?.length)throw new Error("route");
+ return j.routes[0]
+}
+function mrtCoords(a,b){
+ const s1=nearestMRT(a),s2=nearestMRT(b),names=shortestMRTPath(s1.name,s2.name),out=[[a.lng,a.lat],[s1.lng,s1.lat]];
+ names.forEach(n=>{const st=mrt.find(x=>x.name===n);if(st)out.push([st.lng,st.lat])});
+ out.push([s2.lng,s2.lat],[b.lng,b.lat]);return out
+}
+async function loadSimpleStyle(){
  try{
-   const j=preferredMRTJourney(a,b),pts=[[a.lat,a.lng]];
-   pts.push([j.s1.lat,j.s1.lng]);
-   j.segments.forEach(seg=>{
-     seg.stations.forEach(name=>{
-       const st=mrt.find(x=>x.name===name);
-       if(st)pts.push([st.lat,st.lng]);
-     })
-   });
-   pts.push([j.s2.lat,j.s2.lng],[b.lat,b.lng]);
-   return pts;
- }catch(e){return [[a.lat,a.lng],[b.lat,b.lng]]}
-}
-async function renderContinuousRoute(){
- if(!map)return;
- clearContinuousRoute();
- ensureHotelReturn();
- const route=routeObjs();
- if(route.length<2)return;
- const colour=dayLineColour();
- document.getElementById("legendLine").style.background=colour;
- const allCoords=[];
- const layers=[];
- for(let i=0;i<route.length-1;i++){
-   const coords=await buildLegGeometry(route[i],route[i+1]);
-   if(i>0 && coords.length)coords.shift();
-   allCoords.push(...coords);
- }
- const shadow=L.polyline(allCoords,{color:"#fff",weight:11,opacity:.95,lineCap:"round",lineJoin:"round"}).addTo(map);
- const line=L.polyline(allCoords,{color:colour,weight:7,opacity:.95,lineCap:"round",lineJoin:"round"}).addTo(map);
- layers.push(shadow,line);
- continuousRouteGroup=L.featureGroup(layers);
-
- route.forEach((s,i)=>{
-   const m=L.marker([s.lat,s.lng],{icon:stopIcon(i),title:s.name}).addTo(map)
-    .bindPopup(popupHtml(`${i+1}. ${s.name}`,s.desc,s.lat,s.lng,"Route stop"));
-   continuousStopMarkers.push(m);
- });
- addNearbyPoisForRoute(route);
-
- continuousRouteBounds=L.latLngBounds(allCoords);
- fitContinuousRoute();
- const first=route[0],second=route[1];
- document.getElementById("continuousTitle").textContent=`Start: ${first.name}`;
- document.getElementById("continuousSub").textContent=`Follow the coloured line toward ${second?.name||"the next stop"}. Pinch to zoom and drag the map in any direction.`;
-}
-function fitContinuousRoute(){
- if(continuousRouteBounds&&map)map.fitBounds(continuousRouteBounds.pad(.08),{maxZoom:16});
-}
-
-function initMap(){
- if(typeof L==="undefined")return;
- map=L.map("map",{
-   zoomControl:false,
-   dragging:true,
-   touchZoom:true,
-   scrollWheelZoom:true,
-   doubleClickZoom:true,
-   boxZoom:true,
-   keyboard:true,
-   inertia:true,
-   zoomSnap:.25
- }).setView([1.297,103.856],15);
- const tiles=L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",{
-      maxZoom:19,
-      attribution:'© OpenStreetMap contributors'
-    }).addTo(map);
-    let tilesLoaded=false;
-    tiles.on("load",()=>{tilesLoaded=true;const n=document.getElementById("mapNotice");if(n)n.remove()});
-    setTimeout(()=>{
-      if(!tilesLoaded && !document.getElementById("mapNotice")){
-        const n=document.createElement("div");
-        n.id="mapNotice";
-        n.style.cssText="position:absolute;z-index:450;left:12px;right:12px;top:62px;background:rgba(255,255,255,.96);border:1px solid #e2e4e7;border-radius:14px;padding:10px 12px;font-size:12px;color:#555;box-shadow:0 3px 12px rgba(0,0,0,.08)";
-        n.innerHTML="Map tiles have not loaded yet. This preview needs an internet connection. When hosted on HTTPS the map, GPS and camera work normally.";
-        document.querySelector("main").appendChild(n);
-      }
-    },3500);
-}
-function renderHeader(){
- const a=document.getElementById("dayTitle"),b=document.getElementById("daySub"),w=document.getElementById("weatherMode");
- if(a)a.textContent=days[state.day].title;
- if(b)b.textContent=`${days[state.day].label} · ${state.mode} plan`;
- if(w)w.textContent=state.mode+" plan";
-}
-function renderDays(){
- const el=document.getElementById("daysList");if(!el)return;
- el.innerHTML=days.map((d,i)=>`<div class="place"><div><h3>${d.label}</h3><p>${d.title}</p></div><button class="sbtn" onclick="setDay(${i})">${i===state.day?"Current":"Open"}</button></div>`).join("");
-}
-function setDay(i){state.day=i;save();closeSheet("daysSheet");renderAll();renderContinuousRoute()}
-const alongTheWay={
- "fullerton>merlion":[
-  {name:"The Fullerton Hotel",info:"Former General Post Office and one of Singapore’s major colonial-era civic buildings."},
-  {name:"Cavenagh Bridge view",info:"Historic 19th-century iron bridge just upriver; one of the oldest bridges still in use in Singapore."}
- ],
- "merlion>jubilee":[
-  {name:"Marina Bay skyline",info:"This stretch opens up the classic view toward Marina Bay Sands and the downtown towers."}
- ],
- "jubilee>esplanade":[
-  {name:"Esplanade – Theatres on the Bay",info:"Singapore’s performing arts complex, nicknamed 'the durians' because of its spiky roof design."}
- ],
- "esplanade>helix":[
-  {name:"The Float / Bayfront event area",info:"Large waterfront event space beside Marina Bay, used for major national and sporting events."},
-  {name:"Singapore Flyer view",info:"The observation wheel rises just beyond the bay and is especially photogenic around sunset."}
- ],
- "helix>mbs":[
-  {name:"ArtScience Museum",info:"Lotus-shaped museum at Marina Bay Sands, designed to resemble an open hand or flower."}
- ],
- "mbs>spectra":[
-  {name:"The Shoppes at Marina Bay Sands",info:"Luxury mall complex beneath the hotel towers, with indoor canals and direct waterfront access."}
- ],
- "spectra>gardens":[
-  {name:"Marina Bay Sands towers",info:"Three hotel towers linked by the rooftop SkyPark, one of Singapore’s defining modern landmarks."}
- ],
- "gardens>flowerdome":[
-  {name:"Supertree Grove",info:"Vertical garden structures covered with plants; they also collect solar energy and rainwater."},
-  {name:"Cloud Forest exterior",info:"The neighbouring glass conservatory houses a tall indoor waterfall and mountain-style planting."}
- ],
- "sultan>bussorah":[
-  {name:"Sultan Mosque frontage",info:"The golden-domed mosque is the visual centre of Kampong Glam and the best-known landmark in the district."}
- ],
- "bussorah>muscat":[
-  {name:"Traditional shophouses",info:"Rows of restored two-storey shophouses frame the pedestrian approach to the mosque."}
- ],
- "muscat>baghdad":[
-  {name:"Kampong Glam side streets",info:"Look for colourful façades, tiled details and small independent cafés in the restored shophouses."}
- ],
- "arab>haji":[
-  {name:"Textile and perfume shops",info:"Arab Street is known for fabrics, rugs and perfume shops before the route turns into the mural-heavy Haji Lane."}
- ],
- "littleindia>tan":[
-  {name:"Little India shophouses",info:"The surrounding streets are lined with brightly painted façades, jewellery shops and flower-garland stalls."}
- ],
- "tan>clive":[
-  {name:"House of Tan Teng Niah",info:"One of the last surviving Chinese villas in Little India, famous for its vivid multi-coloured exterior."}
- ],
- "clive>serangoon":[
-  {name:"Street murals",info:"This area has several murals reflecting local history and everyday life in Little India."}
- ],
- "fort>hillstreet":[
-  {name:"Fort Canning slopes",info:"The walk descends from the historic hill toward the civic district and Singapore River."},
-  {name:"Old Hill Street Police Station",info:"Former police station with hundreds of rainbow-coloured window shutters."}
- ],
- "hillstreet>chinatown":[
-  {name:"Elgin Bridge",info:"Major crossing over the Singapore River linking the civic district with the south side of the river."},
-  {name:"Clarke Quay riverfront",info:"Restored warehouses and colourful riverside architecture appear as you approach the river."}
- ],
- "chinatown>annsiang":[
-  {name:"Chinatown shophouses",info:"Traditional narrow-fronted buildings with covered five-foot ways and decorative upper floors."}
- ],
- "annsiang>telokayer":[
-  {name:"Ann Siang Hill shophouses",info:"A steep heritage street with restored façades and a quieter old-city atmosphere."}
- ],
- "telokayer>laupasat":[
-  {name:"Thian Hock Keng area",info:"Historic temple district along Telok Ayer Street, one of Singapore’s oldest Chinese settlement areas."}
- ],
- "laupasat>cavenagh":[
-  {name:"CBD towers",info:"The route crosses Singapore’s financial district, mixing conserved colonial buildings with modern skyscrapers."}
- ],
- "cavenagh>anderson":[
-  {name:"Victoria Theatre & Concert Hall view",info:"Distinctive colonial-era civic buildings near the river, recognisable by the clock tower."}
- ],
- "anderson>boat":[
-  {name:"Fullerton Building",info:"Grand former post office building at the mouth of the Singapore River, now the Fullerton Hotel."}
- ],
- "boat>clarke":[
-  {name:"Singapore River shophouses",info:"Restored warehouses and riverside shophouses show how this area grew from a trading port into today’s entertainment district."}
- ]
-};
-
-function alongInfo(a,b){
- return alongTheWay[`${a.id}>${b.id}`] || [];
-}
-
-function isInToday(id){return state.routes[state.day]?.includes(id)}
-function addToTodayRoute(id){
- state.excluded[state.day]=(state.excluded[state.day]||[]).filter(x=>x!==id);
- const base=masterPlans[state.day];
- if(!base.includes(id)&&!state.routes[state.day].includes(id)){
-   const final=state.routes[state.day].pop();state.routes[state.day].push(id,final);
- }
- ensureHotelReturn();save();renderAll();refreshOptionButtons();
-}
-function removeFromTodayRoute(id){
- const base=masterPlans[state.day];
- if(base.includes(id)){
-   const ex=state.excluded[state.day]||[];if(!ex.includes(id))ex.push(id);state.excluded[state.day]=ex;
- }else state.routes[state.day]=state.routes[state.day].filter(x=>x!==id);
- ensureHotelReturn();save();renderAll();refreshOptionButtons();
-}
-function toggleTodayRoute(id){
- if(shoppingOptions[id] && shoppingOptions[id].day!==state.day)return;
- isInToday(id)?removeFromTodayRoute(id):addToTodayRoute(id)
-}
-
-function refreshOptionButtons(){
- document.querySelectorAll("[data-option-id]").forEach(btn=>{
-   const id=btn.dataset.optionId;
-   btn.textContent=isInToday(id)?"Delete from today":"Add to today";
- });
-}
-async function mapAndRouteOption(id){
- closeAllSheets();
- const s=byId(id);if(!s)return;
- if(!userPos){getGPS(()=>mapAndRouteOption(id));return}
- const card=document.querySelector(".routefloat");card.classList.add("collapsed");
- map.setView([s.lat,s.lng],18);
- try{
-   if(nextMode==="transit" || (nextMode!=="walk" && hav(userPos,s)>0.85)) {const j=preferredMRTJourney(userPos,s); await drawTransitTo(userPos,s,j);}
-   else{
-     const r=await footRoute([userPos,s]);
-     if(routeLayer)map.removeLayer(routeLayer);
-     routeLayer=L.geoJSON(r.geometry,{style:{color:"#1677ff",weight:6,opacity:.9}}).addTo(map);
-     map.fitBounds(routeLayer.getBounds().pad(.10),{maxZoom:18});
-     routeStats.textContent=`From you · Walk ${(r.distance/1000).toFixed(1)} km · ${Math.round(r.duration/60)} min`;
-   }
- }catch(e){map.setView([s.lat,s.lng],16);routeStats.textContent="Location shown · route unavailable"}
-}
-
-function airportTransferHtml(){
- return `<div class="airport-transfer">
-   <details>
-    <summary>Changi T4 → Hotel Boss MRT instructions</summary>
-    <div class="airport-step"><b>1.</b> At <b>Terminal 4 Arrivals</b>, go to the <b>T4 Arrival Bus Lounge</b>.</div>
-    <div class="airport-step"><b>2.</b> Take the <b>free public shuttle to T2 / MRT</b>.</div>
-    <div class="airport-step"><b>3.</b> Enter <b>Changi Airport MRT (CG2)</b>.</div>
-    <div class="airport-stations"><b>CG2 Changi Airport → CG1 Expo → EW4 Tanah Merah</b></div>
-    <div class="airport-step"><b>4.</b> At <b>Tanah Merah EW4</b>, change to the <b>westbound East–West Line toward Tuas Link</b>.</div>
-    <div class="airport-stations">EW5 Bedok → EW6 Kembangan → EW7 Eunos → EW8 Paya Lebar → EW9 Aljunied → EW10 Kallang → <b>EW11 Lavender</b></div>
-    <div class="airport-step"><b>5.</b> At <b>Lavender EW11</b>, use <b>Exit B</b>.</div>
-    <div class="airport-step"><b>6.</b> Walk about <b>400 m / 4–5 minutes</b> to <b>Hotel Boss, 500 Jalan Sultan</b>.</div>
-    <div class="option-actions"><button class="sbtn" onclick="showAirportHotelRoute()">Show route on map</button></div>
-   </details>
- </div>`;
-}
-async function showAirportHotelRoute(){
- closeAllSheets();
- const t4=byId("airport"),hotel=byId("hotel");
- const names=["Changi Airport","Expo","Tanah Merah","Bedok","Kembangan","Eunos","Paya Lebar","Aljunied","Kallang","Lavender"];
- const pts=names.map(n=>mrt.find(x=>x.name===n)).filter(Boolean);
- if(routeLayer)map.removeLayer(routeLayer);
- const layers=[];
- if(pts[0])layers.push(L.polyline([[t4.lat,t4.lng],[pts[0].lat,pts[0].lng]],{color:"#7b7f86",weight:5,dashArray:"8 7",opacity:.85}).addTo(map));
- layers.push(L.polyline(pts.map(x=>[x.lat,x.lng]),{color:"#2d8b57",weight:6,opacity:.9}).addTo(map));
- const lav=mrt.find(x=>x.name==="Lavender");
- try{
-   if(lav){const walk=await footRoute([lav,hotel]);layers.push(L.geoJSON(walk.geometry,{style:{color:"#1677ff",weight:5,opacity:.9}}).addTo(map))}
- }catch(e){if(lav)layers.push(L.polyline([[lav.lat,lav.lng],[hotel.lat,hotel.lng]],{color:"#1677ff",weight:5,dashArray:"5 5"}).addTo(map))}
- routeLayer=L.featureGroup(layers);
- const bounds=[[t4.lat,t4.lng],...pts.map(x=>[x.lat,x.lng]),[hotel.lat,hotel.lng]];
- map.fitBounds(L.latLngBounds(bounds).pad(.10),{maxZoom:15});
- routeStats.textContent="T4 shuttle → CG2 → Tanah Merah change → Lavender → walk to Hotel Boss";
- const airportJ=preferredMRTJourney(mrt.find(x=>x.name==="Changi Airport"),mrt.find(x=>x.name==="Lavender"));
- showMRTJourney(airportJ,mrt.find(x=>x.name==="Changi Airport"),mrt.find(x=>x.name==="Lavender"));
- document.querySelector(".routefloat")?.classList.add("collapsed");
-}
-
-
-let miniMap=null,miniRouteLayer=null,selectedRouteIndex=0;
-function ensureMiniMap(){
- if(miniMap)return;
- miniMap=L.map("miniRouteMap",{zoomControl:false,attributionControl:false,dragging:true,scrollWheelZoom:false});
- L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",{maxZoom:19}).addTo(miniMap);
- setTimeout(()=>miniMap.invalidateSize(),50);
-}
-function nextIncludedStop(plan,index){
- for(let j=index+1;j<plan.length;j++){
-   if(routeItemIncluded(plan[j],j,plan))return byId(plan[j]);
- }
- return null;
-}
-function estimateTransitMinutes(a,b,j){
- if(!j||!j.path)return Math.max(5,Math.round(hav(a,b)*5));
- const stationHops=Math.max(1,j.path.stations.length-1);
- const changes=Math.max(0,j.segments.length-1);
- return walkMins(hav(a,j.s1))+walkMins(hav(b,j.s2))+stationHops*2.5+changes*5;
-}
-async function previewRouteLeg(id,index){
- const plan=dayDisplayPlan(),a=byId(id),b=nextIncludedStop(plan,index);
- selectedRouteIndex=index;
- if(!a)return;
- renderInlineLocationDetail(a,b);
- if(!b){miniRouteInfo.textContent="End of day.";return}
- ensureMiniMap();
- if(miniRouteLayer){miniMap.removeLayer(miniRouteLayer);miniRouteLayer=null}
- const km=hav(a,b),hint=smartTransportHint(a,b);
- try{
-   if(hint.mode==="Walk"){
-     const r=await footRoute([a,b]);
-     miniRouteLayer=L.geoJSON(r.geometry,{style:{color:"#1677ff",weight:5,opacity:.9}}).addTo(miniMap);
-     miniMap.fitBounds(miniRouteLayer.getBounds().pad(.14),{maxZoom:17});
-     miniRouteInfo.textContent=`Next: ${b.name} · Walk ${(r.distance/1000).toFixed(1)} km · about ${Math.round(r.duration/60)} min`;
-   }else{
-     const j=preferredMRTJourney(a,b),layers=[];
-     j.segments.forEach(seg=>{
-       const info=mrtLineInfo[seg.line]||{color:"#777"};
-       const pts=seg.stations.map(name=>mrt.find(x=>x.name===name)).filter(Boolean).map(x=>[x.lat,x.lng]);
-       if(pts.length>=2)layers.push(L.polyline(pts,{color:info.color,weight:5,opacity:.9}).addTo(miniMap));
-     });
-     layers.push(L.polyline([[a.lat,a.lng],[j.s1.lat,j.s1.lng]],{color:"#1677ff",weight:3,dashArray:"5 4"}).addTo(miniMap));
-     layers.push(L.polyline([[j.s2.lat,j.s2.lng],[b.lat,b.lng]],{color:"#1677ff",weight:3,dashArray:"5 4"}).addTo(miniMap));
-     miniRouteLayer=L.featureGroup(layers);
-     miniMap.fitBounds(L.latLngBounds([[a.lat,a.lng],[b.lat,b.lng],[j.s1.lat,j.s1.lng],[j.s2.lat,j.s2.lng]]).pad(.14),{maxZoom:17});
-     miniRouteInfo.textContent=`Next: ${b.name} · MRT · approx. ${km.toFixed(1)} km · ${Math.round(estimateTransitMinutes(a,b,j))} min`;
-   }
- }catch(e){
-   miniMap.setView([(a.lat+b.lat)/2,(a.lng+b.lng)/2],15);
-   miniRouteInfo.textContent=`Next: ${b.name} · approx. ${km.toFixed(1)} km`;
- }
-}
-function nearbySummary(s){
- const attractions=stops.filter(x=>x.id!==s.id&&typeof x.lat==="number"&&hav(s,x)<=1.2).sort((a,b)=>hav(s,a)-hav(s,b)).slice(0,3);
- const food=hawkerCentres?.map(h=>({h,d:hav(s,h)})).sort((a,b)=>a.d-b.d)[0];
- const cool=getCoolPlaces().map(c=>({c,d:hav(s,c)})).sort((a,b)=>a.d-b.d)[0];
- const smoke=[...smokingPlaces].map(p=>({p,d:hav(s,p)})).sort((a,b)=>a.d-b.d)[0];
- return {attractions,food,cool,smoke};
-}
-function renderInlineLocationDetail(s,b){
- const n=nearbySummary(s);
- routeInlineDetail.innerHTML=`<h3>${s.name}</h3>
- <p>${s.desc||""}</p>
- <p>${s.photo?`<b>Photo:</b> ${s.photo}`:""}</p>
- ${b?`<p><b>Next:</b> ${b.name}</p>`:""}
- <div class="detail-grid">
-  <div class="detail-box"><h4>Nearby attractions</h4><p>${n.attractions.length?n.attractions.map(x=>`${x.name} (${hav(s,x).toFixed(1)} km)`).join("<br>"):"None saved nearby"}</p></div>
-  <div class="detail-box"><h4>Food</h4><p>${n.food?`${n.food.h.name} (${n.food.d.toFixed(1)} km)`:"No hawker centre nearby"}</p></div>
-  <div class="detail-box"><h4>A/C / cool</h4><p>${n.cool?`${n.cool.c.name} (${n.cool.d.toFixed(1)} km)`:"No saved cool place nearby"}</p></div>
-  <div class="detail-box"><h4>Smoking</h4><p>${n.smoke?`${n.smoke.p.name} (${n.smoke.d.toFixed(1)} km)`:"No saved smoking point nearby"}</p></div>
- </div>
- <div class="option-actions"><button class="sbtn" onclick="routeFromMe('${s.id}')">Route from GPS</button><button class="sbtn" onclick="openLocationDetails('${s.id}')">More details</button></div>`;
-}
-function openLocationDetails(id){
- const s=byId(id); if(!s)return;
- const n=nearbySummary(s);
- locationDetailTitle.textContent=s.name;
- locationDetailBody.innerHTML=`<div class="card">
-   <h3>${s.name}</h3><p>${s.desc||""}</p><p>${s.photo?`<b>Best photo time:</b> ${s.photo}`:""}</p>
-   <div class="detail-grid">
-    <div class="detail-box"><h4>Nearby attractions</h4><p>${n.attractions.length?n.attractions.map(x=>`${x.name} · ${hav(s,x).toFixed(1)} km`).join("<br>"):"None saved nearby"}</p></div>
-    <div class="detail-box"><h4>Food</h4><p>${n.food?`${n.food.h.name} · ${n.food.d.toFixed(1)} km<br>${n.food.h.where}`:"No hawker centre nearby"}</p></div>
-    <div class="detail-box"><h4>A/C / cool</h4><p>${n.cool?`${n.cool.c.name} · ${n.cool.d.toFixed(1)} km<br>${n.cool.c.note}`:"No saved cool place nearby"}</p></div>
-    <div class="detail-box"><h4>Smoking</h4><p>${n.smoke?`${n.smoke.p.name} · ${n.smoke.d.toFixed(1)} km<br>${n.smoke.p.note}`:"No saved smoking point nearby"}</p></div>
-   </div>
-   <div class="option-actions"><button class="sbtn" onclick="routeFromMe('${s.id}')">Route from GPS</button><button class="sbtn" onclick="focusStop('${s.id}')">Show on map</button></div>
- </div>`;
- openSheet("locationDetailSheet");
-}
-async function loadLiveWeather(){
- try{
-   const r=await fetch("https://api.open-meteo.com/v1/forecast?latitude=1.3521&longitude=103.8198&current=temperature_2m,precipitation,cloud_cover&timezone=Asia%2FSingapore");
-   const j=await r.json(),c=j.current||{};
-   const rain=(c.precipitation||0)>0?80:0,cloud=c.cloud_cover||0;
-   liveWeatherBadge.innerHTML=`<div class="weather-icon ${rain>=55?'rainy':cloud>65?'cloudy':'sunny'}">${wxIcon(rain,cloud)}</div><span class="temp">${Math.round(c.temperature_2m||0)}°</span>`;
- }catch(e){liveWeatherBadge.innerHTML='<span class="temp">Weather</span>'}
-}
-function showEveningSpot(lat,lng,name){
- closeAllSheets();
- const p={lat,lng,name};
- if(!userPos){getGPS(()=>showEveningSpot(lat,lng,name));return}
- map.fitBounds(L.latLngBounds([[userPos.lat,userPos.lng],[lat,lng]]).pad(.14),{maxZoom:17});
- routeStats.textContent=`${name} · from your GPS`;
-}
-function savePhotoAiUrl(){
- localStorage.setItem("photoAiUrl",photoAiUrlInput.value.trim());
-}
-function loadPhotoAiUrl(){
- const v=localStorage.getItem("photoAiUrl")||"";
- if(document.getElementById("photoAiUrlInput"))photoAiUrlInput.value=v;
- return v;
-}
-
-
-
-let hourlyWeatherCache=null;
-let visibleCardIndex=0;
-const cardModes={};
-
-function weatherClassAndIcon(rain,cloud){
- return {cls:rain>=55?"rainy":cloud>65?"cloudy":"sunny",icon:wxIcon(rain,cloud)};
-}
-async function loadTripHourlyWeather(){
- if(hourlyWeatherCache)return hourlyWeatherCache;
- try{
-  const r=await fetch("https://api.open-meteo.com/v1/forecast?latitude=1.3521&longitude=103.8198&hourly=temperature_2m,precipitation_probability,cloud_cover&timezone=Asia%2FSingapore&forecast_days=16");
-  const j=await r.json();
-  hourlyWeatherCache=j.hourly||null;
- }catch(e){hourlyWeatherCache=null}
- return hourlyWeatherCache;
-}
-function routeCardDateTime(cardIndex){
- const dates=["2026-10-15","2026-10-16","2026-10-17","2026-10-18"];
- const baseHours=[17,10,10,7];
- const stepHours=[0.55,0.75,0.75,0.7];
- const hour=baseHours[state.day]+cardIndex*stepHours[state.day];
- const h=Math.floor(hour),m=Math.round((hour-h)*60);
- return `${dates[state.day]}T${String(h).padStart(2,"0")}:${String(m).padStart(2,"0")}`;
-}
-async function weatherForCard(cardIndex){
- const hw=await loadTripHourlyWeather();
- if(!hw||!hw.time)return null;
- const target=new Date(routeCardDateTime(cardIndex));
- let best=0,bestDiff=Infinity;
- hw.time.forEach((t,i)=>{const d=Math.abs(new Date(t)-target);if(d<bestDiff){best=i;bestDiff=d}});
- return {temp:Math.round(hw.temperature_2m?.[best]??0),rain:hw.precipitation_probability?.[best]??0,cloud:hw.cloud_cover?.[best]??0};
-}
-async function renderCardWeather(cardIndex){
- const el=document.getElementById(`card-weather-${cardIndex}`);if(!el)return;
- const w=await weatherForCard(cardIndex);if(!w){el.textContent="Forecast";return}
- const v=weatherClassAndIcon(w.rain,w.cloud);
- el.innerHTML=`<div class="weather-icon ${v.cls}">${v.icon}</div><span>${w.temp}° · ${w.rain}% rain</span>`;
-}
-async function updateFloatingWeatherForCard(cardIndex){
- visibleCardIndex=cardIndex;
- const w=await weatherForCard(cardIndex);if(!w)return;
- const v=weatherClassAndIcon(w.rain,w.cloud),jw=document.getElementById("journeyWeather");
- if(jw)jw.innerHTML=`<div class="weather-icon ${v.cls}">${v.icon}</div><span class="temp">${w.temp}°</span>`;
-}
-function observeJourneyCards(){
- const cards=[...document.querySelectorAll(".journey-card[data-card-index]")];
- if(!("IntersectionObserver" in window))return;
- const obs=new IntersectionObserver(entries=>{
-  const visible=entries.filter(e=>e.isIntersecting).sort((a,b)=>b.intersectionRatio-a.intersectionRatio)[0];
-  if(visible){const i=Number(visible.target.dataset.cardIndex);updateFloatingWeatherForCard(i)}
- },{threshold:[.25,.5,.75]});
- cards.forEach(c=>obs.observe(c));
-}
-function setCardMode(index,mode){
- cardModes[index]=mode;
- document.querySelectorAll(`[data-card-index="${index}"] .route-choice button`).forEach(b=>b.classList.toggle("active",b.dataset.mode===mode));
- const route=routeObjs();if(route[index]&&route[index+1])buildJourneyCard(index,route[index],route[index+1],mode);
-}
-
-const toiletPlaces=[
- {name:"Bugis Junction Toilets",lat:1.2995,lng:103.8550,info:"Public toilets inside Bugis Junction. Use the mall directory for the nearest level.",tip:"Useful during the Bugis / Kampong Glam route."},
- {name:"Tekka Centre Toilets",lat:1.3062,lng:103.8504,info:"Public toilets inside Tekka Centre.",tip:"Follow signs inside the food centre / market."},
- {name:"Fort Canning Centre Toilets",lat:1.2959,lng:103.8455,info:"Public toilets near Fort Canning Centre / park facilities.",tip:"Useful before continuing toward Clarke Quay."},
- {name:"Chinatown Complex Toilets",lat:1.2825,lng:103.8432,info:"Public toilets inside Chinatown Complex.",tip:"Use the signs inside the complex; facilities are on public levels."},
- {name:"Lau Pa Sat Toilets",lat:1.2806,lng:103.8504,info:"Public toilets inside Lau Pa Sat.",tip:"Look for facility signs around the interior perimeter."},
- {name:"Marina Bay Sands Toilets",lat:1.2834,lng:103.8607,info:"Public toilets inside The Shoppes at Marina Bay Sands.",tip:"Easy A/C and toilet stop on the Marina route."},
- {name:"Gardens by the Bay Toilets",lat:1.2816,lng:103.8636,info:"Public toilets around the visitor areas at Gardens by the Bay.",tip:"Follow the official facility signs near the main attractions."},
- {name:"VivoCity Toilets",lat:1.2644,lng:103.8222,info:"Public toilets throughout VivoCity.",tip:"Good stop before heading to Sentosa."},
- {name:"Jewel Changi Toilets",lat:1.3602,lng:103.9897,info:"Public toilets on multiple levels inside Jewel Changi Airport.",tip:"Use Jewel directory signs for the closest facilities."}
-];
-
-function cardPoiCandidates(a,b){
- const mid={lat:(a.lat+b.lat)/2,lng:(a.lng+b.lng)/2},candidates=[];
- stops.filter(s=>s.id!==a.id&&s.id!==b.id&&typeof s.lat==="number").forEach(s=>{
-   const d=hav(mid,s); if(d<=0.65)candidates.push({name:s.name,lat:s.lat,lng:s.lng,type:"Attraction",info:s.desc||"",tip:s.photo||""});
- });
- try{getCoolPlaces().forEach(c=>{if(hav(mid,c)<=0.65)candidates.push({name:c.name,lat:c.lat,lng:c.lng,type:"A/C",info:c.note||"Cool indoor stop",tip:"Useful for a heat break."})})}catch{}
- try{hawkerCentres.forEach(h=>{if(hav(mid,h)<=0.8)candidates.push({name:h.name,lat:h.lat,lng:h.lng,type:"Food",info:h.where||"Hawker centre",tip:"Good place for a cheap local meal."})})}catch{}
- try{smokingPlaces.forEach(s=>{if(hav(mid,s)<=0.7)candidates.push({name:s.name,lat:s.lat,lng:s.lng,type:"Smoking",info:s.note||"Listed smoking point",tip:"Always follow current local signage."})})}catch{}
- try{toiletPlaces.forEach(t=>{if(hav(mid,t)<=0.7)candidates.push({name:t.name,lat:t.lat,lng:t.lng,type:"Toilet",info:t.info||"Public toilet",tip:t.tip||"Follow local signs."})})}catch{}
- const seen=new Set();
- return candidates.sort((x,y)=>hav(mid,x)-hav(mid,y)).filter(x=>{if(seen.has(x.name))return false;seen.add(x.name);return true}).slice(0,7);
-}
-function poiColour(type){return type==="Food"?"#f6a800":type==="A/C"?"#1e88e5":type==="Smoking"?"#666":type==="Toilet"?"#7b61ff":type==="Attraction"?"#e32017":"#8e44ad"}
-function escHtml(s){return String(s??"").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;").replace(/'/g,"&#39;")}
-async function wikiPhotoAndSummary(name){
- try{
-   const u=`https://en.wikipedia.org/w/api.php?action=query&generator=search&gsrsearch=${encodeURIComponent(name+" Singapore")}&gsrlimit=1&prop=pageimages|extracts&exintro=1&explaintext=1&piprop=thumbnail&pithumbsize=1200&format=json&origin=*`;
-   const j=await (await fetch(u)).json(),page=Object.values(j.query?.pages||{})[0];
-   return {image:page?.thumbnail?.source||"",summary:page?.extract||""};
- }catch(e){return {image:"",summary:""}}
-}
-
-function googleMapsUrl(name,lat=null,lng=null){
- const q=(lat!==null&&lng!==null)?`${lat},${lng}`:name;
- return `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(q)}`;
-}
-
-async function openPoiOverlay(name,info,tip,type="Place",lat=null,lng=null){
- poiTitle.textContent=name;
- poiInfo.textContent=info||"Interesting place near this route.";
- poiTip.innerHTML=`<b>${type}</b><br>${tip||"Useful stop close to the route."}<br><a class="poi-google-btn" href="${googleMapsUrl(name,lat,lng)}" target="_blank" rel="noopener">View in Google Maps</a>`;
- poiFallback.textContent=name;
- poiImage.style.display="none";
- poiOverlay.classList.add("open");
- document.body.style.overflow="hidden";
- const w=await wikiPhotoAndSummary(name);
- if(w.image){poiImage.src=w.image;poiImage.alt=name;poiImage.style.display="block"}
- if(w.summary && (!info || info.length<80))poiInfo.textContent=w.summary.slice(0,850);
-}
-async function fetchBuildingsForLeg(a,b){
- const minLat=Math.min(a.lat,b.lat)-.0016,maxLat=Math.max(a.lat,b.lat)+.0016;
- const minLng=Math.min(a.lng,b.lng)-.0016,maxLng=Math.max(a.lng,b.lng)+.0016;
- const q=`[out:json][timeout:8];way["building"](${minLat},${minLng},${maxLat},${maxLng});out geom 80;`;
- try{
-   const r=await fetch("https://overpass-api.de/api/interpreter",{method:"POST",body:q});
-   const j=await r.json();
-   return (j.elements||[]).filter(e=>e.geometry?.length>=3).slice(0,55);
- }catch(e){return []}
-}
-function projectPoint(lat,lng,bounds,w=320,h=170,pad=14){
- const [minLng,minLat,maxLng,maxLat]=bounds,dx=Math.max(maxLng-minLng,.00001),dy=Math.max(maxLat-minLat,.00001);
- return [pad+(lng-minLng)/dx*(w-2*pad),h-pad-(lat-minLat)/dy*(h-2*pad)];
-}
-function buildingSvg(buildings,bounds){
- return buildings.map(b=>`<polygon class="building-block" points="${b.geometry.map(g=>projectPoint(g.lat,g.lon,bounds).map(n=>n.toFixed(1)).join(",")).join(" ")}"/>`).join("");
-}
-function poiSvg(pois,bounds){
- return pois.map(p=>{
-  const [x,y]=projectPoint(p.lat,p.lng,bounds),c=poiColour(p.type);
-  return `<g style="cursor:pointer" onclick="openPoiOverlay('${escHtml(p.name)}','${escHtml(p.info)}','${escHtml(p.tip)}','${escHtml(p.type)}',${p.lat},${p.lng})"><circle class="poi-map-dot" cx="${x}" cy="${y}" r="7" fill="${c}"/><text class="poi-map-label" x="${x+10}" y="${y+3}">${escHtml(p.name.length>18?p.name.slice(0,18)+"…":p.name)}</text></g>`;
- }).join("");
-}
-
-const dayRouteColours=["#0050A4","#E32017","#009645","#8B4513"];
-let journeyWeatherTimer=null;
-
-function bearingText(a,b){
- const lat1=a.lat*Math.PI/180,lat2=b.lat*Math.PI/180,dLon=(b.lng-a.lng)*Math.PI/180;
- const y=Math.sin(dLon)*Math.cos(lat2);
- const x=Math.cos(lat1)*Math.sin(lat2)-Math.sin(lat1)*Math.cos(lat2)*Math.cos(dLon);
- let deg=(Math.atan2(y,x)*180/Math.PI+360)%360;
- const dirs=["north","north-east","east","south-east","south","south-west","west","north-west"];
- return dirs[Math.round(deg/45)%8];
-}
-function simplifyCoords(coords,maxPts=120){
- if(!coords||coords.length<=maxPts)return coords||[];
- const out=[];const step=(coords.length-1)/(maxPts-1);
- for(let i=0;i<maxPts;i++)out.push(coords[Math.min(coords.length-1,Math.round(i*step))]);
- return out;
-}
-function projectCoords(coords,w=320,h=160,pad=22){
- if(!coords.length)return [];
- const xs=coords.map(c=>c[0]),ys=coords.map(c=>c[1]);
- const minX=Math.min(...xs),maxX=Math.max(...xs),minY=Math.min(...ys),maxY=Math.max(...ys);
- const dx=Math.max(maxX-minX,.00001),dy=Math.max(maxY-minY,.00001);
- return coords.map(([lng,lat])=>[
-   pad+(lng-minX)/dx*(w-pad*2),
-   h-pad-(lat-minY)/dy*(h-pad*2)
- ]);
-}
-function svgPath(points){
- return points.map((p,i)=>(i?"L":"M")+p[0].toFixed(1)+","+p[1].toFixed(1)).join(" ");
-}
-function routePois(a,b){
- const along=alongInfo(a,b)||[];
- const nearby=stops.filter(s=>s.id!==a.id&&s.id!==b.id&&typeof s.lat==="number"&&typeof s.lng==="number")
-  .map(s=>({s,d:Math.min(hav(a,s),hav(b,s))}))
-  .filter(x=>x.d<=0.55)
-  .sort((x,y)=>x.d-y.d).slice(0,2)
-  .map(x=>({name:x.s.name,info:x.s.desc||"",photo:x.s.photo||"",kind:"stop",lat:x.s.lat,lng:x.s.lng}));
- return [...along.slice(0,2).map(x=>({name:x.name,info:x.info,photo:"Look out for it as you pass.",kind:"along"})),...nearby].slice(0,3);
-}
-function poiImageUrl(name){
- const q=encodeURIComponent(("Singapore "+name).replace(/[^\w\s-]/g," "));
- return `https://loremflickr.com/1200/900/${q}`;
-}
-function closePoiOverlay(){
- poiOverlay.classList.remove("open");
- document.body.style.overflow="";
-}
-function poisHtml(pois){
- if(!pois.length)return "";
- return `<div class="poi-row">${pois.map(p=>`<button class="poi-btn" onclick='openPoiOverlay(${JSON.stringify(p.name)},${JSON.stringify(p.info)},${JSON.stringify(p.photo)},"Nearby",${Number.isFinite(p.lat)?p.lat:"null"},${Number.isFinite(p.lng)?p.lng:"null"})'><span class="poi-dot"></span>${p.name}</button>`).join("")}</div>`;
-}
-async function buildJourneyCard(index,a,b,forcedMode=null){
- const box=document.getElementById(`schematic-${index}`),stats=document.getElementById(`stats-${index}`);
- if(!box||!stats)return;
- const km=hav(a,b),dir=bearingText(a,b),autoHint=smartTransportHint(a,b);
- const mode=forcedMode||cardModes[index]||"smart";
- const useWalk=mode==="walk" || (mode==="smart" && autoHint.mode==="Walk");
- try{
-   if(useWalk){
-     const [r,buildings]=await Promise.all([footRoute([a,b]),fetchBuildingsForLeg(a,b)]);
-     const coords=simplifyCoords(r.geometry.coordinates,120);
-     const lngs=coords.map(c=>c[0]),lats=coords.map(c=>c[1]);
-     const padLng=Math.max((Math.max(...lngs)-Math.min(...lngs))*.12,.00016),padLat=Math.max((Math.max(...lats)-Math.min(...lats))*.12,.00016); const bounds=[Math.min(...lngs)-padLng,Math.min(...lats)-padLat,Math.max(...lngs)+padLng,Math.max(...lats)+padLat];
-     const pts=coords.map(([lng,lat])=>projectPoint(lat,lng,bounds));
-     const colour=dayRouteColours[state.day%dayRouteColours.length],pois=cardPoiCandidates(a,b);
-     box.innerHTML=`<svg viewBox="0 0 320 170"><rect width="320" height="170" fill="#f3f4f5"/>${buildingSvg(buildings,bounds)}<path class="route-line-shadow" d="${svgPath(pts)}"/><path class="route-line-main" d="${svgPath(pts)}" stroke="${colour}"/><circle cx="${pts[0][0]}" cy="${pts[0][1]}" r="8" fill="white" stroke="${colour}" stroke-width="4"/><circle cx="${pts[pts.length-1][0]}" cy="${pts[pts.length-1][1]}" r="8" fill="${colour}"/>${poiSvg(pois,bounds)}</svg>`;
-     const streets=routeStreetNames(r);
-     stats.textContent=`Walk ${(r.distance/1000).toFixed(1)} km · about ${Math.round(r.duration/60)} min${streets.length?` · ${streets.join(" → ")}`:` · generally ${dir}`}`;
-   }else{
-     const j=preferredMRTJourney(a,b),colour=(mrtLineInfo[j.segments?.[0]?.line]||{}).color||dayRouteColours[state.day%dayRouteColours.length];
-     box.innerHTML=mrtSchematic(j,colour);
-     stats.textContent=`MRT · approx. ${km.toFixed(1)} km · about ${Math.round(estimateTransitMinutes(a,b,j))} min`;
-   }
- }catch(e){
-   const colour=dayRouteColours[state.day%dayRouteColours.length];
-   box.innerHTML=`<svg viewBox="0 0 320 170"><rect width="320" height="170" fill="#f3f4f5"/><path d="M40,128 L120,103 L190,67 L280,42" fill="none" stroke="#fff" stroke-width="13"/><path d="M40,128 L120,103 L190,67 L280,42" fill="none" stroke="${colour}" stroke-width="8" stroke-linecap="round"/><circle cx="40" cy="128" r="8" fill="white" stroke="${colour}" stroke-width="4"/><circle cx="280" cy="42" r="8" fill="${colour}"/></svg>`;
-   stats.textContent=`Approx. ${km.toFixed(1)} km · head ${dir}`;
- }
-}
-function journeyInstruction(a,b){
- const km=hav(a,b),hint=smartTransportHint(a,b),dir=bearingText(a,b);
- if(hint.mode==="Walk")return `Head ${dir}. Keep following the coloured line for about ${walkMins(km)} minutes until you reach ${b.name}.`;
- const j=preferredMRTJourney(a,b);
- const changes=j.segments.length>1?` Change at ${j.segments.slice(0,-1).map(s=>s.stations[s.stations.length-1]).join(", ")}.`:"";
- return `Walk to ${j.s1.name}, take the MRT to ${j.s2.name}.${changes} Then walk the final short section to ${b.name}.`;
-}
-function renderJourneyDashboard(){
- if(!document.getElementById("journeyCards"))return;
- ensureHotelReturn();
- const route=routeObjs();
- const jt=document.getElementById("journeyTitle"),ji=document.getElementById("journeyIntro"),jc=document.getElementById("journeyCards");
- if(!jc)return;
- if(jt)jt.textContent=days[state.day].title;
- if(ji)ji.textContent=state.day===0?"Arrival and first evening. Follow one simple card at a time.":"Scroll down. Each card shows only the direction you need for the next part of the day.";
- let out="";
- for(let i=0;i<route.length-1;i++){
-   const a=route[i],b=route[i+1],pois=routePois(a,b),colour=dayRouteColours[state.day%dayRouteColours.length],hint=smartTransportHint(a,b);
-   out+=`<section class="journey-card" data-card-index="${i}" style="--route-colour:${colour}">
-     <div class="journey-band"></div>
-     <div class="journey-card-inner">
-       <div class="journey-step">
-         <div><div class="step-no">Step ${i+1}</div><h3>${a.name} → ${b.name}</h3></div>
-         <div id="card-weather-${i}" class="card-weather">Forecast</div>
-       </div>
-       <p class="journey-instruction">${journeyInstruction(a,b)}</p>
-       <div class="route-choice">
-         <button class="active" data-mode="smart" onclick="setCardMode(${i},'smart')">Smart</button>
-         <button data-mode="walk" onclick="setCardMode(${i},'walk')">Walk only</button>
-       </div>
-       <div class="card-map-wrap"><div class="schematic" id="schematic-${i}"><div class="loading">Drawing local blocks…</div></div></div>
-       <div class="route-stats" id="stats-${i}">Calculating…</div>
-       ${poisHtml(pois)}
-       <details class="more-info">
-         <summary>More about this step</summary>
-         <p><b>${a.name}:</b> ${a.desc||""}</p>
-         <p><b>${b.name}:</b> ${b.desc||""}</p>
-         ${b.photo?`<p><b>Photo tip:</b> ${b.photo}</p>`:""}
-       </details>
-       <div class="next-arrow">Scroll for next step ↓</div>
-     </div>
-   </section>`;
- }
- jc.innerHTML=out||'<div class="card">No route for this day.</div>';
- setTimeout(()=>{route.slice(0,-1).forEach((a,i)=>{buildJourneyCard(i,a,route[i+1]);renderCardWeather(i)});observeJourneyCards();updateFloatingWeatherForCard(0)},40);
-}
-async function loadJourneyWeather(){
- try{
-   const r=await fetch("https://api.open-meteo.com/v1/forecast?latitude=1.3521&longitude=103.8198&current=temperature_2m,precipitation,cloud_cover&timezone=Asia%2FSingapore");
-   const j=await r.json(),c=j.current||{},rain=(c.precipitation||0)>0?80:0,cloud=c.cloud_cover||0;
-   const jw=document.getElementById("journeyWeather");if(jw)jw.innerHTML=`<div class="weather-icon ${rain>=55?'rainy':cloud>65?'cloudy':'sunny'}">${wxIcon(rain,cloud)}</div><span class="temp">${Math.round(c.temperature_2m||0)}°</span>`;
- }catch(e){const jw=document.getElementById("journeyWeather");if(jw)jw.innerHTML='<span class="temp">Weather</span>'}
-}
-
-
-function showJourneyError(msg){
- const box=document.getElementById("journeyCards");
- if(box)box.innerHTML=`<div class="journey-card"><div class="journey-band" style="background:#d22"></div><div class="journey-card-inner"><h3>Route cards could not load</h3><p class="journey-instruction">${msg}</p></div></div>`;
-}
-window.addEventListener("error",e=>{
- const box=document.getElementById("journeyCards");
- if(box && (!box.children.length || box.textContent.includes("Loading today’s route")))showJourneyError(e.message||"Unknown app error");
-});
-
-function dayRouteTheme(){
- const themes=[
-  "Arrival + Marina Bay photo walk: waterfront, skyline, reflections and night lights.",
-  "Kampong Glam + Little India photo walk: mosque framing, murals, shophouses and colourful street scenes.",
-  "Heritage + Chinatown + Singapore River photo walk: architecture first, then riverfront for blue hour and night reflections.",
-  "Departure morning: Jewel and airport."
- ];
- if(document.getElementById("routeTheme")) routeTheme.textContent=themes[state.day]+" As you walk, the app also points out notable buildings, bridges and structures along each leg.";
-}
-function renderNext(){
- const r=routeObjs(),n=r[0];applyPlanRules();dayRouteTheme();
- if(!n){nextCard.innerHTML='<div><h2>Finished for today</h2><p>No stops remaining.</p></div>';routeStats.textContent="";upcomingList.innerHTML="";return}
- const from=userPos||n,d=userPos?hav(userPos,n):0,hint=smartTransportHint(from,n),live=userPos?`<span class="live-dot"></span>Live location · `:"";
- const routeNow=routeObjs();
- const idx=routeNow.indexOf(n);
- const previous=(idx>0?routeNow[idx-1]:null);
- const alongNow=previous?alongInfo(previous,n):[];
- const alongNowHtml=alongNow.length?`<div class="along-card"><div class="along-title">Look out for</div>${alongNow.map(x=>`<div class="along-item"><b>${x.name}</b> — ${x.info}</div>`).join("")}</div>`:"";
- nextCard.innerHTML=`<div><h2>${n.name}</h2><p>${live}${userPos?`${d.toFixed(1)} km · `:""}${hint.mode}</p><div class="route-detail-line">${n.desc||""}</div><div class="route-detail-line">${hint.text}</div><div class="route-detail-line">${n.photo?`Photo: ${n.photo}`:""}</div>${alongNowHtml}</div><button class="sbtn" onclick="focusStop('${n.id}')">Map</button>`;
- renderUpcoming();
- const suggested=smartTransportHint(from,n).mode;
- nextWalkBtn.classList.toggle("active",nextMode==="walk"||(nextMode==="auto"&&suggested==="Walk"));
- nextTransitBtn.classList.toggle("active",nextMode==="transit"||(nextMode==="auto"&&suggested==="MRT"));
-}
-function renderMarkers(){
- markers.forEach(m=>map.removeLayer(m));markers=[];
- mrtMarkers.forEach(m=>map.removeLayer(m));mrtMarkers=[];
- const r=routeObjs();
- r.forEach((s,i)=>{
-   const m=L.marker([s.lat,s.lng],{title:s.name}).addTo(map)
-     .bindTooltip(s.name,{permanent:true,direction:"top",offset:[0,-28],className:"map-label"})
-     .bindPopup(`<div style="font-size:15px;line-height:1.5"><b style="font-size:17px">${i+1}. ${s.name}</b><br>${s.desc||s.type}<br><span style="color:#666">${s.photo?`Photo: ${s.photo}`:""}</span></div>`);
-   markers.push(m)
- });
- mrt.forEach(st=>{
-   const icon=L.divIcon({className:"",html:`<div class="mrt-dot"></div>`,iconSize:[12,12],iconAnchor:[6,6]});
-   const m=L.marker([st.lat,st.lng],{icon,interactive:true,title:`${st.name} MRT`}).addTo(map)
-     .bindTooltip(`${st.name} ${st.code}`,{direction:"right",offset:[7,0],className:"mrt-label"});
-   mrtMarkers.push(m)
- });
-}
-async function footRoute(points){
- if(points.length<2)return null;
- const coords=points.map(p=>`${p.lng},${p.lat}`).join(";");
- const url=`https://routing.openstreetmap.de/routed-foot/route/v1/driving/${coords}?overview=full&geometries=geojson&steps=true`;
- const res=await fetch(url);
- if(!res.ok)throw new Error("route");
- const j=await res.json();
- if(j.code!=="Ok"||!j.routes?.length)throw new Error("route");
- return j.routes[0];
-}
-
-function routeStreetNames(route){
- const names=[];
- try{
-   for(const leg of (route.legs||[])){
-     for(const step of (leg.steps||[])){
-       const n=(step.name||"").trim();
-       if(n && !names.includes(n))names.push(n);
-       if(names.length>=4)break;
-     }
-     if(names.length>=4)break;
-   }
- }catch(e){}
- return names;
-}
-
-async function drawTransitTo(a,b,j=null){
- if(routeLayer){map.removeLayer(routeLayer);routeLayer=null}
- j=j||preferredMRTJourney(a,b);
- const s1=j.s1,s2=j.s2,parts=[];
- try{
-   const r1=await footRoute([a,s1]);
-   parts.push(L.geoJSON(r1.geometry,{style:{color:"#1677ff",weight:5,opacity:.85}}).addTo(map));
- }catch(e){}
- // Draw MRT segments schematically using station coordinates where available.
- j.segments.forEach(seg=>{
-   const info=mrtLineInfo[seg.line]||{color:"#777"};
-   const pts=seg.stations.map(name=>mrt.find(x=>x.name===name)).filter(Boolean).map(x=>[x.lat,x.lng]);
-   if(pts.length>=2)parts.push(L.polyline(pts,{color:info.color,weight:6,opacity:.9}).addTo(map));
- });
- try{
-   const r2=await footRoute([s2,b]);
-   parts.push(L.geoJSON(r2.geometry,{style:{color:"#1677ff",weight:5,opacity:.85}}).addTo(map));
- }catch(e){}
- routeLayer=L.featureGroup(parts);
- const bounds=[[a.lat,a.lng],[b.lat,b.lng],[s1.lat,s1.lng],[s2.lat,s2.lng]];
- map.fitBounds(L.latLngBounds(bounds).pad(.10),{maxZoom:18});
- routeStats.textContent=`MRT · ${s1.name} → ${s2.name}`;
- showMRTJourney(j,a,b);
-}
-async function rebuildRoute(){
- renderMarkers();
- if(routeLayer){map.removeLayer(routeLayer);routeLayer=null}
- const r=routeObjs();
- if(r.length<2){renderNext();return}
- routeStats.textContent="Routing…";
- try{
-   const route=await footRoute(r);
-   lastRoute=route;
-   routeLayer=L.geoJSON(route.geometry,{style:{color:"#1677ff",weight:5,opacity:.8}}).addTo(map);
-   map.fitBounds(routeLayer.getBounds().pad(.12));
-   routeStats.textContent=`${(route.distance/1000).toFixed(1)} km · ${Math.round(route.duration/60)} min`;
- }catch(e){
-   routeStats.textContent="Route unavailable";
-   if(markers.length)map.fitBounds(L.featureGroup(markers).getBounds().pad(.15));
- }
- renderNext();
- if(document.getElementById("routeSheet").classList.contains("open"))renderRouteSheet();
-}
-function smartTransportHint(a,b){
- const km=hav(a,b);
- const shortWalk=km<=0.85;
- const explicitWalk=nextMode==="walk";
- const explicitTransit=nextMode==="transit";
- if(explicitWalk || (shortWalk&&!explicitTransit)){
-   return {mode:"Walk",text:`Walk ${km.toFixed(1)} km · about ${walkMins(km)} min`,distance:km};
- }
- const j=preferredMRTJourney(a,b);
- const access=hav(a,j.s1),egress=hav(b,j.s2);
- return {
-   mode:"MRT",
-   text:`Walk ${access.toFixed(1)} km to ${j.s1.name} ${j.s1.code} → ${mrtJourneyText(j)} → walk ${egress.toFixed(1)} km`,
-   distance:km,s1:j.s1,s2:j.s2,journey:j
- };
-}
-function renderRouteSheet(){
- const r=routeObjs();let cards="",total=0;
- for(let i=0;i<r.length-1;i++){
-  const a=r[i],b=r[i+1],km=hav(a,b);total+=km;const hint=smartTransportHint(a,b);
-  const detail=(state.day===0&&i===0)?"Arrive at Changi, follow signs to the MRT, travel toward the city, then walk from the nearest station to Hotel Boss.":hint.text;
-  const placeNote=`${b.desc||""}${b.photo?` Photo: ${b.photo}.`:""}`;
-  const cruiseNote=b.id==="rivercruise"?" Cruise loop: Clarke Quay → Boat Quay → Merlion / Marina Bay → Marina Bay Sands / Esplanade → Clarke Quay.":"";
-  const along=alongInfo(a,b);
-  const alongHtml=along.length?`<div class="along-card"><div class="along-title">Along the way</div>${along.map(x=>`<div class="along-item"><b>${x.name}</b> — ${x.info}</div>`).join("")}</div>`:"";
-  cards+=`<div class="leg-card"><div class="leg-top"><div><div class="leg-name">${i+1}. ${a.name} → ${b.name}</div><div class="leg-detail">${detail}</div><div class="leg-detail">${placeNote}${cruiseNote}</div>${alongHtml}</div><div class="muted">${km.toFixed(1)} km</div></div><div class="leg-modes"><button onclick="showLegRoute('${a.id}','${b.id}','walk')">Walk</button><button onclick="showLegRoute('${a.id}','${b.id}','transit')">MRT / transport</button></div></div>`;
- }
- routeList.innerHTML=`${state.day===0?airportTransferHtml():""}<div class="card"><div class="muted">Approx. stop-to-stop distance: ${total.toFixed(1)} km</div></div>${cards}`;
- smartBtn.classList.toggle("on",state.routeMode==="smart");walkBtn.classList.toggle("on",state.routeMode==="walk");
-}
-async function showLegRoute(aid,bid,mode){
- closeAllSheets();
- document.querySelector(".routefloat")?.classList.add("collapsed");
- if(typeof expandRouteBtn!=="undefined")if(typeof expandRouteBtn!=="undefined"&&expandRouteBtn)expandRouteBtn.textContent="Expand";
- const a=byId(aid),b=byId(bid);closeSheet("routeSheet");
- if(mode==="transit"){const j=preferredMRTJourney(a,b);await drawTransitTo(a,b,j);return}else hideMRTJourney()
- try{const r=await footRoute([a,b]);if(routeLayer)map.removeLayer(routeLayer);routeLayer=L.geoJSON(r.geometry,{style:{color:"#1677ff",weight:6,opacity:.9}}).addTo(map);map.fitBounds(routeLayer.getBounds().pad(.15));routeStats.textContent=`Walk · ${(r.distance/1000).toFixed(1)} km · ${Math.round(r.duration/60)} min`}catch(e){routeStats.textContent="Walking route unavailable"}
-}
-function removeStop(id){
-  const route = state.routes[state.day];
-  const idx = route.indexOf(id);
-  if(state.day < 3 && id==="hotel" && (idx===0 || idx===route.length-1)) return;
-  if(state.day===3 && ((id==="hotel" && idx===0) || (id==="t4" && idx===route.length-1))) return;
-  state.routes[state.day]=state.routes[state.day].filter(x=>x!==id);if(!state.missed.some(m=>m.id===id))state.missed.push({id,reason:"Removed"});save();renderAll();renderRouteSheet();renderMissed();rebuildRoute()}
-function renderMissed(){missedList.innerHTML=state.missed.length?state.missed.map((m,i)=>{const s=byId(m.id);return `<div class="place"><div><h3>${s.name}</h3><p>${m.reason}</p></div><button class="sbtn" onclick="addBack(${i})">Add back</button></div>`}).join(""):'<p class="muted">Nothing saved.</p>'}
-function approxBestInsert(arr,s){
- if(!arr.length)return {idx:0,cost:0};let best={idx:arr.length,cost:Infinity};
- for(let i=0;i<=arr.length;i++){let c=0;if(i===0)c=hav(s,arr[0]);else if(i===arr.length)c=hav(arr[arr.length-1],s);else c=hav(arr[i-1],s)+hav(s,arr[i])-hav(arr[i-1],arr[i]);if(c<best.cost)best={idx:i,cost:c}}
- return best;
-}
-async function addBack(i){
- const m=state.missed.splice(i,1)[0],s=byId(m.id),arr=routeObjs(),ins=approxBestInsert(arr,s);
- state.routes[state.day].splice(ins.idx,0,s.id);save();renderAll();renderRouteSheet();renderMissed();await rebuildRoute()
-}
-function renderAddList(){const q=(searchPlaces.value||"").toLowerCase(),current=new Set(state.routes[state.day]);addList.innerHTML='<div class="card">'+allStops().filter(s=>!current.has(s.id)&&s.name.toLowerCase().includes(q)).map(s=>`<div class="place"><div><h3>${s.name}</h3><p>${s.type} · ${s.priority}</p></div><button class="sbtn" onclick="checkAdd('${s.id}')">Add</button></div>`).join("")+'</div>'}
-function checkAdd(id){
- const s=byId(id),arr=routeObjs(),ins=approxBestInsert(arr,s),extra=ins.cost;
- pendingAdd={id,idx:ins.idx,extra};
- const far=extra>3;
- detourBody.innerHTML=`<div class="${far?"warning":"good"}">${far?`This is well off the current route. Rough extra distance is about ${extra.toFixed(1)} km before foot-route checking.`:`This fits reasonably well in the current route.`}</div><div class="card"><button class="primary" style="width:100%" onclick="confirmAdd('best')">Add in best position</button><button class="sbtn" style="width:100%;margin-top:8px" onclick="confirmAdd('later')">Save for later</button>${far?`<button class="sbtn" style="width:100%;margin-top:8px" onclick="confirmAdd('transit')">Add and use MRT where sensible</button>`:""}</div>`;
- closeSheet("addSheet");openSheet("detourSheet")
-}
-function confirmAdd(mode){if(!pendingAdd)return;const p=pendingAdd;if(mode==="later")state.missed.push({id:p.id,reason:"Saved because it was off-route"});else{state.routes[state.day].splice(p.idx,0,p.id);if(mode==="transit")byId(p.id).transportHint="MRT preferred"}save();pendingAdd=null;closeSheet("detourSheet");renderAll();rebuildRoute()}
-function setRouteMode(m){state.routeMode=m;save();renderRouteSheet()}
-function tooHot(){toggleHot()}
-function toggleHot(){
- state.hot=!state.hot;
- nextMode=state.hot?"transit":"auto";
- save();
- applyPlanRules();
- renderAll();
- renderAppLayout();
-}
-function applyPlanRules(){
- const hs=document.getElementById("hotState");
- if(hs)hs.textContent=state.hot?"On":"Off";
- const pb=document.getElementById("planBanner");
- if(pb){
-   if(state.hot){pb.textContent="Too hot · MRT and shorter walking preferred";pb.className="plan-banner hot"}
-   else if(state.mode==="Wet"){pb.textContent="Wet plan · MRT and indoor activities preferred";pb.className="plan-banner wet"}
-   else{pb.textContent="Dry plan · outdoor walking preferred";pb.className="plan-banner"}
- }
-}
-function toggleWet(){
- state.mode=state.mode==="Dry"?"Wet":"Dry";
- nextMode=state.mode==="Wet"?"transit":"auto";
- save();applyPlanRules();renderAll();renderAppLayout();
-}
-function skipNext(){const id=state.routes[state.day].shift();if(id)state.missed.push({id,reason:"Skipped"});save();renderAll();rebuildRoute()}
-function setGpsStatus(msg,isError=false){
- const open=document.querySelector(".sheetbg.open .nearby-gps-note");
- if(open){open.className=isError?"gps-error":"nearby-gps-note";open.textContent=msg}
-}
-function getGPS(onSuccess,onError){
- if(userPos){if(onSuccess)onSuccess(userPos);return}
- if(!navigator.geolocation){
-   setGpsStatus("GPS is not available in this browser.",true);
-   if(onError)onError();return;
- }
- setGpsStatus("Getting your current GPS location…");
- navigator.geolocation.getCurrentPosition(p=>{
-   userPos={lat:p.coords.latitude,lng:p.coords.longitude};
-   if(userMarker)map.removeLayer(userMarker);
-   userMarker=L.circleMarker([userPos.lat,userPos.lng],{radius:8,weight:3,fillOpacity:.9})
-     .addTo(map).bindPopup("You are here");
-   map.setView([userPos.lat,userPos.lng],18);
-   userMarker.openPopup();
-   checkNearbyHawker();
-   startLocationWatch();
-   onGpsMoved();
-   if(onSuccess)onSuccess(userPos);
- },err=>{
-   const msg=err.code===1
-    ?"Location permission is blocked. Allow location for this site, then try again."
-    :"I couldn’t get your GPS location. Try again outdoors or with location services on.";
-   setGpsStatus(msg,true);
-   const rs=document.getElementById("routeStats");if(rs)rs.textContent=msg;
-   if(onError)onError(err);
- },{enableHighAccuracy:true,timeout:10000,maximumAge:15000});
-}
-function startLocationWatch(){
- if(window._sgWatchStarted||!navigator.geolocation)return;
- window._sgWatchStarted=true;
- navigator.geolocation.watchPosition(p=>{
-   userPos={lat:p.coords.latitude,lng:p.coords.longitude};
-   if(userMarker)map.removeLayer(userMarker);
-   userMarker=L.circleMarker([userPos.lat,userPos.lng],{radius:8,weight:3,fillOpacity:.9}).addTo(map).bindPopup("You are here");
-   checkNearbyHawker();
-   onGpsMoved();
- },()=>{}, {enableHighAccuracy:true,maximumAge:20000,timeout:12000});
-}
-function locateMe(){getGPS(()=>startLocationWatch())}
-async function followRoute(){
- document.querySelector(".routefloat")?.classList.add("collapsed");
- if(!userPos){getGPS(()=>followRoute());return}
- const n=routeObjs()[0];if(!n)return;
- const shortWalk=hav(userPos,n)<=0.85;
- const useTransit=nextMode==="transit" || (nextMode!=="walk" && !shortWalk);
- if(useTransit){const j=preferredMRTJourney(userPos,n);await drawTransitTo(userPos,n,j);return}
- hideMRTJourney();
- try{
-  const route=await footRoute([userPos,n]);
-  if(routeLayer)map.removeLayer(routeLayer);
-  routeLayer=L.geoJSON(route.geometry,{style:{color:"#1677ff",weight:6,opacity:.9}}).addTo(map);
-  map.fitBounds(routeLayer.getBounds().pad(.10),{maxZoom:18});
-  routeStats.textContent=`Walk · ${(route.distance/1000).toFixed(1)} km · ${Math.round(route.duration/60)} min`;
- }catch(e){routeStats.textContent="Walking route unavailable"}
-}
-function focusStop(id){const s=byId(id);if(!s)return;closeAllSheets();document.querySelector(".routefloat")?.classList.add("collapsed");map.setView([s.lat,s.lng],18);const match=markers.find(m=>m.getLatLng&&Math.abs(m.getLatLng().lat-s.lat)<0.00001&&Math.abs(m.getLatLng().lng-s.lng)<0.00001);if(match)match.openPopup()}
-
-function toggleRouteCard(){
- const card=document.querySelector(".routefloat");
- card.classList.toggle("collapsed");
- if(!card.classList.contains("collapsed")){
-   renderUpcoming();
-   setTimeout(()=>{ensureMiniMap();miniMap.invalidateSize();const p=dayDisplayPlan();if(p[0])previewRouteLeg(p[0],0)},80);
- }
-}
-function toggleUpcoming(){toggleRouteCard()}
-function setNextMode(mode){
- nextMode=mode;
- state.routeMode=(mode==="walk"?"walk":"smart");
- save();
- nextWalkBtn.classList.toggle("active",mode==="walk");
- nextTransitBtn.classList.toggle("active",mode==="transit");
- renderNext();renderUpcoming();
- const n=routeObjs()[0];
- if(userPos&&n)routeFromMe(n.id);
- else routeStats.textContent=mode==="walk"?"Walking selected":"Public transport selected";
-}
-function dayDisplayPlan(){
- const base=[...masterPlans[state.day]];
- const extras=(state.routes[state.day]||[]).filter(id=>!base.includes(id));
- if(extras.length){const end=base.pop();base.push(...extras,end)}
- return base;
-}
-function routeItemIncluded(id,index,plan){
- if(fixedRouteItem(state.day,id,index,plan))return true;
- return !(state.excluded[state.day]||[]).includes(id);
-}
-function toggleDayLocation(id,index){
- const plan=dayDisplayPlan();
- if(fixedRouteItem(state.day,id,index,plan))return;
- const arr=state.excluded[state.day]||[],pos=arr.indexOf(id);
- if(pos>=0)arr.splice(pos,1);else arr.push(id);
- state.excluded[state.day]=arr;
- ensureHotelReturn();save();renderAll();rebuildRoute();
-}
-async function routeFromMe(id){
- const s=byId(id);if(!s)return;
- closeAllSheets();
- if(!userPos){getGPS(()=>routeFromMe(id));return}
- document.querySelector(".routefloat")?.classList.add("collapsed");
- map.fitBounds(L.latLngBounds([[userPos.lat,userPos.lng],[s.lat,s.lng]]).pad(.14),{maxZoom:18});
- const shortWalk=hav(userPos,s)<=0.85; const useTransit=nextMode==="transit" || (nextMode!=="walk" && !shortWalk);
- if(useTransit){const j=preferredMRTJourney(userPos,s);showMRTJourney(j,userPos,s);await drawTransitTo(userPos,s,j);return}else hideMRTJourney()
- try{
-  const r=await footRoute([userPos,s]);
-  if(routeLayer)map.removeLayer(routeLayer);
-  routeLayer=L.geoJSON(r.geometry,{style:{color:"#1677ff",weight:6,opacity:.9}}).addTo(map);
-  map.fitBounds(routeLayer.getBounds().pad(.10),{maxZoom:18});
-  routeStats.textContent=`From GPS · Walk ${(r.distance/1000).toFixed(1)} km · ${Math.round(r.duration/60)} min`;
- }catch(e){
-  map.fitBounds(L.latLngBounds([[userPos.lat,userPos.lng],[s.lat,s.lng]]).pad(.14),{maxZoom:18});
-  routeStats.textContent="Chosen location + GPS shown · route unavailable";
- }
-}
-function renderUpcoming(){
- const plan=dayDisplayPlan();let out="";
- if(state.day===0)out+=airportTransferHtml();
- const effective=nextMode==="walk"?"Walking":nextMode==="transit"?"Public transport / MRT":"Best route";
- out+=`<div class="route-mode-note"><strong>${effective}.</strong> MRT is suggested for getting between areas; walks of about 850 m or less are suggested on foot.</div>`;
- for(let i=0;i<plan.length;i++){
-   const id=plan[i],cur=byId(id);if(!cur)continue;
-   const included=routeItemIncluded(id,i,plan),fixed=fixedRouteItem(state.day,id,i,plan);
-   let meta=i===0?"Start":(i===plan.length-1?"End of day":"");
-   if(included){
-     let next=null;
-     for(let j=i+1;j<plan.length;j++){if(routeItemIncluded(plan[j],j,plan)){next=byId(plan[j]);break}}
-     if(next){const km=hav(cur,next),hint=smartTransportHint(cur,next);meta=`${km.toFixed(1)} km · ${hint.mode}`}
-   }else meta="Not taking this stop";
-   out+=`<div class="upcoming-row ${included?"":"route-off"}" id="up-${id}-${i}">
-    <div onclick="previewRouteLeg('${id}',${i})" title="Show details and route to the next location">
-      <div class="u-name">${i+1}. ${cur.name}</div>
-      <div class="u-meta">${meta}</div>
-      <div class="u-meta">${cur.desc||""}</div>
-      <div class="u-meta">${cur.photo?`<span class="photo-badge">Photo: ${cur.photo}</span>`:""}</div>
-    </div>
-    <div class="route-row-actions">
-      <button class="sbtn" onclick="event.stopPropagation();routeFromMe('${id}')">Route</button>
-      ${fixed?'<button class="sbtn route-toggle" disabled title="Required stop">•</button>':`<button class="sbtn route-toggle" onclick="event.stopPropagation();toggleDayLocation('${id}',${i})">${included?"−":"+"}</button>`}
-    </div>
-   </div>`;
- }
- upcomingList.innerHTML=out;
-}
-function showUpcomingOnMap(id,index){
- document.querySelectorAll(".upcoming-row").forEach(x=>x.classList.remove("selected"));
- const row=document.getElementById(`up-${id}-${index}`);if(row)row.classList.add("selected");
- const s=byId(id);if(!s)return;
- const card=document.querySelector(".routefloat");card.classList.add("collapsed");if(typeof expandRouteBtn!=="undefined"&&expandRouteBtn)expandRouteBtn.textContent="Expand";
- map.setView([s.lat,s.lng],18);
- const match=markers.find(m=>m.getLatLng&&Math.abs(m.getLatLng().lat-s.lat)<0.00001&&Math.abs(m.getLatLng().lng-s.lng)<0.00001);
- if(match)match.openPopup();
-}
-function showReturnOptions(){
- const hotel=byId("hotel");
- const r=routeObjs();
- const from=(r.length>1?r[r.length-2]:(userPos||hotel));
- const km=hav(from,hotel);
- const s1=nearestMRT(from),s2=nearestMRT(hotel);
- alert(`Back to Hotel Boss\n\nWalk: approx. ${km.toFixed(1)} km / ${walkMins(km)} min\n\nPublic transport: walk to ${s1.name} ${s1.code}, take MRT toward ${s2.name} ${s2.code}, then walk to Hotel Boss.`);
-}
-
-function renderSpend(){
- const totalEl=document.getElementById("spendTotal"),fxEl=document.getElementById("spendFx"),listEl=document.getElementById("expenseList");
- if(!totalEl||!fxEl||!listEl)return;
- const t=state.expenses.reduce((a,b)=>a+b.amount,0);
- totalEl.textContent=`S$${t.toFixed(2)}`;
- fxEl.textContent=`≈ £${(t*state.fx.gbp).toFixed(2)} · C$${(t*state.fx.cad).toFixed(2)}`;
- listEl.innerHTML=state.expenses.slice().reverse().map(e=>`<div class="card"><div style="display:flex;justify-content:space-between;gap:10px"><div><div>${e.desc}</div><div class="muted">${e.cat} · ${e.who}</div></div><div style="text-align:right">S$${e.amount.toFixed(2)}<div class="muted">£${(e.amount*state.fx.gbp).toFixed(2)} · C$${(e.amount*state.fx.cad).toFixed(2)}</div></div></div></div>`).join("");
-}
-function saveExpense(){const a=+expAmount.value;if(!a)return;state.expenses.push({desc:expDesc.value||expCat.value,amount:a,cat:expCat.value,who:expWho.value,pay:expPay.value,ts:new Date().toISOString()});expDesc.value=expAmount.value="";save();renderSpend()}
-let actionMarkers=[];
-function clearActionMarkers(){actionMarkers.forEach(m=>map.removeLayer(m));actionMarkers=[]}
-function actionIcon(kind,label){return L.divIcon({className:"",html:`<div class="map-action-pin ${kind==="cool"?"pin-cool":"pin-smoke"}">${label}</div>`,iconSize:[30,30],iconAnchor:[15,15]})}
-function getCoolPlaces(){
- const p=[{name:"Bugis Junction",lat:1.2997,lng:103.8555,note:"Air-conditioned mall · free entry"},{name:"Raffles City",lat:1.2931,lng:103.8533,note:"Air-conditioned mall · free entry"},{name:"Clarke Quay Central",lat:1.2897,lng:103.8465,note:"Air-conditioned mall · free entry"},{name:"Marina Bay Sands Shoppes",lat:1.2839,lng:103.8591,note:"Air-conditioned mall · free entry"},{name:"Tekka Centre",lat:1.3062,lng:103.8504,note:"Covered food centre"}];
- if(userPos)p.sort((a,b)=>hav(userPos,a)-hav(userPos,b));return p;
-}
-function zoomNearestCool(drawRoute=false){
- const ranked=getCoolPlaces();
- if(!userPos||!ranked.length)return;
- clearActionMarkers();
- const nearest=ranked[0];
- ranked.slice(0,4).forEach((x,i)=>{
-  const m=L.marker([x.lat,x.lng],{icon:actionIcon("cool","C")}).addTo(map)
-   .bindPopup(`<div style="font-size:14px;line-height:1.45"><b style="font-size:16px">${x.name}</b><br>${x.note}<br>${hav(userPos,x).toFixed(1)} km from your GPS location<br><button onclick="routeToCool(${i})">Route here</button></div>`);
-  actionMarkers.push(m);
- });
- map.fitBounds(L.latLngBounds([[userPos.lat,userPos.lng],[nearest.lat,nearest.lng]]).pad(.14),{maxZoom:18});
- actionMarkers[0]?.openPopup();
- routeStats.textContent=`Nearest cool place · ${nearest.name} · ${hav(userPos,nearest).toFixed(1)} km`;
- if(drawRoute)routeToCool(0);
-}
-function showCoolPins(){
- if(!userPos){getGPS(()=>{renderCool();zoomNearestCool(false)});return}
- zoomNearestCool(false);
-}
-function renderCool(){
- if(!userPos){
-   coolList.innerHTML='<div class="card"><div class="nearby-gps-note">Getting your current GPS location…</div></div>';
-   getGPS(()=>{renderCool();zoomNearestCool(false)});
-   return;
- }
- const p=getCoolPlaces().slice(0,4);
- coolList.innerHTML='<div class="card"><div class="nearby-gps-note">Nearest cool places from your current GPS location.</div>'+p.map((x,i)=>`<div class="place"><div><h3>${x.name}</h3><p>${x.note} · ${hav(userPos,x).toFixed(1)} km from you${i===0?' · Nearest':''}</p></div><button class="sbtn" onclick="routeToCool(${i})">Route</button></div>`).join("")+'</div>';
-}
-async function routeToCool(i){
- closeAllSheets();
- document.querySelector(".routefloat")?.classList.add("collapsed");
- if(typeof expandRouteBtn!=="undefined")if(typeof expandRouteBtn!=="undefined"&&expandRouteBtn)expandRouteBtn.textContent="Expand";
- const p=getCoolPlaces()[i];closeSheet("coolSheet");
- if(!userPos){getGPS(()=>routeToCool(i));return}
- if(nextMode==="transit" || (nextMode!=="walk" && hav(userPos,p)>0.85)){const j=preferredMRTJourney(userPos,p);await drawTransitTo(userPos,p,j);return}else hideMRTJourney()
- try{const r=await footRoute([userPos,p]);if(routeLayer)map.removeLayer(routeLayer);routeLayer=L.geoJSON(r.geometry,{style:{color:"#1677ff",weight:6,opacity:.9}}).addTo(map);map.fitBounds(routeLayer.getBounds().pad(.10),{maxZoom:18});routeStats.textContent=`Cool place · ${(r.distance/1000).toFixed(1)} km · ${Math.round(r.duration/60)} min`}catch(e){}
-}
-function wxIcon(rain,cloud=0){
- if(rain>=55)return `<svg class="wx-svg wx-rain" viewBox="0 0 24 24"><path d="M7 16h10a4 4 0 0 0 .4-8A6 6 0 0 0 6 7.5 4.3 4.3 0 0 0 7 16Z"/><path d="M8 20l1-2M12 20l1-2M16 20l1-2"/></svg>`;
- if(cloud>65)return `<svg class="wx-svg wx-cloud" viewBox="0 0 24 24"><path d="M7 17h10a4 4 0 0 0 .4-8A6 6 0 0 0 6 8.5 4.3 4.3 0 0 0 7 17Z"/></svg>`;
- return `<svg class="wx-svg wx-sun" viewBox="0 0 24 24"><circle cx="12" cy="12" r="4"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3M5 5l2 2M17 17l2 2M19 5l-2 2M7 17l-2 2"/></svg>`;
-}
-async function loadWeather(){weatherBody.innerHTML='<div class="card">Loading forecast…</div>';try{const r=await fetch("https://api.open-meteo.com/v1/forecast?latitude=1.3521&longitude=103.8198&hourly=temperature_2m,precipitation_probability,cloud_cover&timezone=Asia%2FSingapore&forecast_days=16"),j=await r.json(),date=days[state.day].date,arr=j.hourly.time.map((t,i)=>({t,temp:j.hourly.temperature_2m[i],rain:j.hourly.precipitation_probability[i],cloud:j.hourly.cloud_cover[i]})).filter(x=>x.t.startsWith(date)&&+x.t.slice(11,13)>=7&&+x.t.slice(11,13)<=22);if(!arr.length)throw 0;weatherBody.innerHTML='<div class="card">'+arr.map(x=>`<div class="place"><div style="display:flex;gap:10px;align-items:center"><div class="weather-icon ${x.rain>=55?'rainy':x.cloud>65?'cloudy':'sunny'}">${wxIcon(x.rain,x.cloud)}</div><div><h3>${x.t.slice(11,16)}</h3><p>${Math.round(x.temp)}°C · ${x.rain}% rain · ${x.cloud}% cloud</p></div></div></div>`).join("")+'</div>'}catch(e){weatherBody.innerHTML='<div class="card">Exact hourly forecast is not available yet. Refresh nearer the trip.</div>'}}
-function openCameraCheck(){openSheet("photoSheet");setTimeout(()=>photoInput.click(),180)}
-function previewPhoto(ev){const f=ev.target.files?.[0];if(!f)return;photoPreview.src=URL.createObjectURL(f);photoPreview.style.display="block";usePhotoBtn.style.display="block";photoUsed.textContent=""}
-async function usePhoto(){
- const f=photoInput.files?.[0];if(!f)return;
- const endpoint=loadPhotoAiUrl();
- if(!endpoint){
-   photoUsed.innerHTML='<div class="photo-result"><h3>Photo AI not connected</h3><p class="photo-ai-warn">Enter the secure Photo AI backend URL in Menu → Photo Check AI. The static website cannot identify landmarks accurately by itself.</p></div>';
-   return;
- }
- photoUsed.innerHTML='<div class="photo-result"><h3>Identifying…</h3><p>Analysing the image and matching visual details.</p></div>';
- try{
-   const fd=new FormData();fd.append("image",f);
-   if(userPos){fd.append("lat",String(userPos.lat));fd.append("lng",String(userPos.lng))}
-   fd.append("known_places",JSON.stringify(stops.map(s=>({name:s.name,lat:s.lat,lng:s.lng,desc:s.desc||""}))));
-   const r=await fetch(endpoint.replace(/\/$/,"")+"/photo-identify",{method:"POST",body:fd});
-   if(!r.ok)throw new Error("Photo AI service returned "+r.status);
-   const j=await r.json();
-   photoUsed.innerHTML=`<div class="photo-result">
-     <h3>${j.name||"Location identified"}</h3>
-     <p class="photo-ai-good"><b>Confidence:</b> ${j.confidence||"Not stated"}</p>
-     <p>${j.description||""}</p>
-     ${j.evidence?`<p><b>Why:</b> ${j.evidence}</p>`:""}
-     ${j.tip?`<p><b>Photo / visit tip:</b> ${j.tip}</p>`:""}
-   </div>`;
- }catch(e){
-   photoUsed.innerHTML=`<div class="photo-result"><h3>Could not identify</h3><p class="photo-ai-warn">${e.message}</p><p>Check that the Photo AI backend URL is correct and running.</p></div>`;
- }
- usePhotoBtn.style.display="none";
-}
-
-function showSmokingPins(){
- if(!userPos){getGPS(()=>{renderSmoking();zoomNearestSmoking()});return}
- zoomNearestSmoking();
-}
-
-const smokingPlaces=[
- {name:"Changi T4 public kerbside smoking area",lat:1.3385,lng:103.9838,note:"Terminal 4 public-side vicinity. Follow the airport smoking-area signs when you arrive."},
- {name:"Changi T4 transit smoking area – Gate G4 area",lat:1.3394,lng:103.9847,note:"Airside/transit vicinity. Only accessible after immigration/security."},
- {name:"Changi T4 transit smoking area – Gate G16 area",lat:1.3374,lng:103.9849,note:"Airside/transit vicinity. Follow current terminal signage."}
-];
-
-function renderSmoking(){
- if(!userPos){
-   smokeList.innerHTML='<div class="card"><div class="nearby-gps-note">Getting your current GPS location…</div></div>';
-   getGPS(()=>{renderSmoking();zoomNearestSmoking()});
-   return;
- }
- const ranked=[...smokingPlaces].sort((a,b)=>hav(userPos,a)-hav(userPos,b)).slice(0,5);
- smokeList.innerHTML=`<div class="card"><div class="nearby-gps-note">Nearest listed smoking locations from your current GPS position. Always follow local signs.</div>${ranked.map((p,i)=>`
-   <div class="place">
-    <div><h3>${p.name}</h3><p>${p.note} · ${hav(userPos,p).toFixed(1)} km from you${i===0?' · Nearest':''}</p></div>
-    <button class="sbtn" onclick="routeToSmoking(${smokingPlaces.indexOf(p)})">Route</button>
-   </div>`).join("")}</div>`;
-}
-async function routeToSmoking(i){
- closeAllSheets();
- document.querySelector(".routefloat")?.classList.add("collapsed");
- if(typeof expandRouteBtn!=="undefined")if(typeof expandRouteBtn!=="undefined"&&expandRouteBtn)expandRouteBtn.textContent="Expand";
- const p=smokingPlaces[i];closeSheet("smokeSheet");
- if(!userPos){getGPS(()=>routeToSmoking(i));return}
- if(nextMode==="transit" || (nextMode!=="walk" && hav(userPos,p)>0.85)){const j=preferredMRTJourney(userPos,p);await drawTransitTo(userPos,p,j);routeStats.textContent="Smoking route · MRT / transport";return}else hideMRTJourney()
- try{const route=await footRoute([userPos,p]);if(routeLayer)map.removeLayer(routeLayer);routeLayer=L.geoJSON(route.geometry,{style:{color:"#1677ff",weight:6,opacity:.9}}).addTo(map);map.fitBounds(routeLayer.getBounds().pad(.10),{maxZoom:18});routeStats.textContent=`Smoking route · ${(route.distance/1000).toFixed(1)} km · ${Math.round(route.duration/60)} min`}catch(e){map.setView([p.lat,p.lng],17);routeStats.textContent="Smoking location shown · route unavailable"}
-}
-function renderAll(){ensureHotelReturn();applyPlanRules();renderHeader();renderDays();renderSpend();renderAppLayout()}
-document.addEventListener("click",e=>{
- const btn=e.target.closest(".sheet button");
- if(!btn)return;
- const keepOpen =
-   btn.closest("form") ||
-   btn.id==="smartBtn" ||
-   btn.id==="walkBtn" ||
-   btn.type==="submit" ||
-   btn.dataset.keepopen==="1";
- if(!keepOpen){
-   const bg=btn.closest(".sheetbg");
-   if(bg)setTimeout(()=>closeSheet(bg.id),30);
- }
-});
-
-
-let currentDrawerStep=0;
-let drawerExpanded=false;
-let routeNodePositions=[];
-const streetNameCache={};
-
-function pillState(){
- const hot=document.getElementById('hotPill'), plan=document.getElementById('planPill');
- if(hot){hot.textContent=`Too hot: ${state.hot?'On':'Off'}`;hot.classList.toggle('on',state.hot)}
- if(plan){plan.textContent=state.mode==='Wet'?'Wet plan':'Dry plan';plan.classList.toggle('blue',state.mode==='Wet')}
- const gps=document.getElementById('gpsBadge');
- if(gps)gps.textContent=userPos?'GPS active · current route section follows your position':'Tap the target button to start GPS';
-}
-function toggleDrawer(force){
- const d=document.getElementById('routeDrawer'); if(!d)return;
- if(typeof force==='boolean') drawerExpanded=force; else drawerExpanded=!drawerExpanded;
- d.classList.toggle('expanded',drawerExpanded);
- d.classList.toggle('collapsed',!drawerExpanded);
- const b=document.getElementById('drawerToggleBtn'); if(b)b.textContent=drawerExpanded?'Hide':'More';
-}
-function fitSchematicToCurrent(){ focusSchematicStep(currentDrawerStep,true) }
-function dayColour(){ return ['#0050A4','#E32017','#009645','#8B4513'][state.day]||'#0050A4' }
-function svgEsc(s){return String(s||'').replace(/[&<>]/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[m]))}
-function schematicPoiColor(type){ return type==='Food'?'#f6a800':type==='A/C'?'#1e88e5':type==='Smoking'?'#666':type==='Toilet'?'#7b61ff':'#e32017' }
-function buildSchematicPois(a,b,x,y,side){
- const list=cardPoiCandidates(a,b).slice(0,3);
- return list.map((p,idx)=>{
-   const px=x + side*(78 + (idx%2)*20), py=y + idx*30 - 16;
-   const short=p.name.length>16?p.name.slice(0,16)+'…':p.name;
-   const textX = side>0 ? px+12 : px-12;
-   return `<g class="schem-poi" onclick='openPoiOverlay(${JSON.stringify(p.name)},${JSON.stringify(p.info||'')},${JSON.stringify(p.tip||'')},${JSON.stringify(p.type||'Place')},${Number.isFinite(p.lat)?p.lat:'null'},${Number.isFinite(p.lng)?p.lng:'null'})' style="cursor:pointer">
-      <line class="route-branch" x1="${x}" y1="${y}" x2="${px}" y2="${py}"/>
-      <circle class="route-poi-dot" cx="${px}" cy="${py}" r="7" fill="${schematicPoiColor(p.type)}"/>
-      <text class="route-poi-text" x="${textX}" y="${py+4}" text-anchor="${side>0?'start':'end'}">${svgEsc(short)}</text>
-   </g>`;
- }).join('');
-}
-
-const legMapCache={};
-
-function routeBoundsFromCoords(coords,padFrac=.18){
-  const lngs=coords.map(c=>c[0]), lats=coords.map(c=>c[1]);
-  const minLng=Math.min(...lngs),maxLng=Math.max(...lngs),minLat=Math.min(...lats),maxLat=Math.max(...lats);
-  const dLng=Math.max(maxLng-minLng,.00025), dLat=Math.max(maxLat-minLat,.00025);
-  return [minLng-dLng*padFrac,minLat-dLat*padFrac,maxLng+dLng*padFrac,maxLat+dLat*padFrac];
-}
-function projectRaw(lat,lng,bounds,w=520,h=420,pad=22){
-  const [minLng,minLat,maxLng,maxLat]=bounds;
-  const dx=Math.max(maxLng-minLng,.00001),dy=Math.max(maxLat-minLat,.00001);
-  return [pad+(lng-minLng)/dx*(w-pad*2),h-pad-(lat-minLat)/dy*(h-pad*2)];
-}
-function rotatePts(points,angle,cx=260,cy=210){
-  const c=Math.cos(angle),s=Math.sin(angle);
-  return points.map(([x,y])=>[cx+(x-cx)*c-(y-cy)*s,cy+(x-cx)*s+(y-cy)*c]);
-}
-function rotationForUpwards(points){
-  if(points.length<2)return 0;
-  const a=points[0],b=points[points.length-1];
-  const dx=b[0]-a[0],dy=b[1]-a[1];
-  const current=Math.atan2(dy,dx);
-  const target=-Math.PI/2;
-  return target-current;
-}
-function linePath(points){
-  return points.map((p,i)=>(i?"L":"M")+p[0].toFixed(1)+","+p[1].toFixed(1)).join(" ");
-}
-function centroid(geom,bounds,angle){
-  if(!geom||!geom.length)return [0,0];
-  const pts=geom.map(g=>projectRaw(g.lat,g.lon,bounds));
-  const r=rotatePts(pts,angle);
-  const x=r.reduce((a,p)=>a+p[0],0)/r.length, y=r.reduce((a,p)=>a+p[1],0)/r.length;
-  return [x,y];
-}
-async function fetchMapFeaturesForLeg(a,b,coords){
-  const key=`${a.id}>${b.id}`;
-  if(legMapCache[key])return legMapCache[key];
-  const bounds=routeBoundsFromCoords(coords,.22);
-  const [minLng,minLat,maxLng,maxLat]=bounds;
-  const q=`[out:json][timeout:10];(
-    way["building"](${minLat},${minLng},${maxLat},${maxLng});
-    way["highway"](${minLat},${minLng},${maxLat},${maxLng});
-  );out tags geom 160;`;
-  try{
-    const r=await fetch("https://overpass-api.de/api/interpreter",{method:"POST",body:q});
-    const j=await r.json();
-    const buildings=[],roads=[];
-    (j.elements||[]).forEach(e=>{
-      if(!e.geometry?.length)return;
-      if(e.tags?.building)buildings.push(e);
-      else if(e.tags?.highway)roads.push(e);
-    });
-    const out={bounds,buildings:buildings.slice(0,90),roads:roads.slice(0,90)};
-    legMapCache[key]=out;return out;
-  }catch(e){
-    const out={bounds,buildings:[],roads:[]};legMapCache[key]=out;return out;
-  }
-}
-function roadClass(tags){
-  const h=tags?.highway||"";
-  return ["primary","secondary","tertiary","trunk"].includes(h)?"major":"minor";
-}
-function renderBuildings(buildings,bounds,angle){
-  return buildings.map(b=>{
-    const pts=rotatePts(b.geometry.map(g=>projectRaw(g.lat,g.lon,bounds)),angle);
-    return `<polygon class="building" points="${pts.map(p=>p.map(n=>n.toFixed(1)).join(",")).join(" ")}"/>`;
-  }).join("");
-}
-function renderRoads(roads,bounds,angle){
-  let out="",labels="";
-  roads.forEach((r,idx)=>{
-    const pts=rotatePts(r.geometry.map(g=>projectRaw(g.lat,g.lon,bounds)),angle);
-    if(pts.length<2)return;
-    const d=linePath(pts),major=roadClass(r.tags)==="major";
-    out+=`<path class="${major?"road-casing":"minor-road-casing"}" d="${d}"/><path class="${major?"road-fill":"minor-road-fill"}" d="${d}"/>`;
-    const name=(r.tags?.name||"").trim();
-    if(name && idx%2===0){
-      const mid=pts[Math.floor(pts.length/2)];
-      labels+=`<text class="street-name" x="${mid[0]}" y="${mid[1]-4}" text-anchor="middle">${svgEsc(name)}</text>`;
+  const s=await (await fetch("https://tiles.openfreemap.org/styles/positron")).json();
+  s.layers=s.layers.filter(l=>{
+    const id=(l.id||"").toLowerCase();
+    if(id.includes("poi")||id.includes("housenumber")||id.includes("transit")||id.includes("airport-label"))return false;
+    if(l.type==="symbol"){
+      return id.includes("road")||id.includes("street")||id.includes("place")||id.includes("city")||id.includes("water");
     }
+    return true;
   });
-  return out+labels;
+  return s
+ }catch(e){return "https://tiles.openfreemap.org/styles/positron"}
 }
-async function renderRealMapCard(i,a,b){
-  const el=document.getElementById(`real-map-${i}`);if(!el)return;
-  const colour=dayColour();
-  try{
-    const route=await footRoute([a,b]);
-    const coords=route.geometry.coordinates;
-    const feat=await fetchMapFeaturesForLeg(a,b,coords);
-    const bounds=feat.bounds;
-    const raw=coords.map(([lng,lat])=>projectRaw(lat,lng,bounds));
-    const angle=rotationForUpwards(raw);
-    const routePts=rotatePts(raw,angle);
-    const buildings=renderBuildings(feat.buildings,bounds,angle);
-    const roads=renderRoads(feat.roads,bounds,angle);
-    const start=routePts[0],end=routePts[routePts.length-1];
-    const streetNames=routeStreetNames(route);
-    el.innerHTML=`<svg viewBox="0 0 520 420" preserveAspectRatio="xMidYMid meet">
-      <rect class="map-bg" width="520" height="420"/>
-      ${buildings}
-      ${roads}
-      <path class="route-halo" d="${linePath(routePts)}"/>
-      <path class="route-path" stroke="${colour}" d="${linePath(routePts)}"/>
-      <circle class="route-node" cx="${start[0]}" cy="${start[1]}" r="10"/>
-      <circle class="route-node end" cx="${end[0]}" cy="${end[1]}" r="10"/>
-      <text class="route-num" x="${start[0]}" y="${start[1]+1}">${i+1}</text>
-      <text class="route-label" x="${start[0]+16}" y="${start[1]-10}">${svgEsc(a.name)}</text>
-      <text class="route-label" x="${end[0]+16}" y="${end[1]-10}">${svgEsc(b.name)}</text>
-      <polygon class="next-arrow" points="${end[0]-8},${end[1]+18} ${end[0]+8},${end[1]+18} ${end[0]},${end[1]+4}"/>
-      <text class="route-sub" x="18" y="397">${svgEsc(streetNames.slice(0,4).join(" → ") || "Follow the highlighted route")}</text>
-    </svg>`;
-    const badge=el.querySelector(".step-badge");
-    if(badge)badge.textContent=`${i+1}. ${a.name} → ${b.name}`;
-  }catch(e){
-    el.innerHTML=`<div class="loading">Couldn’t load local map for this section.</div>`;
-  }
+function bearing(a,b){
+ const p=Math.PI/180,la1=a[1]*p,la2=b[1]*p,dl=(b[0]-a[0])*p;
+ const y=Math.sin(dl)*Math.cos(la2),x=Math.cos(la1)*Math.sin(la2)-Math.sin(la1)*Math.cos(la2)*Math.cos(dl);
+ return (Math.atan2(y,x)*180/Math.PI+360)%360
 }
-function renderRealMapStack(){
-  const stack=document.getElementById("routeMapStack");if(!stack)return;
-  ensureHotelReturn();const route=routeObjs();
-  if(route.length<2){stack.innerHTML="";return}
-  currentDrawerStep=Math.max(0,Math.min(currentDrawerStep,route.length-2));
-  let htmlOut="";
-  // Reverse DOM order so step 1 is physically at the bottom.
-  for(let i=route.length-2;i>=0;i--){
-    const a=route[i],b=route[i+1];
-    htmlOut+=`<section class="real-map-card ${i===currentDrawerStep?"current-step":""}" data-step="${i}" id="real-map-${i}">
-      <div class="step-badge">${i+1}. ${svgEsc(a.name)} → ${svgEsc(b.name)}</div>
-      <div class="loading">Loading streets and buildings…</div>
-    </section>`;
-  }
-  stack.innerHTML=htmlOut;
-  route.slice(0,-1).forEach((a,i)=>renderRealMapCard(i,a,route[i+1]));
-  setTimeout(()=>{
-    const sc=document.getElementById("schematicScroller");
-    if(sc && currentDrawerStep===0){sc.scrollTop=sc.scrollHeight}
-    scrollRouteToStep(currentDrawerStep,false);
-  },120);
+async function init(){
+ const style=await loadSimpleStyle();
+ map=new maplibregl.Map({container:"map",style,center:[103.856,1.297],zoom:14,attributionControl:true,dragPan:false,scrollZoom:false,touchZoomRotate:true});
+ map.touchZoomRotate.disableRotation();
+ map.on("load",async()=>{await buildRoute();setupGesture();renderDays()});
 }
-function scrollRouteToStep(i,smooth=true){
-  const sc=document.getElementById("schematicScroller"),card=document.getElementById(`real-map-${i}`);
-  if(!sc||!card)return;
-  // Because cards are reversed, step 1 is at the bottom. Keep current step around lower-middle.
-  const top=card.offsetTop - Math.max(10,sc.clientHeight*0.58);
-  sc.scrollTo({top:Math.max(0,top),behavior:smooth?"smooth":"auto"});
-  document.querySelectorAll(".real-map-card").forEach(c=>c.classList.toggle("current-step",Number(c.dataset.step)===i));
-}
-
-function renderRouteSchematic(){
- const svg=document.getElementById('routeSvg'); if(!svg) return;
- ensureHotelReturn();
- const route=routeObjs();
- if(route.length<2){svg.innerHTML=''; return}
- const colour=dayColour();
- const lngs=route.map(r=>r.lng||0), minLng=Math.min(...lngs), maxLng=Math.max(...lngs);
- const usable=minLng===maxLng?1:(maxLng-minLng);
- routeNodePositions = route.map((s,i)=>{
-   const norm=((s.lng||0)-minLng)/usable;
-   let x=190 + (norm-.5)*100 + ((i%2===0)?-18:18);
-   x=Math.max(90,Math.min(290,x));
-   const y=90 + i*170;
-   return {x,y,id:s.id,name:s.name};
+async function buildRoute(){
+ statusTitle.textContent="Building today's route…";statusSub.textContent="Loading real streets and building shapes.";
+ const rs=routeStops();routeCoords=[];stopCoordIndex=[];let idx=0;
+ for(let i=0;i<rs.length-1;i++){
+  stopCoordIndex[i]=idx;
+  const a=rs[i],b=rs[i+1];let coords;
+  try{coords=smartLeg(a,b)==="walk"?(await footRoute(a,b)).geometry.coordinates:mrtCoords(a,b)}catch(e){coords=[[a.lng,a.lat],[b.lng,b.lat]]}
+  if(i>0)coords=coords.slice(1);
+  routeCoords.push(...coords);idx=routeCoords.length-1;
+ }
+ stopCoordIndex[rs.length-1]=Math.max(0,routeCoords.length-1);
+ const data={type:"Feature",geometry:{type:"LineString",coordinates:routeCoords},properties:{}};
+ if(map.getSource("route"))map.getSource("route").setData(data);
+ else{
+   map.addSource("route",{type:"geojson",data});
+   map.addLayer({id:"route-halo",type:"line",source:"route",paint:{"line-color":"#fff","line-width":12,"line-opacity":.95,"line-join":"round","line-cap":"round"}});
+   map.addLayer({id:"route-main",type:"line",source:"route",paint:{"line-color":["#0050A4","#E32017","#009645","#8B4513"][state.day],"line-width":7,"line-opacity":.96,"line-join":"round","line-cap":"round"}});
+ }
+ clearStopMarkers();
+ rs.forEach((s,i)=>{
+  const el=document.createElement("div");el.className="route-marker";el.textContent=i+1;
+  el.onclick=()=>selectStep(Math.min(i,rs.length-2),true);
+  const m=new maplibregl.Marker({element:el,anchor:"center"}).setLngLat([s.lng,s.lat]).addTo(map);stopMarkers.push(m)
  });
- const height=Math.max(820, routeNodePositions[routeNodePositions.length-1].y + 140);
- const pathPts=routeNodePositions.map((p,i)=> `${i?'L':'M'} ${p.x.toFixed(1)} ${p.y.toFixed(1)}`).join(' ');
- let out=`<rect width="380" height="${height}" fill="#eef1f4"/>`;
- out+=`<path class="route-main-line" d="${pathPts}"/><path class="route-main-line-colour" stroke="${colour}" d="${pathPts}"/>`;
- for(let i=0;i<routeNodePositions.length;i++){
-   const p=routeNodePositions[i], s=route[i], active=i===Math.min(currentDrawerStep,route.length-2);
-   const dayLabel=(i===0?'Start':(i===route.length-1?'Finish':'Stop'));
-   out+=`<g class="route-node ${active?'active':''}" data-stop="${i}" style="cursor:pointer" onclick="chooseDrawerStep(${Math.min(i,route.length-2)})">
-      <circle class="route-node-base" cx="${p.x}" cy="${p.y}" r="18"></circle>
-      <text class="route-node-num" x="${p.x}" y="${p.y+1}">${i+1}</text>
-      <text class="route-stop-label" x="${p.x+26}" y="${p.y-6}">${svgEsc(s.name)}</text>
-      <text class="route-stop-sub" x="${p.x+26}" y="${p.y+10}">${dayLabel}</text>
-   </g>`;
-   if(i<route.length-1){
-     const side=i%2===0?1:-1;
-     const midX=(p.x+routeNodePositions[i+1].x)/2, midY=(p.y+routeNodePositions[i+1].y)/2;
-     out += buildSchematicPois(route[i],route[i+1],midX,midY,side);
-   }
- }
- svg.setAttribute('viewBox', `0 0 380 ${height}`);
- svg.innerHTML=out;
- setTimeout(()=>focusSchematicStep(currentDrawerStep,false),30);
+ currentIndex=Math.min(currentIndex,Math.max(0,routeCoords.length-2));routeScrollFloat=currentIndex;
+ fitRoute();renderDrawer();statusTitle.textContent="Simplified real map";statusSub.textContent="Start near the bottom. Swipe upward to move forward; pinch to zoom.";
 }
-function chooseDrawerStep(i){ currentDrawerStep=Math.max(0,Math.min(i, routeObjs().length-2)); updateDrawerSummary(); highlightActiveCards(); focusSchematicStep(currentDrawerStep,true); toggleDrawer(true); }
-function focusSchematicStep(i,smooth=true){
- currentDrawerStep=Math.max(0,Math.min(i,routeObjs().length-2));
- scrollRouteToStep(currentDrawerStep,smooth);
- highlightActiveCards();
+let stopMarkers=[];
+function clearStopMarkers(){stopMarkers.forEach(m=>m.remove());stopMarkers=[]}
+function fitRoute(){
+ if(!routeCoords.length)return;const b=routeCoords.reduce((bb,c)=>bb.extend(c),new maplibregl.LngLatBounds(routeCoords[0],routeCoords[0]));
+ map.fitBounds(b,{padding:{top:100,bottom:190,left:40,right:40},duration:700,maxZoom:16});
 }
-function highlightActiveCards(){
- document.querySelectorAll('.drawer-card').forEach((c,idx)=>c.classList.toggle('active', idx===currentDrawerStep));
+function setupGesture(){
+ const canvas=map.getCanvasContainer();
+ canvas.addEventListener("touchstart",e=>{if(e.touches.length===1)lastTouchY=e.touches[0].clientY},{passive:true});
+ canvas.addEventListener("touchmove",e=>{
+  if(e.touches.length!==1||lastTouchY===null)return;
+  e.preventDefault();
+  const y=e.touches[0].clientY,dy=lastTouchY-y;lastTouchY=y;
+  advanceRoute(dy/18)
+ },{passive:false});
+ canvas.addEventListener("touchend",()=>lastTouchY=null,{passive:true});
+ canvas.addEventListener("wheel",e=>{if(e.ctrlKey)return;e.preventDefault();advanceRoute(e.deltaY/22)},{passive:false});
 }
-function nearestLegIndex(pos){
- const route=routeObjs(); if(route.length<2) return 0;
- let best=0,bestD=Infinity;
- for(let i=0;i<route.length-1;i++){
-   const a=route[i],b=route[i+1],mid={lat:(a.lat+b.lat)/2,lng:(a.lng+b.lng)/2};
-   const d=Math.min(hav(pos,a),hav(pos,b),hav(pos,mid));
-   if(d<bestD){bestD=d;best=i}
- }
- return best;
+function advanceRoute(delta){
+ if(!routeCoords.length)return;
+ routeScrollFloat=Math.max(0,Math.min(routeCoords.length-1,routeScrollFloat+delta));
+ currentIndex=Math.round(routeScrollFloat);cameraToIndex(currentIndex,false);updateStepFromCoord();
 }
-function onGpsMoved(){
- pillState();
- if(!userPos) return;
- const idx=nearestLegIndex(userPos);
- if(idx!==currentDrawerStep){ currentDrawerStep=idx; updateDrawerSummary(); focusSchematicStep(currentDrawerStep,true); }
+function cameraToIndex(i,animate=true){
+ if(!routeCoords.length)return;i=Math.max(0,Math.min(routeCoords.length-1,i));
+ const p=routeCoords[i],q=routeCoords[Math.min(routeCoords.length-1,i+8)]||p,br=bearing(p,q);
+ map.easeTo({center:p,bearing:br,zoom:Math.max(map.getZoom(),16),offset:[0,120],duration:animate?350:0});
 }
-async function streetLineFor(a,b){
- const key=`${a.id}>${b.id}`;
- if(streetNameCache[key]) return streetNameCache[key];
- const midLat=((a.lat+b.lat)/2).toFixed(6), midLng=((a.lng+b.lng)/2).toFixed(6);
- try{
-   const res=await fetch(`https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat=${midLat}&lon=${midLng}`);
-   const j=await res.json();
-   const road=j.address?.road || j.address?.pedestrian || j.address?.footway || j.address?.path || j.address?.suburb || 'Street details near this step';
-   streetNameCache[key]=road;
- }catch(e){ streetNameCache[key]='Street details near this step'; }
- return streetNameCache[key];
+function updateStepFromCoord(){
+ let step=0;for(let i=0;i<stopCoordIndex.length-1;i++)if(currentIndex>=stopCoordIndex[i])step=i;
+ step=Math.min(step,routeStops().length-2);updateSummary(step)
 }
-function drawerCardHtml(i,a,b){
- const mode=cardModes[i]||'smart';
- return `<article class="drawer-card ${i===currentDrawerStep?'active':''}" data-card-index="${i}" id="drawer-card-${i}">
-   <div class="drawer-card-head">
-     <div class="card-no">${i+1}</div>
-     <div style="min-width:0;flex:1">
-       <h4>${svgEsc(a.name)} → ${svgEsc(b.name)}</h4>
-       <div class="streetline" id="street-${i}">Street: loading…</div>
-     </div>
-     <button class="show-btn" onclick="event.stopPropagation();chooseDrawerStep(${i})">Show</button>
-   </div>
-   <p class="card-text">${svgEsc(journeyInstruction(a,b))}</p>
-   <div class="route-choice">
-     <button data-mode="smart" class="${mode==='smart'?'active':''}" onclick="event.stopPropagation();setCardMode(${i},'smart')">Smart</button>
-     <button data-mode="walk" class="${mode==='walk'?'active':''}" onclick="event.stopPropagation();setCardMode(${i},'walk')">Walk only</button>
-   </div>
-   <div class="card-map-wrap"><div class="schematic" id="schematic-${i}"><div class="loading">Drawing local route…</div></div></div>
-   <div class="route-stats" id="stats-${i}">Calculating…</div>
-   <div class="small-map-note">Street name + local blocks visible here, so you can quickly understand the next part of the route.</div>
-   ${poisHtml(routePois(a,b))}
-   <div class="card-actions">
-      <button onclick="event.stopPropagation();openLocationDetailForStep(${i})">More details</button>
-      <button onclick="event.stopPropagation();chooseDrawerStep(${i});focusSchematicStep(${i},true)">Focus route</button>
-   </div>
- </article>`;
+function selectStep(step,animate=true){
+ const i=stopCoordIndex[step]||0;currentIndex=i;routeScrollFloat=i;cameraToIndex(i,animate);updateSummary(step);highlightDrawer(step)
 }
-async function fillStreetNames(route){
- for(let i=0;i<route.length-1;i++){
-   const street = await streetLineFor(route[i], route[i+1]);
-   const el=document.getElementById(`street-${i}`);
-   if(el) el.textContent = `Street: ${street}`;
-   if(i===currentDrawerStep){ const ds=document.getElementById('drawerStreet'); if(ds) ds.textContent = `Street: ${street}`; }
- }
+function updateSummary(step){
+ const rs=routeStops();if(!rs[step]||!rs[step+1])return;
+ summarySmall.textContent=`Step ${step+1} of ${rs.length-1}`;
+ summaryTitle.textContent=`${rs[step].name} → ${rs[step+1].name}`;
+ const mode=smartLeg(rs[step],rs[step+1])==="walk"?"Walk":"MRT / transport";
+ summaryText.textContent=`${mode} · ${hav(rs[step],rs[step+1]).toFixed(1)} km straight-line between stops`;
 }
-function updateDrawerSummary(){
- const route=routeObjs();
- if(route.length<2) return;
- const i=Math.max(0,Math.min(currentDrawerStep,route.length-2)), a=route[i], b=route[i+1];
- const title=document.getElementById('drawerTitle'), mode=document.getElementById('drawerModeText'), street=document.getElementById('drawerStreet');
- if(title) title.textContent=`${i+1}. ${a.name} → ${b.name}`;
- const hint=smartTransportHint(a,b);
- if(mode) mode.textContent=`${state.mode} plan · ${hint.mode}`;
- const known=streetNameCache[`${a.id}>${b.id}`];
- if(street) street.textContent=known?`Street: ${known}`:'Street details loading…';
- highlightActiveCards();
+function renderDrawer(){
+ const rs=routeStops();drawerBody.innerHTML=rs.slice(0,-1).map((a,i)=>`<div class="stepcard" data-step="${i}"><div class="stephead"><div class="num">${i+1}</div><div><h3>${a.name} → ${rs[i+1].name}</h3><p>${a.desc||""}</p><button onclick="selectStep(${i},true)">Show this step</button></div></div></div>`).join("");
+ updateSummary(0);highlightDrawer(0)
 }
-function renderRouteDrawer(){
- const route=routeObjs();
- const box=document.getElementById('drawerCards'); if(!box) return;
- if(route.length<2){ box.innerHTML='<div class="drawer-card">No route for this day.</div>'; return; }
- box.innerHTML = route.slice(0,-1).map((a,i)=>drawerCardHtml(i,a,route[i+1])).join('');
- updateDrawerSummary();
- setTimeout(()=>{
-   route.slice(0,-1).forEach((a,i)=>buildJourneyCard(i,a,route[i+1],cardModes[i]||null));
-   fillStreetNames(route);
- },40);
+function highlightDrawer(step){document.querySelectorAll(".stepcard").forEach(c=>c.classList.toggle("active",Number(c.dataset.step)===step))}
+function toggleDrawer(force){drawerOpen=typeof force==="boolean"?force:!drawerOpen;drawer.classList.toggle("expanded",drawerOpen);drawer.classList.toggle("collapsed",!drawerOpen)}
+function openDays(){daySheet.classList.add("open")} function closeDays(){daySheet.classList.remove("open")}
+function renderDays(){
+ dayRows.innerHTML=days.map((d,i)=>`<div class="dayrow"><div><b>${d.label}</b><div style="font-size:12px;color:#667">${d.title}</div></div><button onclick="setDay(${i})">${i===state.day?"Current":"Open"}</button></div>`).join("")
 }
-function openLocationDetailForStep(i){
- const route=routeObjs(); if(!route[i]||!route[i+1]) return;
- const a=route[i], b=route[i+1], hint=smartTransportHint(a,b), street=streetNameCache[`${a.id}>${b.id}`]||'Street details loading…';
- const body=document.getElementById('locationDetailBody');
- body.innerHTML=`<div class="card"><h3 style="margin-top:0">${i+1}. ${svgEsc(a.name)} → ${svgEsc(b.name)}</h3><p><b>Street:</b> ${svgEsc(street)}</p><p>${svgEsc(journeyInstruction(a,b))}</p><p><b>Suggested:</b> ${svgEsc(hint.text)}</p><div class="card-map-wrap"><div class="schematic" id="detail-schematic"></div></div><div class="route-stats" id="detail-stats">Loading local map…</div></div>`;
- document.getElementById('locationDetailTitle').textContent='Route step details';
- openSheet('locationDetailSheet');
- setTimeout(async()=>{
-   const tempBox=document.getElementById('schematic-'+i), tempStats=document.getElementById('stats-'+i), dBox=document.getElementById('detail-schematic'), dStats=document.getElementById('detail-stats');
-   if(tempBox&&dBox){dBox.innerHTML=tempBox.innerHTML; dStats.textContent=tempStats?.textContent||''}
-   else { await buildJourneyCard(i,a,b,cardModes[i]||null); if(tempBox&&dBox){dBox.innerHTML=tempBox.innerHTML; dStats.textContent=tempStats?.textContent||''} }
- },100);
+async function setDay(i){
+ state.day=i;save();currentIndex=0;routeScrollFloat=0;dayTitle.textContent=days[i].title;daySub.textContent=`${days[i].label} · simplified route`;closeDays();await buildRoute()
 }
-function renderAppLayout(){ pillState(); renderRealMapStack(); renderRouteDrawer(); }
-
-try{initMap()}catch(e){console.warn("Map init skipped:",e)}
-try{renderAll()}catch(e){console.error(e)}
-setTimeout(()=>renderAppLayout(),180);
-</script>
-<div id="appError" style="display:none;position:fixed;left:12px;right:12px;top:72px;z-index:99999;background:#fff3cd;border:1px solid #ffe69c;padding:10px 12px;border-radius:10px;font:13px Arial;color:#664d03"></div>
-
-<script>
-window.addEventListener("error",function(e){
-  const box=document.getElementById("appError");
-  if(box){
-    box.style.display="block";
-    box.textContent="App error: "+(e.message||"Unknown error")+". Please refresh after the next update.";
-  }
-});
+function goCurrent(){if(userPos)syncGps(true);else locateMe()}
+function locateMe(){
+ if(!navigator.geolocation){alert("GPS is not available in this browser.");return}
+ navigator.geolocation.getCurrentPosition(p=>{userPos={lng:p.coords.longitude,lat:p.coords.latitude};drawUser();syncGps(true);startWatch()},()=>alert("Allow location access for GPS route following."),{enableHighAccuracy:true,timeout:10000,maximumAge:10000})
+}
+function drawUser(){
+ if(userMarker)userMarker.remove();
+ const el=document.createElement("div");el.style.cssText="width:18px;height:18px;border-radius:50%;background:#1677ff;border:4px solid white;box-shadow:0 2px 8px #0005";
+ userMarker=new maplibregl.Marker({element:el}).setLngLat([userPos.lng,userPos.lat]).addTo(map)
+}
+function startWatch(){
+ if(watchId!==null)return;
+ watchId=navigator.geolocation.watchPosition(p=>{userPos={lng:p.coords.longitude,lat:p.coords.latitude};drawUser();syncGps(false)},()=>{},{enableHighAccuracy:true,maximumAge:10000,timeout:12000})
+}
+function syncGps(animate){
+ if(!userPos||!routeCoords.length)return;
+ let best=0,bd=Infinity;const u={lat:userPos.lat,lng:userPos.lng};
+ routeCoords.forEach((c,i)=>{const d=hav(u,{lat:c[1],lng:c[0]});if(d<bd){bd=d;best=i}});
+ currentIndex=best;routeScrollFloat=best;cameraToIndex(best,animate);updateStepFromCoord();
+ statusTitle.textContent=`GPS · ${Math.round(bd*1000)} m from route line`;statusSub.textContent="The current position stays near the bottom so the next part of the route is ahead/up-screen."
+}
+function zoomIn(){map.zoomIn()} function zoomOut(){map.zoomOut()}
+function renderHeader(){dayTitle.textContent=days[state.day].title;daySub.textContent=`${days[state.day].label} · simplified route`}
+renderHeader();init();
 </script>
 </body>
 </html>
