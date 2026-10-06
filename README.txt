@@ -1,9 +1,11 @@
-Singapore Trip App V30
+Singapore Trip App V31
 
-Fixes:
-- The More / Hide button now properly collapses the bottom information drawer.
-- Clicking Hide no longer bubbles to the drawer header and immediately re-opens it.
-- Local walking maps now retain up to 120 routed geometry points rather than heavily simplifying the path.
-- The coloured route therefore follows the real foot-routing geometry much more closely.
-- Walking cards now show the routed distance, routed time, and up to four street names from the routing instructions when available.
-- Building blocks remain based on OpenStreetMap building footprints.
+This version focuses only on the route-map direction:
+- Main route is now made from simplified real-map sections.
+- Each section uses the real routed walking geometry.
+- Nearby OpenStreetMap roads and building footprints are drawn, with street names where available.
+- Each route section is rotated so direction of travel is upward on screen.
+- Step 1 starts at the bottom of the route stack.
+- Scroll UP to reveal the next part of the journey.
+- GPS/current-step logic scrolls the route stack to the matching section.
+- Bottom detail drawer remains available but the map direction is the main focus.
