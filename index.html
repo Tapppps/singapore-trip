@@ -586,63 +586,142 @@ nav{
   .map-action-cluster{top:78px;right:8px}
 }
 
+
+/* V29 restarted layout */
+body,html,#app{height:100%;overflow:hidden;background:#eef1f4}
+header#fixedTop{
+  position:fixed!important;top:0;left:0;right:0;z-index:4000!important;
+  height:108px;display:block!important;padding:8px 10px 10px;
+  background:rgba(255,255,255,.97)!important;
+  backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);
+  box-shadow:0 2px 10px rgba(0,0,0,.08)
+}
+#fixedTop .top-row{display:flex;align-items:center;gap:10px;margin-bottom:8px}
+#fixedTop .title h1{font-size:19px}
+#fixedTop .title div{font-size:12px}
+#topActions{display:flex;gap:8px;overflow-x:auto;overflow-y:hidden;padding-bottom:2px;-webkit-overflow-scrolling:touch;scrollbar-width:none}
+#topActions::-webkit-scrollbar{display:none}
+.top-pill{flex:0 0 auto;border:1px solid var(--line);background:#fff;border-radius:999px;padding:10px 13px;font-size:13px;white-space:nowrap;box-shadow:0 1px 5px rgba(0,0,0,.04)}
+.top-pill.primary{background:#111;color:#fff;border-color:#111}
+.top-pill.blue{background:#eaf2ff;color:#1558d6;border-color:#cfe0ff}
+.top-pill.on{background:#111;color:#fff;border-color:#111}
+main{
+  position:fixed!important;top:108px;left:0;right:0;bottom:0;overflow:hidden!important;
+  background:#eef1f4!important;padding:0!important;margin:0!important
+}
+#map{position:absolute!important;left:-9999px!important;top:-9999px!important;width:1px!important;height:1px!important;opacity:0!important;pointer-events:none!important}
+#routeStats{display:none}
+#schematicScroller{position:absolute;inset:0;overflow-y:auto;overflow-x:hidden;-webkit-overflow-scrolling:touch;scroll-behavior:smooth;padding:16px 0 190px;background:linear-gradient(180deg,#eef1f4 0%,#f6f7f9 100%)}
+#routeTrackWrap{width:min(100%,520px);margin:0 auto;position:relative;padding:0 10px 28px}
+#routeSvg{display:block;width:100%;height:auto}
+#gpsBadge{position:sticky;top:10px;z-index:20;width:fit-content;max-width:calc(100% - 20px);margin:0 10px 10px auto;background:rgba(255,255,255,.95);border:1px solid var(--line);border-radius:999px;padding:7px 12px;font-size:12px;box-shadow:0 2px 8px rgba(0,0,0,.08)}
+.route-stop-label{font-size:12px;font-weight:700;fill:#111}
+.route-stop-sub{font-size:10px;fill:#59606a}
+.route-main-line{fill:none;stroke-linecap:round;stroke-linejoin:round;stroke:#fff;stroke-width:18}
+.route-main-line-colour{fill:none;stroke-linecap:round;stroke-linejoin:round;stroke-width:10}
+.route-node-base{fill:#fff;stroke:#111;stroke-width:3}
+.route-node-num{font-size:12px;font-weight:800;fill:#111;text-anchor:middle;dominant-baseline:middle}
+.route-node.active .route-node-base{stroke:#1677ff;stroke-width:5}
+.route-node.active .route-stop-label{fill:#1677ff}
+.route-branch{stroke:#9aa3ad;stroke-width:2}
+.route-poi-dot{stroke:#fff;stroke-width:2}
+.route-poi-text{font-size:10px;font-weight:700;fill:#333}
+.route-street-chip{font-size:10px;fill:#68707b}
+#routeDrawer{
+  position:fixed;left:10px;right:10px;bottom:10px;z-index:3500;
+  background:rgba(255,255,255,.98);border:1px solid var(--line);border-radius:22px;
+  box-shadow:0 18px 40px rgba(0,0,0,.16);overflow:hidden;
+  transition:height .25s ease, transform .25s ease;
+}
+#routeDrawer.collapsed{height:140px}
+#routeDrawer.expanded{height:min(72vh,760px)}
+#routeDrawer .drag-handle{display:flex;justify-content:center;padding:9px 0 6px;cursor:pointer}
+#routeDrawer .drag-handle span{display:block;width:42px;height:5px;border-radius:999px;background:#d5d9df}
+#routeDrawer .drawer-summary{display:flex;align-items:flex-start;gap:10px;padding:2px 14px 12px;cursor:pointer}
+#routeDrawer .drawer-summary h3{margin:0;font-size:18px;line-height:1.15}
+#routeDrawer .drawer-summary .small{font-size:12px;color:var(--muted);margin-bottom:4px}
+#routeDrawer .drawer-summary .sub{font-size:13px;color:#555;line-height:1.35;margin-top:4px}
+#routeDrawer .drawer-summary .morebtn{margin-left:auto;border:1px solid var(--line);background:#fff;border-radius:999px;padding:8px 12px;font-size:13px;white-space:nowrap}
+#routeDrawer .drawer-body{height:calc(100% - 78px);overflow-y:auto;padding:2px 12px 16px;-webkit-overflow-scrolling:touch}
+#drawerCards{padding-top:4px}
+.drawer-card{position:relative;background:#f8f9fb;border:1px solid #e0e3e8;border-radius:20px;padding:14px;margin-top:-8px;box-shadow:0 3px 8px rgba(0,0,0,.04)}
+.drawer-card:first-child{margin-top:0}
+.drawer-card.active{border-color:#bfd4ff;box-shadow:0 0 0 2px #dce8ff,0 5px 12px rgba(0,0,0,.06);background:#fff}
+.drawer-card-head{display:flex;gap:10px;align-items:flex-start}
+.card-no{width:34px;height:34px;border-radius:50%;display:grid;place-items:center;font-weight:800;background:#111;color:#fff;flex:none}
+.drawer-card.active .card-no{background:#1677ff}
+.drawer-card h4{margin:0;font-size:17px;line-height:1.2}
+.drawer-card .streetline{font-size:13px;color:#555;margin:8px 0 8px;line-height:1.4}
+.drawer-card .card-text{font-size:14px;line-height:1.5;color:#222;margin:0 0 10px}
+.drawer-card .card-map-wrap{border-radius:16px;overflow:hidden;background:#eceff3;margin-bottom:8px}
+.drawer-card .route-stats{font-size:13px;color:#444;margin:8px 0 8px}
+.drawer-card .card-actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:6px}
+.drawer-card .card-actions button{border:1px solid var(--line);background:#fff;border-radius:999px;padding:8px 12px;font-size:13px}
+.drawer-card .route-choice{display:flex;gap:8px;margin-bottom:10px}
+.drawer-card .route-choice button{flex:1;border:1px solid var(--line);background:#fff;border-radius:12px;padding:9px 10px;font-size:13px}
+.drawer-card .route-choice button.active{background:#eaf2ff;color:#1558d6;border-color:#cfe0ff}
+.drawer-card .poi-row{display:flex;gap:8px;overflow-x:auto;padding-bottom:2px}
+.drawer-card .poi-btn{flex:0 0 auto}
+.drawer-card .poi-btn,.drawer-card .show-btn{border:1px solid var(--line);background:#fff;border-radius:999px;padding:8px 11px;font-size:12px}
+.drawer-card .small-map-note{font-size:12px;color:#666;margin-top:4px}
+@media(max-width:699px){
+ header#fixedTop{height:112px}
+ main{top:112px}
+ #routeDrawer.collapsed{height:148px}
+ #routeDrawer.expanded{left:8px;right:8px;bottom:8px;height:73vh}
+ .drawer-card h4{font-size:16px}
+}
+
 </style>
 </head>
 <body>
 <div id="app">
-<header>
-  <button class="ibtn" onclick="locateMe()" aria-label="Locate me">
-    <svg class="ico" viewBox="0 0 24 24"><circle cx="12" cy="12" r="4"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3"/></svg>
-  </button>
-  <div class="title"><h1 id="dayTitle">Singapore Trip</h1><div id="daySub">15–18 Oct 2026</div></div>
-  <button class="ibtn" onclick="openSheet('weatherSheet')" aria-label="Weather">
-    <svg class="ico" viewBox="0 0 24 24"><path d="M7 18h10a4 4 0 0 0 .4-8A6 6 0 0 0 6 9.5 4.3 4.3 0 0 0 7 18Z"/></svg>
-  </button>
-  <button class="ibtn" onclick="openCameraCheck()" aria-label="Camera">
-    <svg class="ico" viewBox="0 0 24 24"><path d="M4 7h4l1.5-2h5L16 7h4v12H4Z"/><circle cx="12" cy="13" r="4"/></svg>
-  </button>
+<header id="fixedTop">
+  <div class="top-row">
+    <button class="ibtn" onclick="locateMe()" aria-label="Locate me">
+      <svg class="ico" viewBox="0 0 24 24"><circle cx="12" cy="12" r="4"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3"/></svg>
+    </button>
+    <div class="title"><h1 id="dayTitle">Singapore Trip</h1><div id="daySub">15–18 Oct 2026</div></div>
+    <button class="ibtn" onclick="openSheet('weatherSheet')" aria-label="Weather">
+      <svg class="ico" viewBox="0 0 24 24"><path d="M7 18h10a4 4 0 0 0 .4-8A6 6 0 0 0 6 9.5 4.3 4.3 0 0 0 7 18Z"/></svg>
+    </button>
+    <button class="ibtn" onclick="openCameraCheck()" aria-label="Camera">
+      <svg class="ico" viewBox="0 0 24 24"><path d="M4 7h4l1.5-2h5L16 7h4v12H4Z"/><circle cx="12" cy="13" r="4"/></svg>
+    </button>
+  </div>
+  <div id="topActions">
+    <button class="top-pill primary" onclick="toggleDrawer(true)">Today's route</button>
+    <button class="top-pill" onclick="openSheet('daysSheet')">Choose day</button>
+    <button class="top-pill" id="hotPill" onclick="toggleHot()">Too hot: Off</button>
+    <button class="top-pill" id="planPill" onclick="toggleWet()">Dry plan</button>
+    <button class="top-pill" onclick="openSheet('coolSheet')">Cool nearby</button>
+    <button class="top-pill" onclick="openSheet('smokeSheet')">Smoking</button>
+    <button class="top-pill" onclick="openSheet('addSheet')">Add stop</button>
+    <button class="top-pill" onclick="openSheet('moreSheet')">Options</button>
+    <button class="top-pill" onclick="openSheet('spendSheet')">Spend</button>
+    <button class="top-pill" onclick="fitSchematicToCurrent()">Current step</button>
+  </div>
 </header>
 
 <main>
   <div id="map"></div>
-
-  <div id="continuousInfo">
-    <div class="continuous-card">
-      <h3 id="continuousTitle">Today’s continuous route</h3>
-      <p id="continuousSub">Start at the first numbered point and follow the coloured line.</p>
-    </div>
-  </div>
-
-  <div class="map-action-cluster">
-    <button onclick="locateMe()" aria-label="Find me" title="Find me">◎</button>
-    <button onclick="fitContinuousRoute()" aria-label="Show full route" title="Show full route">↗</button>
-  </div>
-
-  <div id="routeLegend">
-    <div><span id="legendLine" class="legend-line"></span>Today’s route</div>
-    <div>Pinch to zoom · drag any direction</div>
-  </div>
+  <div id="routeStats"></div>
+  <div id="gpsBadge">GPS route follow ready</div>
+  <div id="schematicScroller"><div id="routeTrackWrap"><svg id="routeSvg" viewBox="0 0 380 900" preserveAspectRatio="xMidYMin meet"></svg></div></div>
 </main>
-<div id="poiOverlay" role="dialog" aria-modal="true">
-  <div class="poi-hero">
-    <button class="poi-close" onclick="closePoiOverlay()">← Back to route</button>
-    <div class="poi-fallback" id="poiFallback">Singapore place</div>
-    <img id="poiImage" alt="" onerror="this.style.display='none'">
-  </div>
-  <div class="poi-content">
-    <h2 id="poiTitle"></h2>
-    <p id="poiInfo"></p>
-    <div class="poi-tip" id="poiTip"></div>
-  </div>
-</div>
 
-<nav>
-  <button class="nav active" onclick="openSheet('daysSheet')"><svg class="ico" viewBox="0 0 24 24"><rect x="4" y="5" width="16" height="15" rx="2"/><path d="M8 3v4M16 3v4M4 9h16"/></svg>Day</button>
-  <button class="nav" onclick="openSheet('routeSheet')"><svg class="ico" viewBox="0 0 24 24"><path d="M5 19c0-4 5-4 5-8s-5-4-5-8M19 5c0 4-5 4-5 8s5 4 5 8"/><circle cx="5" cy="19" r="2"/><circle cx="19" cy="5" r="2"/></svg>Route</button>
-  <button class="nav" onclick="openSheet('addSheet')"><svg class="ico" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>Add</button>
-  <button class="nav" onclick="openSheet('spendSheet')"><svg class="ico" viewBox="0 0 24 24"><path d="M4 7h16v12H4zM4 10h16"/><circle cx="16" cy="15" r="1.5"/></svg>Spend</button>
-  <button class="nav" onclick="openSheet('moreSheet')"><svg class="ico" viewBox="0 0 24 24"><path d="M5 7h14M5 12h14M5 17h14"/></svg>Menu</button>
-</nav>
+<div id="routeDrawer" class="collapsed">
+  <div class="drag-handle" onclick="toggleDrawer()"><span></span></div>
+  <div class="drawer-summary" onclick="toggleDrawer(true)">
+    <div style="min-width:0">
+      <div class="small" id="drawerModeText">Today’s route</div>
+      <h3 id="drawerTitle">Tap to view the current route step</h3>
+      <div class="sub" id="drawerStreet">Street names and local map will appear here.</div>
+    </div>
+    <button class="morebtn" id="drawerToggleBtn">More</button>
+  </div>
+  <div class="drawer-body"><div id="drawerCards"></div></div>
+</div>
 </div>
 
 <div class="sheetbg" id="daysSheet"><div class="sheet"><div class="handle"></div><div class="shead"><h2>Choose day</h2><button class="close" onclick="closeSheet('daysSheet')">×</button></div><div id="daysList"></div></div></div>
@@ -892,7 +971,7 @@ const masterPlans=[
  ["hotel","jewel","t4"]
 ];
 
-let state=JSON.parse(localStorage.getItem("sgTripV28")||localStorage.getItem("sgTripV16")||"null")||{
+let state=JSON.parse(localStorage.getItem("sgTripV29")||localStorage.getItem("sgTripV16")||"null")||{
  day:0,routes:masterPlans.map(x=>[...x]),missed:[],expenses:[],custom:[],mode:"Dry",hot:false,routeMode:"smart",fx:{gbp:.58,cad:.96},excluded:[[],[],[],[]]
 };
 if(typeof state.hot==="undefined") state.hot=false;
@@ -1143,7 +1222,7 @@ function ensureHotelReturn(){
 }
 ensureHotelReturn();
 
-function save(){localStorage.setItem("sgTripV28",JSON.stringify(state))}
+function save(){localStorage.setItem("sgTripV29",JSON.stringify(state))}
 function allStops(){return [...stops,...state.custom]}
 function byId(id){return allStops().find(s=>s.id===id)}
 function routeObjs(){return state.routes[state.day].map(byId).filter(Boolean)}
@@ -1663,8 +1742,7 @@ function observeJourneyCards(){
 }
 function setCardMode(index,mode){
  cardModes[index]=mode;
- const card=document.querySelector(`.journey-card[data-card-index="${index}"]`);
- if(card)card.querySelectorAll(".route-choice button").forEach(b=>b.classList.toggle("active",b.dataset.mode===mode));
+ document.querySelectorAll(`[data-card-index="${index}"] .route-choice button`).forEach(b=>b.classList.toggle("active",b.dataset.mode===mode));
  const route=routeObjs();if(route[index]&&route[index+1])buildJourneyCard(index,route[index],route[index+1],mode);
 }
 
@@ -2050,7 +2128,7 @@ function toggleHot(){
  save();
  applyPlanRules();
  renderAll();
- renderContinuousRoute();
+ renderAppLayout();
 }
 function applyPlanRules(){
  const hs=document.getElementById("hotState");
@@ -2065,7 +2143,7 @@ function applyPlanRules(){
 function toggleWet(){
  state.mode=state.mode==="Dry"?"Wet":"Dry";
  nextMode=state.mode==="Wet"?"transit":"auto";
- save();applyPlanRules();renderAll();renderContinuousRoute();
+ save();applyPlanRules();renderAll();renderAppLayout();
 }
 function skipNext(){const id=state.routes[state.day].shift();if(id)state.missed.push({id,reason:"Skipped"});save();renderAll();rebuildRoute()}
 function setGpsStatus(msg,isError=false){
@@ -2088,6 +2166,7 @@ function getGPS(onSuccess,onError){
    userMarker.openPopup();
    checkNearbyHawker();
    startLocationWatch();
+   onGpsMoved();
    if(onSuccess)onSuccess(userPos);
  },err=>{
    const msg=err.code===1
@@ -2106,6 +2185,7 @@ function startLocationWatch(){
    if(userMarker)map.removeLayer(userMarker);
    userMarker=L.circleMarker([userPos.lat,userPos.lng],{radius:8,weight:3,fillOpacity:.9}).addTo(map).bindPopup("You are here");
    checkNearbyHawker();
+   onGpsMoved();
  },()=>{}, {enableHighAccuracy:true,maximumAge:20000,timeout:12000});
 }
 function locateMe(){getGPS(()=>startLocationWatch())}
@@ -2353,7 +2433,7 @@ async function routeToSmoking(i){
  if(nextMode==="transit" || (nextMode!=="walk" && hav(userPos,p)>0.85)){const j=preferredMRTJourney(userPos,p);await drawTransitTo(userPos,p,j);routeStats.textContent="Smoking route · MRT / transport";return}else hideMRTJourney()
  try{const route=await footRoute([userPos,p]);if(routeLayer)map.removeLayer(routeLayer);routeLayer=L.geoJSON(route.geometry,{style:{color:"#1677ff",weight:6,opacity:.9}}).addTo(map);map.fitBounds(routeLayer.getBounds().pad(.10),{maxZoom:18});routeStats.textContent=`Smoking route · ${(route.distance/1000).toFixed(1)} km · ${Math.round(route.duration/60)} min`}catch(e){map.setView([p.lat,p.lng],17);routeStats.textContent="Smoking location shown · route unavailable"}
 }
-function renderAll(){ensureHotelReturn();applyPlanRules();renderHeader();renderDays();renderSpend()}
+function renderAll(){ensureHotelReturn();applyPlanRules();renderHeader();renderDays();renderSpend();renderAppLayout()}
 document.addEventListener("click",e=>{
  const btn=e.target.closest(".sheet button");
  if(!btn)return;
@@ -2369,9 +2449,195 @@ document.addEventListener("click",e=>{
  }
 });
 
+
+let currentDrawerStep=0;
+let drawerExpanded=false;
+let routeNodePositions=[];
+const streetNameCache={};
+
+function pillState(){
+ const hot=document.getElementById('hotPill'), plan=document.getElementById('planPill');
+ if(hot){hot.textContent=`Too hot: ${state.hot?'On':'Off'}`;hot.classList.toggle('on',state.hot)}
+ if(plan){plan.textContent=state.mode==='Wet'?'Wet plan':'Dry plan';plan.classList.toggle('blue',state.mode==='Wet')}
+ const gps=document.getElementById('gpsBadge');
+ if(gps)gps.textContent=userPos?'GPS active · route follows your current position':'Tap the target button to start GPS';
+}
+function toggleDrawer(force){
+ const d=document.getElementById('routeDrawer'); if(!d)return;
+ if(typeof force==='boolean') drawerExpanded=force; else drawerExpanded=!drawerExpanded;
+ d.classList.toggle('expanded',drawerExpanded);
+ d.classList.toggle('collapsed',!drawerExpanded);
+ const b=document.getElementById('drawerToggleBtn'); if(b)b.textContent=drawerExpanded?'Hide':'More';
+}
+function fitSchematicToCurrent(){ focusSchematicStep(currentDrawerStep,true) }
+function dayColour(){ return ['#0050A4','#E32017','#009645','#8B4513'][state.day]||'#0050A4' }
+function svgEsc(s){return String(s||'').replace(/[&<>]/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[m]))}
+function schematicPoiColor(type){ return type==='Food'?'#f6a800':type==='A/C'?'#1e88e5':type==='Smoking'?'#666':type==='Toilet'?'#7b61ff':'#e32017' }
+function buildSchematicPois(a,b,x,y,side){
+ const list=cardPoiCandidates(a,b).slice(0,3);
+ return list.map((p,idx)=>{
+   const px=x + side*(78 + (idx%2)*20), py=y + idx*30 - 16;
+   const short=p.name.length>16?p.name.slice(0,16)+'…':p.name;
+   const textX = side>0 ? px+12 : px-12;
+   return `<g class="schem-poi" onclick='openPoiOverlay(${JSON.stringify(p.name)},${JSON.stringify(p.info||'')},${JSON.stringify(p.tip||'')},${JSON.stringify(p.type||'Place')},${Number.isFinite(p.lat)?p.lat:'null'},${Number.isFinite(p.lng)?p.lng:'null'})' style="cursor:pointer">
+      <line class="route-branch" x1="${x}" y1="${y}" x2="${px}" y2="${py}"/>
+      <circle class="route-poi-dot" cx="${px}" cy="${py}" r="7" fill="${schematicPoiColor(p.type)}"/>
+      <text class="route-poi-text" x="${textX}" y="${py+4}" text-anchor="${side>0?'start':'end'}">${svgEsc(short)}</text>
+   </g>`;
+ }).join('');
+}
+function renderRouteSchematic(){
+ const svg=document.getElementById('routeSvg'); if(!svg) return;
+ ensureHotelReturn();
+ const route=routeObjs();
+ if(route.length<2){svg.innerHTML=''; return}
+ const colour=dayColour();
+ const lngs=route.map(r=>r.lng||0), minLng=Math.min(...lngs), maxLng=Math.max(...lngs);
+ const usable=minLng===maxLng?1:(maxLng-minLng);
+ routeNodePositions = route.map((s,i)=>{
+   const norm=((s.lng||0)-minLng)/usable;
+   let x=190 + (norm-.5)*100 + ((i%2===0)?-18:18);
+   x=Math.max(90,Math.min(290,x));
+   const y=90 + i*170;
+   return {x,y,id:s.id,name:s.name};
+ });
+ const height=Math.max(820, routeNodePositions[routeNodePositions.length-1].y + 140);
+ const pathPts=routeNodePositions.map((p,i)=> `${i?'L':'M'} ${p.x.toFixed(1)} ${p.y.toFixed(1)}`).join(' ');
+ let out=`<rect width="380" height="${height}" fill="#eef1f4"/>`;
+ out+=`<path class="route-main-line" d="${pathPts}"/><path class="route-main-line-colour" stroke="${colour}" d="${pathPts}"/>`;
+ for(let i=0;i<routeNodePositions.length;i++){
+   const p=routeNodePositions[i], s=route[i], active=i===Math.min(currentDrawerStep,route.length-2);
+   const dayLabel=(i===0?'Start':(i===route.length-1?'Finish':'Stop'));
+   out+=`<g class="route-node ${active?'active':''}" data-stop="${i}" style="cursor:pointer" onclick="chooseDrawerStep(${Math.min(i,route.length-2)})">
+      <circle class="route-node-base" cx="${p.x}" cy="${p.y}" r="18"></circle>
+      <text class="route-node-num" x="${p.x}" y="${p.y+1}">${i+1}</text>
+      <text class="route-stop-label" x="${p.x+26}" y="${p.y-6}">${svgEsc(s.name)}</text>
+      <text class="route-stop-sub" x="${p.x+26}" y="${p.y+10}">${dayLabel}</text>
+   </g>`;
+   if(i<route.length-1){
+     const side=i%2===0?1:-1;
+     const midX=(p.x+routeNodePositions[i+1].x)/2, midY=(p.y+routeNodePositions[i+1].y)/2;
+     out += buildSchematicPois(route[i],route[i+1],midX,midY,side);
+   }
+ }
+ svg.setAttribute('viewBox', `0 0 380 ${height}`);
+ svg.innerHTML=out;
+ setTimeout(()=>focusSchematicStep(currentDrawerStep,false),30);
+}
+function chooseDrawerStep(i){ currentDrawerStep=Math.max(0,Math.min(i, routeObjs().length-2)); updateDrawerSummary(); highlightActiveCards(); focusSchematicStep(currentDrawerStep,true); toggleDrawer(true); }
+function focusSchematicStep(i,smooth=true){
+ const sc=document.getElementById('schematicScroller'); if(!sc||!routeNodePositions[i]) return;
+ const top=Math.max(0, routeNodePositions[i].y - sc.clientHeight*0.34);
+ sc.scrollTo({top, behavior:smooth?'smooth':'auto'});
+ document.querySelectorAll('.route-node').forEach((n,idx)=>n.classList.toggle('active', idx===Math.min(i, routeObjs().length-2)));
+ highlightActiveCards();
+}
+function highlightActiveCards(){
+ document.querySelectorAll('.drawer-card').forEach((c,idx)=>c.classList.toggle('active', idx===currentDrawerStep));
+}
+function nearestLegIndex(pos){
+ const route=routeObjs(); if(route.length<2) return 0;
+ let best=0,bestD=Infinity;
+ for(let i=0;i<route.length-1;i++){
+   const a=route[i],b=route[i+1],mid={lat:(a.lat+b.lat)/2,lng:(a.lng+b.lng)/2};
+   const d=Math.min(hav(pos,a),hav(pos,b),hav(pos,mid));
+   if(d<bestD){bestD=d;best=i}
+ }
+ return best;
+}
+function onGpsMoved(){
+ pillState();
+ if(!userPos) return;
+ const idx=nearestLegIndex(userPos);
+ if(idx!==currentDrawerStep){ currentDrawerStep=idx; updateDrawerSummary(); focusSchematicStep(currentDrawerStep,true); }
+}
+async function streetLineFor(a,b){
+ const key=`${a.id}>${b.id}`;
+ if(streetNameCache[key]) return streetNameCache[key];
+ const midLat=((a.lat+b.lat)/2).toFixed(6), midLng=((a.lng+b.lng)/2).toFixed(6);
+ try{
+   const res=await fetch(`https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat=${midLat}&lon=${midLng}`);
+   const j=await res.json();
+   const road=j.address?.road || j.address?.pedestrian || j.address?.footway || j.address?.path || j.address?.suburb || 'Street details near this step';
+   streetNameCache[key]=road;
+ }catch(e){ streetNameCache[key]='Street details near this step'; }
+ return streetNameCache[key];
+}
+function drawerCardHtml(i,a,b){
+ const mode=cardModes[i]||'smart';
+ return `<article class="drawer-card ${i===currentDrawerStep?'active':''}" data-card-index="${i}" id="drawer-card-${i}">
+   <div class="drawer-card-head">
+     <div class="card-no">${i+1}</div>
+     <div style="min-width:0;flex:1">
+       <h4>${svgEsc(a.name)} → ${svgEsc(b.name)}</h4>
+       <div class="streetline" id="street-${i}">Street: loading…</div>
+     </div>
+     <button class="show-btn" onclick="event.stopPropagation();chooseDrawerStep(${i})">Show</button>
+   </div>
+   <p class="card-text">${svgEsc(journeyInstruction(a,b))}</p>
+   <div class="route-choice">
+     <button data-mode="smart" class="${mode==='smart'?'active':''}" onclick="event.stopPropagation();setCardMode(${i},'smart')">Smart</button>
+     <button data-mode="walk" class="${mode==='walk'?'active':''}" onclick="event.stopPropagation();setCardMode(${i},'walk')">Walk only</button>
+   </div>
+   <div class="card-map-wrap"><div class="schematic" id="schematic-${i}"><div class="loading">Drawing local route…</div></div></div>
+   <div class="route-stats" id="stats-${i}">Calculating…</div>
+   <div class="small-map-note">Street name + local blocks visible here, so you can quickly understand the next part of the route.</div>
+   ${poisHtml(routePois(a,b))}
+   <div class="card-actions">
+      <button onclick="event.stopPropagation();openLocationDetailForStep(${i})">More details</button>
+      <button onclick="event.stopPropagation();chooseDrawerStep(${i});focusSchematicStep(${i},true)">Focus route</button>
+   </div>
+ </article>`;
+}
+async function fillStreetNames(route){
+ for(let i=0;i<route.length-1;i++){
+   const street = await streetLineFor(route[i], route[i+1]);
+   const el=document.getElementById(`street-${i}`);
+   if(el) el.textContent = `Street: ${street}`;
+   if(i===currentDrawerStep){ const ds=document.getElementById('drawerStreet'); if(ds) ds.textContent = `Street: ${street}`; }
+ }
+}
+function updateDrawerSummary(){
+ const route=routeObjs();
+ if(route.length<2) return;
+ const i=Math.max(0,Math.min(currentDrawerStep,route.length-2)), a=route[i], b=route[i+1];
+ const title=document.getElementById('drawerTitle'), mode=document.getElementById('drawerModeText'), street=document.getElementById('drawerStreet');
+ if(title) title.textContent=`${i+1}. ${a.name} → ${b.name}`;
+ const hint=smartTransportHint(a,b);
+ if(mode) mode.textContent=`${state.mode} plan · ${hint.mode}`;
+ const known=streetNameCache[`${a.id}>${b.id}`];
+ if(street) street.textContent=known?`Street: ${known}`:'Street details loading…';
+ highlightActiveCards();
+}
+function renderRouteDrawer(){
+ const route=routeObjs();
+ const box=document.getElementById('drawerCards'); if(!box) return;
+ if(route.length<2){ box.innerHTML='<div class="drawer-card">No route for this day.</div>'; return; }
+ box.innerHTML = route.slice(0,-1).map((a,i)=>drawerCardHtml(i,a,route[i+1])).join('');
+ updateDrawerSummary();
+ setTimeout(()=>{
+   route.slice(0,-1).forEach((a,i)=>buildJourneyCard(i,a,route[i+1],cardModes[i]||null));
+   fillStreetNames(route);
+ },40);
+}
+function openLocationDetailForStep(i){
+ const route=routeObjs(); if(!route[i]||!route[i+1]) return;
+ const a=route[i], b=route[i+1], hint=smartTransportHint(a,b), street=streetNameCache[`${a.id}>${b.id}`]||'Street details loading…';
+ const body=document.getElementById('locationDetailBody');
+ body.innerHTML=`<div class="card"><h3 style="margin-top:0">${i+1}. ${svgEsc(a.name)} → ${svgEsc(b.name)}</h3><p><b>Street:</b> ${svgEsc(street)}</p><p>${svgEsc(journeyInstruction(a,b))}</p><p><b>Suggested:</b> ${svgEsc(hint.text)}</p><div class="card-map-wrap"><div class="schematic" id="detail-schematic"></div></div><div class="route-stats" id="detail-stats">Loading local map…</div></div>`;
+ document.getElementById('locationDetailTitle').textContent='Route step details';
+ openSheet('locationDetailSheet');
+ setTimeout(async()=>{
+   const tempBox=document.getElementById('schematic-'+i), tempStats=document.getElementById('stats-'+i), dBox=document.getElementById('detail-schematic'), dStats=document.getElementById('detail-stats');
+   if(tempBox&&dBox){dBox.innerHTML=tempBox.innerHTML; dStats.textContent=tempStats?.textContent||''}
+   else { await buildJourneyCard(i,a,b,cardModes[i]||null); if(tempBox&&dBox){dBox.innerHTML=tempBox.innerHTML; dStats.textContent=tempStats?.textContent||''} }
+ },100);
+}
+function renderAppLayout(){ pillState(); renderRouteSchematic(); renderRouteDrawer(); }
+
 try{initMap()}catch(e){console.warn("Map init skipped:",e)}
 try{renderAll()}catch(e){console.error(e)}
-setTimeout(()=>renderContinuousRoute(),120);
+setTimeout(()=>renderAppLayout(),180);
 </script>
 <div id="appError" style="display:none;position:fixed;left:12px;right:12px;top:72px;z-index:99999;background:#fff3cd;border:1px solid #ffe69c;padding:10px 12px;border-radius:10px;font:13px Arial;color:#664d03"></div>
 
