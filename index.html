@@ -672,6 +672,13 @@ main{
  .drawer-card h4{font-size:16px}
 }
 
+
+/* V30 route-detail fixes */
+.drawer-summary .morebtn{position:relative;z-index:5}
+.drawer-card .schematic svg{width:100%;height:auto;display:block}
+.drawer-card .route-line-main{stroke-width:7!important}
+.drawer-card .route-line-shadow{stroke-width:11!important}
+
 </style>
 </head>
 <body>
@@ -712,13 +719,13 @@ main{
 
 <div id="routeDrawer" class="collapsed">
   <div class="drag-handle" onclick="toggleDrawer()"><span></span></div>
-  <div class="drawer-summary" onclick="toggleDrawer(true)">
+  <div class="drawer-summary" onclick="if(!drawerExpanded)toggleDrawer(true)">
     <div style="min-width:0">
       <div class="small" id="drawerModeText">Today’s route</div>
       <h3 id="drawerTitle">Tap to view the current route step</h3>
       <div class="sub" id="drawerStreet">Street names and local map will appear here.</div>
     </div>
-    <button class="morebtn" id="drawerToggleBtn">More</button>
+    <button class="morebtn" id="drawerToggleBtn" onclick="event.stopPropagation();toggleDrawer()">More</button>
   </div>
   <div class="drawer-body"><div id="drawerCards"></div></div>
 </div>
@@ -971,7 +978,7 @@ const masterPlans=[
  ["hotel","jewel","t4"]
 ];
 
-let state=JSON.parse(localStorage.getItem("sgTripV29")||localStorage.getItem("sgTripV16")||"null")||{
+let state=JSON.parse(localStorage.getItem("sgTripV30")||localStorage.getItem("sgTripV16")||"null")||{
  day:0,routes:masterPlans.map(x=>[...x]),missed:[],expenses:[],custom:[],mode:"Dry",hot:false,routeMode:"smart",fx:{gbp:.58,cad:.96},excluded:[[],[],[],[]]
 };
 if(typeof state.hot==="undefined") state.hot=false;
@@ -1222,7 +1229,7 @@ function ensureHotelReturn(){
 }
 ensureHotelReturn();
 
-function save(){localStorage.setItem("sgTripV29",JSON.stringify(state))}
+function save(){localStorage.setItem("sgTripV30",JSON.stringify(state))}
 function allStops(){return [...stops,...state.custom]}
 function byId(id){return allStops().find(s=>s.id===id)}
 function routeObjs(){return state.routes[state.day].map(byId).filter(Boolean)}
@@ -1798,8 +1805,8 @@ async function openPoiOverlay(name,info,tip,type="Place",lat=null,lng=null){
  if(w.summary && (!info || info.length<80))poiInfo.textContent=w.summary.slice(0,850);
 }
 async function fetchBuildingsForLeg(a,b){
- const minLat=Math.min(a.lat,b.lat)-.0012,maxLat=Math.max(a.lat,b.lat)+.0012;
- const minLng=Math.min(a.lng,b.lng)-.0012,maxLng=Math.max(a.lng,b.lng)+.0012;
+ const minLat=Math.min(a.lat,b.lat)-.0016,maxLat=Math.max(a.lat,b.lat)+.0016;
+ const minLng=Math.min(a.lng,b.lng)-.0016,maxLng=Math.max(a.lng,b.lng)+.0016;
  const q=`[out:json][timeout:8];way["building"](${minLat},${minLng},${maxLat},${maxLng});out geom 80;`;
  try{
    const r=await fetch("https://overpass-api.de/api/interpreter",{method:"POST",body:q});
@@ -1832,10 +1839,10 @@ function bearingText(a,b){
  const dirs=["north","north-east","east","south-east","south","south-west","west","north-west"];
  return dirs[Math.round(deg/45)%8];
 }
-function simplifyCoords(coords,maxPts=18){
+function simplifyCoords(coords,maxPts=120){
  if(!coords||coords.length<=maxPts)return coords||[];
  const out=[];const step=(coords.length-1)/(maxPts-1);
- for(let i=0;i<maxPts;i++)out.push(coords[Math.round(i*step)]);
+ for(let i=0;i<maxPts;i++)out.push(coords[Math.min(coords.length-1,Math.round(i*step))]);
  return out;
 }
 function projectCoords(coords,w=320,h=160,pad=22){
@@ -1881,13 +1888,14 @@ async function buildJourneyCard(index,a,b,forcedMode=null){
  try{
    if(useWalk){
      const [r,buildings]=await Promise.all([footRoute([a,b]),fetchBuildingsForLeg(a,b)]);
-     const coords=simplifyCoords(r.geometry.coordinates,28);
+     const coords=simplifyCoords(r.geometry.coordinates,120);
      const lngs=coords.map(c=>c[0]),lats=coords.map(c=>c[1]);
-     const bounds=[Math.min(...lngs)-.00045,Math.min(...lats)-.00045,Math.max(...lngs)+.00045,Math.max(...lats)+.00045];
+     const padLng=Math.max((Math.max(...lngs)-Math.min(...lngs))*.12,.00016),padLat=Math.max((Math.max(...lats)-Math.min(...lats))*.12,.00016); const bounds=[Math.min(...lngs)-padLng,Math.min(...lats)-padLat,Math.max(...lngs)+padLng,Math.max(...lats)+padLat];
      const pts=coords.map(([lng,lat])=>projectPoint(lat,lng,bounds));
      const colour=dayRouteColours[state.day%dayRouteColours.length],pois=cardPoiCandidates(a,b);
      box.innerHTML=`<svg viewBox="0 0 320 170"><rect width="320" height="170" fill="#f3f4f5"/>${buildingSvg(buildings,bounds)}<path class="route-line-shadow" d="${svgPath(pts)}"/><path class="route-line-main" d="${svgPath(pts)}" stroke="${colour}"/><circle cx="${pts[0][0]}" cy="${pts[0][1]}" r="8" fill="white" stroke="${colour}" stroke-width="4"/><circle cx="${pts[pts.length-1][0]}" cy="${pts[pts.length-1][1]}" r="8" fill="${colour}"/>${poiSvg(pois,bounds)}</svg>`;
-     stats.textContent=`Walk ${(r.distance/1000).toFixed(1)} km · about ${Math.round(r.duration/60)} min · generally ${dir}`;
+     const streets=routeStreetNames(r);
+     stats.textContent=`Walk ${(r.distance/1000).toFixed(1)} km · about ${Math.round(r.duration/60)} min${streets.length?` · ${streets.join(" → ")}`:` · generally ${dir}`}`;
    }else{
      const j=preferredMRTJourney(a,b),colour=(mrtLineInfo[j.segments?.[0]?.line]||{}).color||dayRouteColours[state.day%dayRouteColours.length];
      box.innerHTML=mrtSchematic(j,colour);
@@ -2014,6 +2022,22 @@ async function footRoute(points){
  if(j.code!=="Ok"||!j.routes?.length)throw new Error("route");
  return j.routes[0];
 }
+
+function routeStreetNames(route){
+ const names=[];
+ try{
+   for(const leg of (route.legs||[])){
+     for(const step of (leg.steps||[])){
+       const n=(step.name||"").trim();
+       if(n && !names.includes(n))names.push(n);
+       if(names.length>=4)break;
+     }
+     if(names.length>=4)break;
+   }
+ }catch(e){}
+ return names;
+}
+
 async function drawTransitTo(a,b,j=null){
  if(routeLayer){map.removeLayer(routeLayer);routeLayer=null}
  j=j||preferredMRTJourney(a,b);

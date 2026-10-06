@@ -1,11 +1,9 @@
-Singapore Trip App V29
+Singapore Trip App V30
 
-Layout restarted from the user's sketch:
-- fixed header with horizontally scrollable action buttons
-- full-height vertical route schematic that scrolls down the day
-- numbered route nodes
-- nearby A/C / food / smoking / toilet / attractions shown as branch dots
-- bottom route drawer collapsed by default, expandable for more detail
-- route detail cards show a local mini map with building blocks and step details
-- street name line added to each route card
-- GPS now updates the current step and scrolls the route toward the present location
+Fixes:
+- The More / Hide button now properly collapses the bottom information drawer.
+- Clicking Hide no longer bubbles to the drawer header and immediately re-opens it.
+- Local walking maps now retain up to 120 routed geometry points rather than heavily simplifying the path.
+- The coloured route therefore follows the real foot-routing geometry much more closely.
+- Walking cards now show the routed distance, routed time, and up to four street names from the routing instructions when available.
+- Building blocks remain based on OpenStreetMap building footprints.
