@@ -1,18 +1,132 @@
 <!doctype html>
-<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no"><meta name="theme-color" content="#ffffff"><title>Singapore Trip</title><link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"><script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script><style>
-:root{--line:#dfe3e8;--muted:#65707c;--blue:#1677ff;--bg:#eef1f4}*{box-sizing:border-box}html,body{margin:0;height:100%;font-family:Inter,system-ui,-apple-system,Segoe UI,Arial,sans-serif;background:var(--bg);color:#17191c;overflow:hidden}button{font:inherit}#topbar{position:fixed;left:0;right:0;top:0;z-index:2000;height:108px;background:rgba(255,255,255,.98);border-bottom:1px solid var(--line);padding:7px 9px 8px;box-shadow:0 2px 10px rgba(0,0,0,.06)}.topline{height:42px;display:flex;align-items:center;gap:9px}.iconbtn{width:39px;height:39px;border:0;border-radius:14px;background:#f5f6f8;font-size:19px;cursor:pointer}.title{min-width:0;flex:1}.title h1{font-size:18px;line-height:1.1;margin:0;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.title div{font-size:11px;color:var(--muted);margin-top:3px}#actions{display:flex;gap:7px;overflow-x:auto;scrollbar-width:none;padding-top:5px}#actions::-webkit-scrollbar{display:none}.pill{flex:0 0 auto;border:1px solid var(--line);background:white;border-radius:999px;padding:9px 12px;font-size:12px;white-space:nowrap;cursor:pointer}.pill.dark{background:#111;color:#fff;border-color:#111}#map{position:fixed;left:0;right:0;top:108px;bottom:0;background:#e9edf1}#status{position:fixed;left:10px;top:118px;z-index:1200;max-width:min(74vw,460px);background:rgba(255,255,255,.96);border:1px solid var(--line);border-radius:14px;padding:8px 10px;box-shadow:0 2px 9px rgba(0,0,0,.09)}#status b{font-size:13px}#status div{font-size:11px;color:var(--muted);line-height:1.35;margin-top:2px}#mapTools{position:fixed;right:10px;top:118px;z-index:1200;display:flex;flex-direction:column;gap:7px}.mapbtn{width:42px;height:42px;border:1px solid var(--line);background:rgba(255,255,255,.96);border-radius:13px;font-size:18px;cursor:pointer;box-shadow:0 2px 8px rgba(0,0,0,.08)}#drawer{position:fixed;left:9px;right:9px;bottom:9px;z-index:1600;background:rgba(255,255,255,.98);border:1px solid var(--line);border-radius:21px;box-shadow:0 15px 38px rgba(0,0,0,.18);overflow:hidden;transition:height .22s ease}#drawer.collapsed{height:132px}#drawer.expanded{height:min(68vh,680px)}.handle{height:24px;display:grid;place-items:center;cursor:pointer}.handle span{width:41px;height:5px;border-radius:99px;background:#d4d9df}.summary{padding:0 13px 11px;display:flex;gap:10px;align-items:flex-start}.summary .copy{min-width:0;flex:1}.summary .small{font-size:11px;color:var(--muted);margin-bottom:3px}.summary h2{font-size:16px;line-height:1.2;margin:0}.summary p{font-size:12px;line-height:1.35;color:#4d5661;margin:4px 0 0}.more{border:1px solid var(--line);background:#fff;border-radius:999px;padding:7px 11px;font-size:12px;cursor:pointer}#drawerBody{height:calc(100% - 78px);overflow:auto;padding:2px 12px 14px}.stepcard{border:1px solid var(--line);border-radius:16px;padding:12px;margin:8px 0;background:#fafbfc}.stepcard.active{border-color:#b8d2ff;background:#fff;box-shadow:0 0 0 2px #e0ebff}.stephead{display:flex;align-items:flex-start;gap:9px}.num{width:31px;height:31px;border-radius:50%;background:#111;color:#fff;display:grid;place-items:center;font-weight:700;flex:none}.stepcard.active .num{background:var(--blue)}.stepcard h3{font-size:15px;margin:1px 0 2px;line-height:1.2}.stepcard p{font-size:12px;color:#505966;line-height:1.45;margin:5px 0 0}.stepcard button{margin-top:8px;border:1px solid var(--line);background:#fff;border-radius:999px;padding:7px 10px;font-size:12px;cursor:pointer}#daySheet{position:fixed;inset:0;z-index:3000;background:rgba(0,0,0,.35);display:none;align-items:flex-end}#daySheet.open{display:flex}.sheet{width:100%;background:#fff;border-radius:22px 22px 0 0;padding:12px;max-height:70vh;overflow:auto}.sheet h2{font-size:18px;margin:5px 0 10px}.dayrow{display:flex;justify-content:space-between;align-items:center;border-top:1px solid var(--line);padding:11px 2px}.dayrow:first-of-type{border-top:0}.dayrow button{border:1px solid var(--line);background:#fff;border-radius:999px;padding:7px 11px;cursor:pointer}.route-marker{width:28px;height:28px;border-radius:50%;background:#fff;border:4px solid #111;display:grid;place-items:center;font-size:10px;font-weight:800;box-shadow:0 2px 6px rgba(0,0,0,.25)}.leaflet-control-attribution{font-size:9px}.route-arrow-icon{font-size:17px;font-weight:900;color:#111;text-shadow:0 0 3px #fff,0 0 3px #fff}@media(max-width:699px){#topbar{height:111px}#map{top:111px}#status{top:121px}#mapTools{top:121px}}
-</style></head><body>
-<header id="topbar"><div class="topline"><button class="iconbtn" id="locateTop">◎</button><div class="title"><h1 id="dayTitle">Singapore Trip</h1><div id="daySub"></div></div><button class="iconbtn" id="fitTop">↗</button></div><div id="actions"><button class="pill dark" id="todayBtn">Today's route</button><button class="pill" id="chooseBtn">Choose day</button><button class="pill" id="gpsBtn">GPS</button><button class="pill" id="currentBtn">Current step</button><button class="pill" id="fullBtn">Full route</button><button class="pill" id="zinBtn">Zoom +</button><button class="pill" id="zoutBtn">Zoom −</button></div></header>
-<div id="map"></div><div id="status"><b id="statusTitle">Loading map…</b><div id="statusSub">Simplified streets, buildings and route line.</div><div style="font-size:9px;color:#999;margin-top:3px">Map V35</div></div><div id="mapTools"><button class="mapbtn" id="currentMap">◎</button><button class="mapbtn" id="fitMap">↗</button></div>
-<div id="drawer" class="collapsed"><div class="handle" id="drawerHandle"><span></span></div><div class="summary"><div class="copy"><div class="small" id="summarySmall">Route</div><h2 id="summaryTitle">Loading current step…</h2><p id="summaryText">Route details will appear here.</p></div><button class="more" id="moreBtn">More</button></div><div id="drawerBody"></div></div>
-<div id="daySheet"><div class="sheet"><h2>Choose day</h2><div id="dayRows"></div><button class="pill" id="closeDays" style="width:100%;margin-top:8px">Close</button></div></div>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<meta name="theme-color" content="#ffffff">
+<title>Singapore Trip</title>
+<link rel="stylesheet" href="https://unpkg.com/maplibre-gl@5.6.2/dist/maplibre-gl.css">
+<script src="https://unpkg.com/maplibre-gl@5.6.2/dist/maplibre-gl.js"></script>
+<style>
+:root{--line:#dfe3e8;--muted:#65707c;--blue:#1677ff;--bg:#eef1f4}
+*{box-sizing:border-box}
+html,body{margin:0;height:100%;font-family:Inter,system-ui,-apple-system,Segoe UI,Arial,sans-serif;background:var(--bg);color:#17191c;overflow:hidden}
+button{font:inherit}
+#topbar{
+ position:fixed;left:0;right:0;top:0;z-index:50;height:108px;background:rgba(255,255,255,.97);
+ border-bottom:1px solid var(--line);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);
+ padding:7px 9px 8px;box-shadow:0 2px 10px rgba(0,0,0,.06)
+}
+.topline{height:42px;display:flex;align-items:center;gap:9px}
+.iconbtn{width:39px;height:39px;border:0;border-radius:14px;background:#f5f6f8;font-size:19px}
+.title{min-width:0;flex:1}
+.title h1{font-size:18px;line-height:1.1;margin:0;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.title div{font-size:11px;color:var(--muted);margin-top:3px}
+#actions{display:flex;gap:7px;overflow-x:auto;scrollbar-width:none;padding-top:5px}
+#actions::-webkit-scrollbar{display:none}
+.pill{flex:0 0 auto;border:1px solid var(--line);background:white;border-radius:999px;padding:9px 12px;font-size:12px;white-space:nowrap}
+.pill.dark{background:#111;color:#fff;border-color:#111}
+#map{position:fixed;left:0;right:0;top:108px;bottom:0;background:#e9edf1}
+#mapStatus{
+ position:fixed;left:10px;top:118px;z-index:20;max-width:min(72vw,440px);background:rgba(255,255,255,.95);
+ border:1px solid var(--line);border-radius:14px;padding:8px 10px;box-shadow:0 2px 9px rgba(0,0,0,.09)
+}
+#mapStatus b{font-size:13px}
+#mapStatus div{font-size:11px;color:var(--muted);line-height:1.35;margin-top:2px}
+#mapTools{position:fixed;right:10px;top:118px;z-index:22;display:flex;flex-direction:column;gap:7px}
+.mapbtn{width:42px;height:42px;border:1px solid var(--line);background:rgba(255,255,255,.96);border-radius:13px;font-size:18px;box-shadow:0 2px 8px rgba(0,0,0,.08)}
+#drawer{
+ position:fixed;left:9px;right:9px;bottom:9px;z-index:30;background:rgba(255,255,255,.98);border:1px solid var(--line);
+ border-radius:21px;box-shadow:0 15px 38px rgba(0,0,0,.18);overflow:hidden;transition:height .22s ease
+}
+#drawer.collapsed{height:132px}
+#drawer.expanded{height:min(68vh,680px)}
+.handle{height:24px;display:grid;place-items:center;cursor:pointer}
+.handle span{width:41px;height:5px;border-radius:99px;background:#d4d9df}
+.summary{padding:0 13px 11px;display:flex;gap:10px;align-items:flex-start}
+.summary .copy{min-width:0;flex:1}
+.summary .small{font-size:11px;color:var(--muted);margin-bottom:3px}
+.summary h2{font-size:16px;line-height:1.2;margin:0}
+.summary p{font-size:12px;line-height:1.35;color:#4d5661;margin:4px 0 0}
+.more{border:1px solid var(--line);background:#fff;border-radius:999px;padding:7px 11px;font-size:12px}
+#drawerBody{height:calc(100% - 78px);overflow:auto;padding:2px 12px 14px}
+.stepcard{border:1px solid var(--line);border-radius:16px;padding:12px;margin:8px 0;background:#fafbfc}
+.stepcard.active{border-color:#b8d2ff;background:#fff;box-shadow:0 0 0 2px #e0ebff}
+.stephead{display:flex;align-items:flex-start;gap:9px}
+.num{width:31px;height:31px;border-radius:50%;background:#111;color:#fff;display:grid;place-items:center;font-weight:700;flex:none}
+.stepcard.active .num{background:var(--blue)}
+.stepcard h3{font-size:15px;margin:1px 0 2px;line-height:1.2}
+.stepcard p{font-size:12px;color:#505966;line-height:1.45;margin:5px 0 0}
+.stepcard button{margin-top:8px;border:1px solid var(--line);background:#fff;border-radius:999px;padding:7px 10px;font-size:12px}
+#daySheet{position:fixed;inset:0;z-index:80;background:rgba(0,0,0,.35);display:none;align-items:flex-end}
+#daySheet.open{display:flex}
+.sheet{width:100%;background:#fff;border-radius:22px 22px 0 0;padding:12px;max-height:70vh;overflow:auto}
+.sheet h2{font-size:18px;margin:5px 0 10px}
+.dayrow{display:flex;justify-content:space-between;align-items:center;border-top:1px solid var(--line);padding:11px 2px}
+.dayrow:first-of-type{border-top:0}
+.dayrow button{border:1px solid var(--line);background:#fff;border-radius:999px;padding:7px 11px}
+.route-marker{width:28px;height:28px;border-radius:50%;background:#fff;border:4px solid #111;display:grid;place-items:center;font-size:10px;font-weight:800;box-shadow:0 2px 6px rgba(0,0,0,.25)}
+.maplibregl-ctrl-bottom-left,.maplibregl-ctrl-bottom-right{font-size:9px}
+@media(max-width:699px){
+ #topbar{height:111px} #map{top:111px} #mapStatus{top:121px} #mapTools{top:121px}
+ #drawer.collapsed{height:138px}
+}
+</style>
+</head>
+<body>
+<header id="topbar">
+ <div class="topline">
+   <button class="iconbtn" id="btnLocateTop" aria-label="Locate me">◎</button>
+   <div class="title"><h1 id="dayTitle">Singapore Trip</h1><div id="daySub"></div></div>
+   <button class="iconbtn" id="btnFitTop" aria-label="Show full route">↗</button>
+ </div>
+ <div id="actions">
+   <button class="pill dark" id="btnTodayRoute">Today's route</button>
+   <button class="pill" id="btnChooseDay">Choose day</button>
+   <button class="pill" id="btnGps">GPS</button>
+   <button class="pill" id="btnCurrent">Current step</button>
+   <button class="pill" id="btnFullRoute">Full route</button>
+   <button class="pill" id="btnZoomIn">Zoom +</button>
+   <button class="pill" id="btnZoomOut">Zoom −</button>
+ </div>
+</header>
+
+<div id="map"></div>
+<div id="mapStatus"><b id="statusTitle">Loading route…</b><div id="statusSub">Simplified real map: streets, building shapes and street names.</div></div>
+<div id="mapTools">
+ <button class="mapbtn" id="btnCurrentMap" title="Current step">◎</button>
+ <button class="mapbtn" id="btnFitMap" title="Full route">↗</button>
+</div>
+
+<div id="drawer" class="collapsed">
+ <div class="handle" id="drawerHandle"><span></span></div>
+ <div class="summary">
+  <div class="copy">
+   <div class="small" id="summarySmall">Route</div>
+   <h2 id="summaryTitle">Loading current step…</h2>
+   <p id="summaryText">Street and direction details will appear here.</p>
+  </div>
+  <button class="more" id="drawerMore">More</button>
+ </div>
+ <div id="drawerBody"></div>
+</div>
+
+<div id="daySheet">
+ <div class="sheet">
+  <h2>Choose day</h2>
+  <div id="dayRows"></div>
+  <button class="pill" id="btnCloseDays" style="width:100%;margin-top:8px">Close</button>
+ </div>
+</div>
+
 <script>
 const days=[
  {date:"2026-10-15",label:"Thu 15",title:"Arrival + Marina Bay lights"},
  {date:"2026-10-16",label:"Fri 16",title:"Kampong Glam · Bugis · Little India"},
  {date:"2026-10-17",label:"Sat 17",title:"Fort Canning · River · Chinatown"},
  {date:"2026-10-18",label:"Sun 18",title:"Changi · Jewel · T4"}
-];const stops=[
+];
+const stops=[
 {id:"airport",name:"Changi Airport T4 Arrivals",lat:1.3384,lng:103.9832,day:0,type:"Indoor",priority:"Must See",desc:"Arrival at Terminal 4. Take the free terminal shuttle to T2/MRT, then continue by MRT to Lavender.",photo:"Arrival / travel documentary"},
 {id:"hotel",name:"Hotel Boss",lat:1.3057,lng:103.8603,day:0,type:"Indoor",priority:"Must See",desc:"Your base at Jalan Sultan, close to Kampong Glam and Lavender MRT.",photo:"Useful base / street scenes nearby"},
 {id:"fullerton",name:"Fullerton Waterfront",lat:1.2860,lng:103.8530,day:0,type:"Outdoor",priority:"Would Like",desc:"Historic waterfront beside the Fullerton Hotel with strong river-to-skyline views.",photo:"Best at blue hour / night reflections"},
@@ -58,12 +172,14 @@ const days=[
 {id:"palawan",name:"Palawan Beach",lat:1.2494,lng:103.8200,day:2,type:"Outdoor",priority:"Optional",desc:"Relaxed Sentosa beach with tropical waterfront views.",photo:"Late afternoon / sunset"},
 {id:"jewel",name:"Jewel Changi Airport",lat:1.3603,lng:103.9898,day:3,type:"Indoor",priority:"Must See",desc:"Indoor airport complex centred on the Rain Vortex and tropical garden.",photo:"Morning / indoor light"},
 {id:"t4",name:"Changi Terminal 4",lat:1.3384,lng:103.9832,day:3,type:"Indoor",priority:"Must See",desc:"Your departure terminal for the flight home.",photo:"Travel/documentary shots"}
-];const masterPlans=[
+];
+const masterPlans=[
  ["airport","hotel","fullerton","merlion","jubilee","esplanade","helix","mbs","spectra","gardens","flowerdome","f1","hotel"],
  ["hotel","sultan","bussorah","muscat","baghdad","arab","haji","bugis","littleindia","tan","clive","serangoon","tekka","hotel"],
  ["hotel","fort","hillstreet","chinatown","annsiang","telokayer","laupasat","cavenagh","anderson","boat","clarke","rivercruise","hotel"],
  ["hotel","jewel","t4"]
-];const mrt=[
+];
+const mrt=[
 {name:"Changi Airport",code:"CG2",lat:1.3572,lng:103.9880},
 {name:"Expo",code:"CG1/DT35",lat:1.3350,lng:103.9615},
 {name:"Tanah Merah",code:"EW4",lat:1.3272,lng:103.9464},
@@ -114,7 +230,18 @@ const days=[
 {name:"Shenton Way",code:"TE19",lat:1.2777,lng:103.8503},
 {name:"Gardens by the Bay",code:"TE22",lat:1.2795,lng:103.8675},
 {name:"Tanjong Rhu",code:"TE23",lat:1.2990,lng:103.8730}
-];const mrtNetworks={
+];
+const mrtLineInfo={
+ EW:{name:"East–West Line",color:"#009645"},
+ CG:{name:"Changi Airport Branch",color:"#009645"},
+ DT:{name:"Downtown Line",color:"#005EC4"},
+ CC:{name:"Circle Line",color:"#FA9E0D"},
+ CE:{name:"Circle Line Extension",color:"#FA9E0D"},
+ NE:{name:"North East Line",color:"#9900AA"},
+ NS:{name:"North–South Line",color:"#D42E12"},
+ TE:{name:"Thomson–East Coast Line",color:"#9D5B25"}
+};
+const mrtNetworks={
  CG:[
   ["Changi Airport","CG2"],["Expo","CG1"],["Tanah Merah","EW4"]
  ],
@@ -151,21 +278,233 @@ const days=[
   ["Shenton Way","TE19"],["Marina Bay","TE20"],["Gardens by the Bay","TE22"],["Tanjong Rhu","TE23"]
  ]
 };
-let state=JSON.parse(localStorage.getItem("sgTripV35")||"null")||{day:0,routes:masterPlans.map(x=>[...x])};if(!Array.isArray(state.routes)||state.routes.length<4)state.routes=masterPlans.map(x=>[...x]);
-let map,routeLayer=null,haloLayer=null,arrowLayer=null,stopMarkers=[],userMarker=null,userPos=null,watchId=null;let routeCoords=[],stopCoordIndex=[],currentIndex=0,routeFloat=0,lastTouchY=null,drawerOpen=false;
-function save(){localStorage.setItem("sgTripV35",JSON.stringify(state))}function byId(id){return stops.find(s=>s.id===id)}function routeStops(){return state.routes[state.day].map(byId).filter(Boolean)}function hav(a,b){const R=6371,p=Math.PI/180,dLat=(b.lat-a.lat)*p,dLon=(b.lng-a.lng)*p,la1=a.lat*p,la2=b.lat*p,x=Math.sin(dLat/2)**2+Math.cos(la1)*Math.cos(la2)*Math.sin(dLon/2)**2;return 2*R*Math.asin(Math.sqrt(x))}function smartLeg(a,b){return hav(a,b)<=.85?"walk":"mrt"}function nearestMRT(p){return mrt.slice().sort((a,b)=>hav(p,a)-hav(p,b))[0]}
-function buildGraph(){const g={};for(const [line,sts] of Object.entries(mrtNetworks))sts.forEach((s,i)=>{if(!g[s[0]])g[s[0]]=[];if(i)g[s[0]].push({to:sts[i-1][0],line});if(i<sts.length-1)g[s[0]].push({to:sts[i+1][0],line})});return g}const mrtGraph=buildGraph();
-function shortestMRTPath(a,b){if(a===b)return[a];const q=[a],prev={[a]:null};while(q.length){const n=q.shift();for(const e of(mrtGraph[n]||[])){if(Object.prototype.hasOwnProperty.call(prev,e.to))continue;prev[e.to]=n;if(e.to===b){q.length=0;break}q.push(e.to)}};if(!Object.prototype.hasOwnProperty.call(prev,b))return[a,b];const out=[];let c=b;while(c!==null){out.push(c);c=prev[c]}return out.reverse()}
-function mrtCoords(a,b){const s1=nearestMRT(a),s2=nearestMRT(b),names=shortestMRTPath(s1.name,s2.name),out=[[a.lat,a.lng],[s1.lat,s1.lng]];names.forEach(n=>{const st=mrt.find(x=>x.name===n);if(st)out.push([st.lat,st.lng])});out.push([s2.lat,s2.lng],[b.lat,b.lng]);return out}
-async function footRoute(a,b){const url=`https://routing.openstreetmap.de/routed-foot/route/v1/driving/${a.lng},${a.lat};${b.lng},${b.lat}?overview=full&geometries=geojson&steps=true`;const r=await fetch(url);if(!r.ok)throw new Error("route");const j=await r.json();if(j.code!=="Ok"||!j.routes?.length)throw new Error("route");return j.routes[0]}
-function initMap(){if(typeof L==="undefined"){document.getElementById("statusTitle").textContent="Map library failed to load";return}map=L.map("map",{zoomControl:false,dragging:false,scrollWheelZoom:false,doubleClickZoom:true,touchZoom:true,boxZoom:true,keyboard:true,inertia:true});L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",{maxZoom:19,attribution:"&copy; OpenStreetMap contributors"}).addTo(map);map.setView([1.297,103.856],14);setupGesture();buildRoute()}
-async function buildRoute(){const rs=routeStops();routeCoords=[];stopCoordIndex=[];let idx=0;statusTitle.textContent="Building route…";statusSub.textContent="Drawing a visible route line.";for(let i=0;i<rs.length-1;i++){stopCoordIndex[i]=idx;const a=rs[i],b=rs[i+1];let coords;try{coords=smartLeg(a,b)==="walk"?(await footRoute(a,b)).geometry.coordinates.map(c=>[c[1],c[0]]):mrtCoords(a,b)}catch(e){coords=[[a.lat,a.lng],[b.lat,b.lng]]}coords=coords.filter(c=>Number.isFinite(c[0])&&Number.isFinite(c[1]));if(i>0)coords=coords.slice(1);routeCoords.push(...coords);idx=routeCoords.length-1}stopCoordIndex[rs.length-1]=Math.max(0,routeCoords.length-1);if(routeLayer)map.removeLayer(routeLayer);if(haloLayer)map.removeLayer(haloLayer);if(arrowLayer)map.removeLayer(arrowLayer);stopMarkers.forEach(m=>m.remove());stopMarkers=[];const colour=["#0050A4","#E32017","#009645","#8B4513"][state.day]||"#1677ff";haloLayer=L.polyline(routeCoords,{color:"#fff",weight:18,opacity:.98,lineJoin:"round",lineCap:"round"}).addTo(map);routeLayer=L.polyline(routeCoords,{color:colour,weight:10,opacity:1,lineJoin:"round",lineCap:"round"}).addTo(map);arrowLayer=L.layerGroup().addTo(map);for(let i=10;i<routeCoords.length-5;i+=30){const p=routeCoords[i],n=routeCoords[Math.min(i+3,routeCoords.length-1)];const ang=Math.atan2(n[1]-p[1],n[0]-p[0])*180/Math.PI;const icon=L.divIcon({className:"",html:`<div class="route-arrow-icon" style="transform:rotate(${ang}deg)">➤</div>`,iconSize:[20,20],iconAnchor:[10,10]});L.marker(p,{icon,interactive:false}).addTo(arrowLayer)}rs.forEach((s,i)=>{const icon=L.divIcon({className:"",html:`<div class="route-marker">${i+1}</div>`,iconSize:[28,28],iconAnchor:[14,14]});const m=L.marker([s.lat,s.lng],{icon}).addTo(map);m.on("click",()=>selectStep(Math.min(i,rs.length-2),true));stopMarkers.push(m)});currentIndex=0;routeFloat=0;renderDrawer();setTimeout(()=>selectStep(0,false),120);statusTitle.textContent="Follow the coloured route line";statusSub.textContent="Swipe upward to move forward. Arrows show direction. Pinch to zoom."}
-function setupGesture(){const el=map.getContainer();el.addEventListener("touchstart",e=>{if(e.touches.length===1)lastTouchY=e.touches[0].clientY},{passive:true});el.addEventListener("touchmove",e=>{if(e.touches.length!==1||lastTouchY===null)return;e.preventDefault();const y=e.touches[0].clientY,dy=lastTouchY-y;lastTouchY=y;advanceRoute(dy/18)},{passive:false});el.addEventListener("touchend",()=>lastTouchY=null,{passive:true});el.addEventListener("wheel",e=>{if(e.ctrlKey)return;e.preventDefault();advanceRoute(e.deltaY/22)},{passive:false})}
-function cameraToIndex(i,animate=true){if(!routeCoords.length)return;i=Math.max(0,Math.min(routeCoords.length-1,i));const p=routeCoords[i];map.setView(p,Math.max(map.getZoom(),16.5),{animate})}function advanceRoute(delta){if(!routeCoords.length)return;routeFloat=Math.max(0,Math.min(routeCoords.length-1,routeFloat+delta));currentIndex=Math.round(routeFloat);cameraToIndex(currentIndex,false);updateStepFromCoord()}function updateStepFromCoord(){let step=0;for(let i=0;i<stopCoordIndex.length-1;i++)if(currentIndex>=stopCoordIndex[i])step=i;step=Math.min(step,routeStops().length-2);updateSummary(step);highlightDrawer(step)}function selectStep(step,animate=true){currentIndex=stopCoordIndex[step]||0;routeFloat=currentIndex;cameraToIndex(currentIndex,animate);updateSummary(step);highlightDrawer(step)}function fitRoute(){if(routeLayer)map.fitBounds(routeLayer.getBounds(),{paddingTopLeft:[40,100],paddingBottomRight:[40,190],maxZoom:16})}
-function updateSummary(step){const rs=routeStops(),small=document.getElementById("summarySmall"),title=document.getElementById("summaryTitle"),text=document.getElementById("summaryText");if(!rs[step]||!rs[step+1])return;if(small)small.textContent=`Step ${step+1} of ${rs.length-1}`;if(title)title.textContent=`${rs[step].name} → ${rs[step+1].name}`;if(text)text.textContent=`${smartLeg(rs[step],rs[step+1])==="walk"?"Walk":"MRT / transport"} · follow the coloured route line`}
-function renderDrawer(){const rs=routeStops(),body=document.getElementById("drawerBody");body.innerHTML=rs.slice(0,-1).map((a,i)=>`<div class="stepcard" data-step="${i}"><div class="stephead"><div class="num">${i+1}</div><div><h3>${a.name} → ${rs[i+1].name}</h3><p>${a.desc||""}</p><button data-stepbtn="${i}">Show this step</button></div></div></div>`).join("");body.querySelectorAll("[data-stepbtn]").forEach(b=>b.addEventListener("click",()=>selectStep(Number(b.dataset.stepbtn),true)))}function highlightDrawer(step){document.querySelectorAll(".stepcard").forEach(c=>c.classList.toggle("active",Number(c.dataset.step)===step))}function toggleDrawer(force){drawerOpen=typeof force==="boolean"?force:!drawerOpen;const d=document.getElementById("drawer");d.classList.toggle("expanded",drawerOpen);d.classList.toggle("collapsed",!drawerOpen);document.getElementById("moreBtn").textContent=drawerOpen?"Hide":"More"}
-function renderHeader(){dayTitle.textContent=days[state.day].title;daySub.textContent=`${days[state.day].label} · simplified route`}function renderDays(){dayRows.innerHTML=days.map((d,i)=>`<div class="dayrow"><div><b>${d.label}</b><div style="font-size:12px;color:#667">${d.title}</div></div><button data-day="${i}">${i===state.day?"Current":"Open"}</button></div>`).join("");dayRows.querySelectorAll("[data-day]").forEach(b=>b.addEventListener("click",()=>setDay(Number(b.dataset.day))))}async function setDay(i){state.day=i;save();renderHeader();document.getElementById("daySheet").classList.remove("open");renderDays();await buildRoute()}
-function locateMe(){if(!navigator.geolocation){alert("GPS not available.");return}navigator.geolocation.getCurrentPosition(p=>{userPos={lat:p.coords.latitude,lng:p.coords.longitude};drawUser();syncGps(true);startWatch()},()=>alert("Allow location access for GPS."),{enableHighAccuracy:true,timeout:10000,maximumAge:10000})}function drawUser(){if(userMarker)map.removeLayer(userMarker);userMarker=L.circleMarker([userPos.lat,userPos.lng],{radius:8,color:"#fff",weight:4,fillColor:"#1677ff",fillOpacity:1}).addTo(map)}function startWatch(){if(watchId!==null)return;watchId=navigator.geolocation.watchPosition(p=>{userPos={lat:p.coords.latitude,lng:p.coords.longitude};drawUser();syncGps(false)},()=>{},{enableHighAccuracy:true,maximumAge:10000,timeout:12000})}function syncGps(animate){if(!userPos||!routeCoords.length)return;let best=0,bd=Infinity;routeCoords.forEach((c,i)=>{const d=hav(userPos,{lat:c[0],lng:c[1]});if(d<bd){bd=d;best=i}});currentIndex=best;routeFloat=best;cameraToIndex(best,animate);updateStepFromCoord();statusTitle.textContent=`GPS · ${Math.round(bd*1000)} m from route`;statusSub.textContent="Current position follows the route line."}function goCurrent(){userPos?syncGps(true):locateMe()}
-function wire(){const on=(id,fn)=>document.getElementById(id).addEventListener("click",fn);on("locateTop",locateMe);on("fitTop",fitRoute);on("todayBtn",()=>toggleDrawer(true));on("chooseBtn",()=>daySheet.classList.add("open"));on("gpsBtn",locateMe);on("currentBtn",goCurrent);on("fullBtn",fitRoute);on("zinBtn",()=>map.zoomIn());on("zoutBtn",()=>map.zoomOut());on("currentMap",goCurrent);on("fitMap",fitRoute);on("drawerHandle",()=>toggleDrawer());on("moreBtn",e=>{e.stopPropagation();toggleDrawer()});on("closeDays",()=>daySheet.classList.remove("open"));daySheet.addEventListener("click",e=>{if(e.target===daySheet)daySheet.classList.remove("open")})}
-wire();renderHeader();renderDays();initMap();
-</script></body></html>
+
+let state=JSON.parse(localStorage.getItem("sgTripV36")||"null")||{day:0,routes:masterPlans.map(x=>[...x])};
+if(!Array.isArray(state.routes)||state.routes.length<4)state.routes=masterPlans.map(x=>[...x]);
+let map=null,routeCoords=[],routeFeature=null,currentIndex=0,userPos=null,userMarker=null,watchId=null,drawerOpen=false,stopCoordIndex=[];
+let lastTouchY=null,routeScrollFloat=0;
+
+function save(){localStorage.setItem("sgTripV36",JSON.stringify(state))}
+function byId(id){return stops.find(s=>s.id===id)}
+function routeStops(){return state.routes[state.day].map(byId).filter(Boolean)}
+function hav(a,b){const R=6371,p=Math.PI/180,dLat=(b.lat-a.lat)*p,dLon=(b.lng-a.lng)*p,la1=a.lat*p,la2=b.lat*p,x=Math.sin(dLat/2)**2+Math.cos(la1)*Math.cos(la2)*Math.sin(dLon/2)**2;return 2*R*Math.asin(Math.sqrt(x))}
+function nearestMRT(p){return mrt.slice().sort((a,b)=>hav(p,a)-hav(p,b))[0]}
+function stationCode(name,lineKey){const row=(mrtNetworks[lineKey]||[]).find(x=>x[0]===name);return row?row[1]:""}
+function buildGraph(){
+ const g={};
+ for(const [line,sts] of Object.entries(mrtNetworks)){
+  sts.forEach((s,i)=>{if(!g[s[0]])g[s[0]]=[];if(i)g[s[0]].push({to:sts[i-1][0],line});if(i<sts.length-1)g[s[0]].push({to:sts[i+1][0],line})})
+ }
+ return g
+}
+const mrtGraph=buildGraph();
+function shortestMRTPath(a,b){
+ if(a===b)return [a];const q=[a],prev={[a]:null};
+ while(q.length){const n=q.shift();for(const e of (mrtGraph[n]||[])){if(Object.prototype.hasOwnProperty.call(prev,e.to))continue;prev[e.to]=n;if(e.to===b){q.length=0;break}q.push(e.to)}}
+ if(!Object.prototype.hasOwnProperty.call(prev,b))return [a,b];
+ const out=[];let c=b;while(c!==null){out.push(c);c=prev[c]}return out.reverse()
+}
+function smartLeg(a,b){return hav(a,b)<=.85?"walk":"mrt"}
+async function footRoute(a,b){
+ const url=`https://routing.openstreetmap.de/routed-foot/route/v1/driving/${a.lng},${a.lat};${b.lng},${b.lat}?overview=full&geometries=geojson&steps=true`;
+ const r=await fetch(url);if(!r.ok)throw new Error("route");
+ const j=await r.json();if(j.code!=="Ok"||!j.routes?.length)throw new Error("route");
+ return j.routes[0]
+}
+function mrtCoords(a,b){
+ const s1=nearestMRT(a),s2=nearestMRT(b),names=shortestMRTPath(s1.name,s2.name),out=[[a.lng,a.lat],[s1.lng,s1.lat]];
+ names.forEach(n=>{const st=mrt.find(x=>x.name===n);if(st)out.push([st.lng,st.lat])});
+ out.push([s2.lng,s2.lat],[b.lng,b.lat]);return out
+}
+async function loadSimpleStyle(){
+ try{
+  const s=await (await fetch("https://tiles.openfreemap.org/styles/positron")).json();
+  s.layers=s.layers.filter(l=>{
+    const id=(l.id||"").toLowerCase();
+    if(id.includes("poi")||id.includes("housenumber")||id.includes("transit")||id.includes("airport-label"))return false;
+    if(l.type==="symbol"){
+      return id.includes("road")||id.includes("street")||id.includes("place")||id.includes("city")||id.includes("water");
+    }
+    return true;
+  });
+  return s
+ }catch(e){return "https://tiles.openfreemap.org/styles/positron"}
+}
+function bearing(a,b){
+ const p=Math.PI/180,la1=a[1]*p,la2=b[1]*p,dl=(b[0]-a[0])*p;
+ const y=Math.sin(dl)*Math.cos(la2),x=Math.cos(la1)*Math.sin(la2)-Math.sin(la1)*Math.cos(la2)*Math.cos(dl);
+ return (Math.atan2(y,x)*180/Math.PI+360)%360
+}
+async function init(){
+ const style=await loadSimpleStyle();
+ map=new maplibregl.Map({container:"map",style,center:[103.856,1.297],zoom:14,attributionControl:true,dragPan:false,scrollZoom:false,touchZoomRotate:true});
+ map.touchZoomRotate.disableRotation();
+ map.on("load",async()=>{await buildRoute();setupGesture();renderDays()});
+}
+async function buildRoute(){
+ const statusTitleEl=document.getElementById("statusTitle");
+ const statusSubEl=document.getElementById("statusSub");
+ const rs=routeStops();
+ routeCoords=[];stopCoordIndex=[];let idx=0;
+ if(statusTitleEl)statusTitleEl.textContent="Building route…";
+ if(statusSubEl)statusSubEl.textContent="Keeping the V32 map view and adding the route line.";
+
+ for(let i=0;i<rs.length-1;i++){
+  stopCoordIndex[i]=idx;
+  const a=rs[i],b=rs[i+1];let coords;
+  try{
+   coords=smartLeg(a,b)==="walk"
+     ? (await footRoute(a,b)).geometry.coordinates
+     : mrtCoords(a,b);
+  }catch(e){
+   coords=[[a.lng,a.lat],[b.lng,b.lat]];
+  }
+  coords=(coords||[]).filter(c=>Array.isArray(c)&&Number.isFinite(c[0])&&Number.isFinite(c[1]));
+  if(i>0&&coords.length)coords=coords.slice(1);
+  routeCoords.push(...coords);
+  idx=Math.max(0,routeCoords.length-1);
+ }
+ stopCoordIndex[rs.length-1]=Math.max(0,routeCoords.length-1);
+
+ const data={type:"Feature",properties:{},geometry:{type:"LineString",coordinates:routeCoords}};
+
+ // Replace the route source/layers cleanly every time.
+ ["route-main","route-halo"].forEach(id=>{if(map.getLayer(id))map.removeLayer(id)});
+ if(map.getSource("route"))map.removeSource("route");
+
+ map.addSource("route",{type:"geojson",data});
+ map.addLayer({
+  id:"route-halo",type:"line",source:"route",
+  layout:{"line-join":"round","line-cap":"round"},
+  paint:{"line-color":"#ffffff","line-width":16,"line-opacity":.98}
+ });
+ map.addLayer({
+  id:"route-main",type:"line",source:"route",
+  layout:{"line-join":"round","line-cap":"round"},
+  paint:{
+   "line-color":["#0050A4","#E32017","#009645","#8B4513"][state.day]||"#0050A4",
+   "line-width":9,"line-opacity":1
+  }
+ });
+
+ clearStopMarkers();
+ rs.forEach((s,i)=>{
+  const el=document.createElement("div");
+  el.className="route-marker";
+  el.textContent=i+1;
+  el.addEventListener("click",()=>selectStep(Math.min(i,rs.length-2),true));
+  stopMarkers.push(new maplibregl.Marker({element:el,anchor:"center"}).setLngLat([s.lng,s.lat]).addTo(map));
+ });
+
+ currentIndex=0;
+ routeScrollFloat=0;
+ renderDrawer();
+ selectStep(0,false);
+
+ if(statusTitleEl)statusTitleEl.textContent="V32 map + route line";
+ if(statusSubEl)statusSubEl.textContent="Same map view as V32. Follow the coloured line; swipe upward to move forward.";
+}
+let stopMarkers=[];
+function clearStopMarkers(){stopMarkers.forEach(m=>m.remove());stopMarkers=[]}
+function fitRoute(){
+ if(!routeCoords.length)return;const b=routeCoords.reduce((bb,c)=>bb.extend(c),new maplibregl.LngLatBounds(routeCoords[0],routeCoords[0]));
+ map.fitBounds(b,{padding:{top:100,bottom:190,left:40,right:40},duration:700,maxZoom:16});
+}
+function setupGesture(){
+ const canvas=map.getCanvasContainer();
+ canvas.addEventListener("touchstart",e=>{if(e.touches.length===1)lastTouchY=e.touches[0].clientY},{passive:true});
+ canvas.addEventListener("touchmove",e=>{
+  if(e.touches.length!==1||lastTouchY===null)return;
+  e.preventDefault();
+  const y=e.touches[0].clientY,dy=lastTouchY-y;lastTouchY=y;
+  advanceRoute(dy/18)
+ },{passive:false});
+ canvas.addEventListener("touchend",()=>lastTouchY=null,{passive:true});
+ canvas.addEventListener("wheel",e=>{if(e.ctrlKey)return;e.preventDefault();advanceRoute(e.deltaY/22)},{passive:false});
+}
+function advanceRoute(delta){
+ if(!routeCoords.length)return;
+ routeScrollFloat=Math.max(0,Math.min(routeCoords.length-1,routeScrollFloat+delta));
+ currentIndex=Math.round(routeScrollFloat);cameraToIndex(currentIndex,false);updateStepFromCoord();
+}
+function cameraToIndex(i,animate=true){
+ if(!routeCoords.length)return;i=Math.max(0,Math.min(routeCoords.length-1,i));
+ const p=routeCoords[i],q=routeCoords[Math.min(routeCoords.length-1,i+8)]||p,br=bearing(p,q);
+ map.easeTo({center:p,bearing:br,zoom:Math.max(map.getZoom(),16),offset:[0,120],duration:animate?350:0});
+}
+function updateStepFromCoord(){
+ let step=0;for(let i=0;i<stopCoordIndex.length-1;i++)if(currentIndex>=stopCoordIndex[i])step=i;
+ step=Math.min(step,routeStops().length-2);updateSummary(step)
+}
+function selectStep(step,animate=true){
+ const i=stopCoordIndex[step]||0;currentIndex=i;routeScrollFloat=i;cameraToIndex(i,animate);updateSummary(step);highlightDrawer(step)
+}
+function updateSummary(step){
+ const rs=routeStops();if(!rs[step]||!rs[step+1])return;
+ summarySmall.textContent=`Step ${step+1} of ${rs.length-1}`;
+ summaryTitle.textContent=`${rs[step].name} → ${rs[step+1].name}`;
+ const mode=smartLeg(rs[step],rs[step+1])==="walk"?"Walk":"MRT / transport";
+ summaryText.textContent=`${mode} · ${hav(rs[step],rs[step+1]).toFixed(1)} km straight-line between stops`;
+}
+function renderDrawer(){
+ const rs=routeStops();drawerBody.innerHTML=rs.slice(0,-1).map((a,i)=>`<div class="stepcard" data-step="${i}"><div class="stephead"><div class="num">${i+1}</div><div><h3>${a.name} → ${rs[i+1].name}</h3><p>${a.desc||""}</p><button onclick="selectStep(${i},true)">Show this step</button></div></div></div>`).join("");
+ updateSummary(0);highlightDrawer(0)
+}
+function highlightDrawer(step){document.querySelectorAll(".stepcard").forEach(c=>c.classList.toggle("active",Number(c.dataset.step)===step))}
+function toggleDrawer(force){drawerOpen=typeof force==="boolean"?force:!drawerOpen;drawer.classList.toggle("expanded",drawerOpen);drawer.classList.toggle("collapsed",!drawerOpen)}
+function openDays(){daySheet.classList.add("open")} function closeDays(){daySheet.classList.remove("open")}
+function renderDays(){
+ dayRows.innerHTML=days.map((d,i)=>`<div class="dayrow"><div><b>${d.label}</b><div style="font-size:12px;color:#667">${d.title}</div></div><button onclick="setDay(${i})">${i===state.day?"Current":"Open"}</button></div>`).join("")
+}
+async function setDay(i){
+ state.day=i;save();currentIndex=0;routeScrollFloat=0;dayTitle.textContent=days[i].title;daySub.textContent=`${days[i].label} · simplified route`;closeDays();await buildRoute()
+}
+function goCurrent(){if(userPos)syncGps(true);else locateMe()}
+function locateMe(){
+ if(!navigator.geolocation){alert("GPS is not available in this browser.");return}
+ navigator.geolocation.getCurrentPosition(p=>{userPos={lng:p.coords.longitude,lat:p.coords.latitude};drawUser();syncGps(true);startWatch()},()=>alert("Allow location access for GPS route following."),{enableHighAccuracy:true,timeout:10000,maximumAge:10000})
+}
+function drawUser(){
+ if(userMarker)userMarker.remove();
+ const el=document.createElement("div");el.style.cssText="width:18px;height:18px;border-radius:50%;background:#1677ff;border:4px solid white;box-shadow:0 2px 8px #0005";
+ userMarker=new maplibregl.Marker({element:el}).setLngLat([userPos.lng,userPos.lat]).addTo(map)
+}
+function startWatch(){
+ if(watchId!==null)return;
+ watchId=navigator.geolocation.watchPosition(p=>{userPos={lng:p.coords.longitude,lat:p.coords.latitude};drawUser();syncGps(false)},()=>{},{enableHighAccuracy:true,maximumAge:10000,timeout:12000})
+}
+function syncGps(animate){
+ if(!userPos||!routeCoords.length)return;
+ let best=0,bd=Infinity;const u={lat:userPos.lat,lng:userPos.lng};
+ routeCoords.forEach((c,i)=>{const d=hav(u,{lat:c[1],lng:c[0]});if(d<bd){bd=d;best=i}});
+ currentIndex=best;routeScrollFloat=best;cameraToIndex(best,animate);updateStepFromCoord();
+ statusTitle.textContent=`GPS · ${Math.round(bd*1000)} m from route line`;statusSub.textContent="The current position stays near the bottom so the next part of the route is ahead/up-screen."
+}
+function zoomIn(){map.zoomIn()} function zoomOut(){map.zoomOut()}
+function renderHeader(){dayTitle.textContent=days[state.day].title;daySub.textContent=`${days[state.day].label} · simplified route`}
+
+function wireV36Buttons(){
+ const on=(id,fn)=>document.getElementById(id)?.addEventListener("click",fn);
+ on("btnLocateTop",locateMe);
+ on("btnFitTop",fitRoute);
+ on("btnTodayRoute",()=>toggleDrawer(true));
+ on("btnChooseDay",openDays);
+ on("btnGps",locateMe);
+ on("btnCurrent",goCurrent);
+ on("btnFullRoute",fitRoute);
+ on("btnZoomIn",zoomIn);
+ on("btnZoomOut",zoomOut);
+ on("btnCurrentMap",goCurrent);
+ on("btnFitMap",fitRoute);
+ on("drawerHandle",()=>toggleDrawer());
+ on("drawerMore",e=>{e.stopPropagation();toggleDrawer()});
+ on("btnCloseDays",closeDays);
+ document.getElementById("daySheet")?.addEventListener("click",e=>{if(e.target.id==="daySheet")closeDays()});
+}
+wireV36Buttons();
+renderHeader();
+init();
+
+</script>
+</body>
+</html>

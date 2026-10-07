@@ -1,9 +1,9 @@
-Singapore Trip App V35
+Singapore Trip App V36
 
-Fix:
-- CARTO raster tiles were displaying "API KEY REQUIRED".
-- Replaced them with standard OpenStreetMap tiles, which do not require an API key.
-- Real streets, building footprints and street/place labels should now be visible.
-- Kept the continuous highlighted route line, route arrows and numbered stops.
-- Route line halo/width increased slightly so it remains easy to follow.
-- Fresh load starts at Step 1.
+This is deliberately based on V32, because V32 had the map view the user preferred.
+
+Only two changes:
+1. Core buttons are explicitly wired so they work reliably.
+2. A thick coloured continuous route line with a white halo is added on top of the V32 map.
+
+No change to the V32 map style, camera concept, map extent, or forward-scroll idea.
