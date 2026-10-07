@@ -1,10 +1,13 @@
-Singapore Trip App V38
+Singapore Trip App V39
 
-Changes:
-- Map is always north-facing.
-- Once GPS is active, live GPS position is kept centered.
-- Free finger/mouse panning still works, but the next GPS position update recenters the map.
-- Sightseeing route legs follow actual mapped walking streets and pedestrian paths wherever possible.
-- Airport/terminal transfer legs remain transport-based.
-- River Cruise uses a water-following route through Singapore River / Marina Bay.
-- Added N-up indicator.
+- Removed N indicator.
+- Removed the large V32/status card from the map.
+- Map stays north-up.
+- GPS centres the live position while GPS Follow is active.
+- Manually dragging or zooming the map pauses auto-centering.
+- Press GPS or Current Step to resume auto-centering.
+- Walking route is black.
+- MRT route is red.
+- River Cruise route is blue.
+- River Cruise blue line is limited to the Clarke Quay sightseeing boat loop and follows Singapore River / Marina Bay.
+- MRT is preferred between areas; short legs use routed walking streets/paths.

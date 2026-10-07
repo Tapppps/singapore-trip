@@ -27,12 +27,7 @@ button{font:inherit}
 .pill{flex:0 0 auto;border:1px solid var(--line);background:white;border-radius:999px;padding:9px 12px;font-size:12px;white-space:nowrap}
 .pill.dark{background:#111;color:#fff;border-color:#111}
 #map{position:fixed;left:0;right:0;top:108px;bottom:0;background:#e9edf1}
-#mapStatus{
- position:fixed;left:10px;top:118px;z-index:20;max-width:min(72vw,440px);background:rgba(255,255,255,.95);
- border:1px solid var(--line);border-radius:14px;padding:8px 10px;box-shadow:0 2px 9px rgba(0,0,0,.09)
-}
-#mapStatus b{font-size:13px}
-#mapStatus div{font-size:11px;color:var(--muted);line-height:1.35;margin-top:2px}
+
 #mapTools{position:fixed;right:10px;top:118px;z-index:22;display:flex;flex-direction:column;gap:7px}
 .mapbtn{width:42px;height:42px;border:1px solid var(--line);background:rgba(255,255,255,.96);border-radius:13px;font-size:18px;box-shadow:0 2px 8px rgba(0,0,0,.08)}
 #drawer{
@@ -68,7 +63,7 @@ button{font:inherit}
 .route-marker{width:28px;height:28px;border-radius:50%;background:#fff;border:4px solid #111;display:grid;place-items:center;font-size:10px;font-weight:800;box-shadow:0 2px 6px rgba(0,0,0,.25)}
 .maplibregl-ctrl-bottom-left,.maplibregl-ctrl-bottom-right{font-size:9px}
 @media(max-width:699px){
- #topbar{height:111px} #map{top:111px} #mapStatus{top:121px} #mapTools{top:121px}
+ #topbar{height:111px} #map{top:111px}  #mapTools{top:121px}
  #drawer.collapsed{height:138px}
 }
 
@@ -77,12 +72,22 @@ button{font:inherit}
 .maplibregl-canvas:active{cursor:grabbing}
 
 /* V38 */
-#northCue{
- position:fixed;right:11px;top:214px;z-index:1100;
- width:36px;height:36px;border:1px solid var(--line);border-radius:50%;
- background:rgba(255,255,255,.95);display:grid;place-items:center;
- font-size:11px;font-weight:800;box-shadow:0 2px 8px rgba(0,0,0,.08)
+
+
+/* V39 */
+#routeKey{
+ position:fixed;left:10px;top:118px;z-index:1100;
+ display:flex;align-items:center;gap:10px;
+ padding:6px 9px;background:rgba(255,255,255,.9);
+ border:1px solid var(--line);border-radius:999px;
+ font-size:10px;box-shadow:0 2px 7px rgba(0,0,0,.06)
 }
+#routeKey span{display:flex;align-items:center;gap:4px}
+#routeKey i{display:block;width:18px;height:4px;border-radius:4px}
+#routeKey .walk{background:#111}
+#routeKey .mrt{background:#E32017}
+#routeKey .river{background:#1677FF}
+@media(max-width:699px){#routeKey{top:121px}}
 </style>
 </head>
 <body>
@@ -104,8 +109,14 @@ button{font:inherit}
 </header>
 
 <div id="map"></div>
-<div id="mapStatus"><b id="statusTitle">Loading route…</b><div id="statusSub">Simplified real map: streets, building shapes and street names.</div></div>
-<div id="northCue">N↑</div><div id="mapTools">
+</div>
+
+<div id="routeKey">
+ <span><i class="walk"></i>Walk</span>
+ <span><i class="mrt"></i>MRT</span>
+ <span><i class="river"></i>River</span>
+</div>
+<div id="mapTools">
  <button class="mapbtn" id="btnCurrentMap" title="Current step">◎</button>
  <button class="mapbtn" id="btnFitMap" title="Full route">↗</button>
 </div>
@@ -291,12 +302,13 @@ const mrtNetworks={
  ]
 };
 
-let state=JSON.parse(localStorage.getItem("sgTripV38")||"null")||{day:0,routes:masterPlans.map(x=>[...x])};
+let state=JSON.parse(localStorage.getItem("sgTripV39")||"null")||{day:0,routes:masterPlans.map(x=>[...x])};
 if(!Array.isArray(state.routes)||state.routes.length<4)state.routes=masterPlans.map(x=>[...x]);
 let map=null,routeCoords=[],routeFeature=null,currentIndex=0,userPos=null,userMarker=null,watchId=null,drawerOpen=false,stopCoordIndex=[];
+let gpsFollow=false;
 let lastTouchY=null,routeScrollFloat=0;
 
-function save(){localStorage.setItem("sgTripV38",JSON.stringify(state))}
+function save(){localStorage.setItem("sgTripV39",JSON.stringify(state))}
 function byId(id){return stops.find(s=>s.id===id)}
 function routeStops(){return state.routes[state.day].map(byId).filter(Boolean)}
 function hav(a,b){const R=6371,p=Math.PI/180,dLat=(b.lat-a.lat)*p,dLon=(b.lng-a.lng)*p,la1=a.lat*p,la2=b.lat*p,x=Math.sin(dLat/2)**2+Math.cos(la1)*Math.cos(la2)*Math.sin(dLon/2)**2;return 2*R*Math.asin(Math.sqrt(x))}
@@ -365,70 +377,142 @@ async function init(){
  map.touchZoomRotate.disableRotation();
  map.setBearing(0);
  map.setPitch(0);
- map.on("load",async()=>{await buildRoute();setupGesture();renderDays()});
+ map.on("rotate",()=>{if(Math.abs(map.getBearing())>.01)map.setBearing(0)});
+ map.on("load",async()=>{
+ await buildRoute();
+ setupGesture();
+ renderDays();
+ map.on("dragstart",()=>{gpsFollow=false});
+ map.on("zoomstart",e=>{if(e && e.originalEvent)gpsFollow=false});
+});
 }
 function riverCruiseCoords(a,b){
- if(a.id!=="rivercruise" && b.id!=="rivercruise")return null;
+ if(!(a.id==="clarke" && b.id==="rivercruise"))return null;
+
+ // Water-following sightseeing loop:
+ // Clarke Quay -> Boat Quay -> Merlion / river mouth ->
+ // Marina Bay / MBS -> Esplanade side -> back to Clarke Quay.
  return [
-   [103.8475,1.2904],
-   [103.8495,1.2886],
-   [103.8521,1.2868],
-   [103.8548,1.2851],
-   [103.8581,1.2830],
-   [103.8605,1.2825],
-   [103.8588,1.2860],
-   [103.8536,1.2881],
-   [103.8495,1.2900],
-   [103.8475,1.2904]
+   [103.8465,1.2906],
+   [103.8472,1.2902],
+   [103.8480,1.2897],
+   [103.8489,1.2890],
+   [103.8498,1.2878],
+   [103.8510,1.2872],
+   [103.8523,1.2865],
+   [103.8535,1.2858],
+   [103.8547,1.2851],
+   [103.8561,1.2844],
+   [103.8576,1.2836],
+   [103.8591,1.2829],
+   [103.8603,1.2825],
+   [103.8600,1.2840],
+   [103.8591,1.2851],
+   [103.8580,1.2860],
+   [103.8565,1.2868],
+   [103.8550,1.2874],
+   [103.8534,1.2880],
+   [103.8518,1.2886],
+   [103.8503,1.2891],
+   [103.8490,1.2897],
+   [103.8478,1.2902],
+   [103.8465,1.2906]
  ];
 }
 
+function legMode(a,b){
+ if(a.id==="clarke" && b.id==="rivercruise")return "river";
+ if(
+   a.id==="airport" ||
+   b.id==="t4" ||
+   (a.id==="hotel" && b.id==="jewel") ||
+   smartLeg(a,b)==="mrt"
+ )return "mrt";
+ return "walk";
+}
+
 async function buildRoute(){
- const statusTitleEl=document.getElementById("statusTitle");
- const statusSubEl=document.getElementById("statusSub");
  const rs=routeStops();
- routeCoords=[];stopCoordIndex=[];let idx=0;
- if(statusTitleEl)statusTitleEl.textContent="Building route…";
- if(statusSubEl)statusSubEl.textContent="Keeping the V32 map view and adding the route line.";
+ routeCoords=[];
+ stopCoordIndex=[];
+ let idx=0;
+ const features=[];
 
  for(let i=0;i<rs.length-1;i++){
   stopCoordIndex[i]=idx;
-  const a=rs[i],b=rs[i+1];let coords;
+  const a=rs[i],b=rs[i+1];
+  const mode=legMode(a,b);
+  let coords=[];
+
   try{
-   const forceTransit=(a.id==="airport" || b.id==="t4" || (a.id==="hotel"&&b.id==="jewel"));
-   const waterCoords=riverCruiseCoords(a,b);
-   if(waterCoords) coords=waterCoords;
-   else coords=forceTransit
-     ? mrtCoords(a,b)
-     : (await footRoute(a,b)).geometry.coordinates;
+   if(mode==="river"){
+    coords=riverCruiseCoords(a,b);
+   }else if(mode==="mrt"){
+    coords=mrtCoords(a,b);
+   }else{
+    coords=(await footRoute(a,b)).geometry.coordinates;
+   }
   }catch(e){
    coords=[[a.lng,a.lat],[b.lng,b.lat]];
   }
+
   coords=(coords||[]).filter(c=>Array.isArray(c)&&Number.isFinite(c[0])&&Number.isFinite(c[1]));
-  if(i>0&&coords.length)coords=coords.slice(1);
-  routeCoords.push(...coords);
+  if(!coords.length)continue;
+
+  features.push({
+   type:"Feature",
+   properties:{mode,from:a.id,to:b.id},
+   geometry:{type:"LineString",coordinates:coords}
+  });
+
+  let merged=coords;
+  if(i>0 && merged.length)merged=merged.slice(1);
+  routeCoords.push(...merged);
   idx=Math.max(0,routeCoords.length-1);
  }
+
  stopCoordIndex[rs.length-1]=Math.max(0,routeCoords.length-1);
 
- const data={type:"Feature",properties:{},geometry:{type:"LineString",coordinates:routeCoords}};
+ const data={type:"FeatureCollection",features};
 
- // Replace the route source/layers cleanly every time.
  ["route-main","route-halo"].forEach(id=>{if(map.getLayer(id))map.removeLayer(id)});
  if(map.getSource("route"))map.removeSource("route");
 
  map.addSource("route",{type:"geojson",data});
+
  map.addLayer({
-  id:"route-halo",type:"line",source:"route",
-  layout:{"line-join":"round","line-cap":"round"},
-  paint:{"line-color":"#ffffff","line-width":16,"line-opacity":.98}
- });
- map.addLayer({
-  id:"route-main",type:"line",source:"route",
+  id:"route-halo",
+  type:"line",
+  source:"route",
   layout:{"line-join":"round","line-cap":"round"},
   paint:{
-   "line-color":["#0050A4","#E32017","#009645","#8B4513"][state.day]||"#0050A4",
-   "line-width":9,"line-opacity":1
+   "line-color":"#ffffff",
+   "line-width":14,
+   "line-opacity":.98
+  }
+ });
+
+ map.addLayer({
+  id:"route-main",
+  type:"line",
+  source:"route",
+  layout:{"line-join":"round","line-cap":"round"},
+  paint:{
+   "line-color":[
+    "match",["get","mode"],
+    "walk","#111111",
+    "mrt","#E32017",
+    "river","#1677FF",
+    "#111111"
+   ],
+   "line-width":[
+    "match",["get","mode"],
+    "walk",7,
+    "mrt",8,
+    "river",8,
+    7
+   ],
+   "line-opacity":1
   }
  });
 
@@ -438,17 +522,19 @@ async function buildRoute(){
   el.className="route-marker";
   el.textContent=i+1;
   el.addEventListener("click",()=>selectStep(Math.min(i,rs.length-2),true));
-  stopMarkers.push(new maplibregl.Marker({element:el,anchor:"center"}).setLngLat([s.lng,s.lat]).addTo(map));
+  stopMarkers.push(
+   new maplibregl.Marker({element:el,anchor:"center"})
+    .setLngLat([s.lng,s.lat])
+    .addTo(map)
+  );
  });
 
  currentIndex=0;
  routeScrollFloat=0;
  renderDrawer();
  selectStep(0,false);
-
- if(statusTitleEl)statusTitleEl.textContent="V32 map + route line";
- if(statusSubEl)statusSubEl.textContent="Drag the map with your finger or mouse. Pinch or mouse-wheel to zoom. Follow the coloured route line.";
 }
+
 let stopMarkers=[];
 function clearStopMarkers(){stopMarkers.forEach(m=>m.remove());stopMarkers=[]}
 function fitRoute(){
@@ -490,8 +576,9 @@ function updateSummary(step){
  const rs=routeStops();if(!rs[step]||!rs[step+1])return;
  summarySmall.textContent=`Step ${step+1} of ${rs.length-1}`;
  summaryTitle.textContent=`${rs[step].name} → ${rs[step+1].name}`;
- const mode=smartLeg(rs[step],rs[step+1])==="walk"?"Walk":"MRT / transport";
- summaryText.textContent=`${mode} · ${hav(rs[step],rs[step+1]).toFixed(1)} km straight-line between stops`;
+ const mode=legMode(rs[step],rs[step+1]);
+ const label=mode==="walk"?"Walk":mode==="river"?"River":"MRT";
+ summaryText.textContent=`${label} · ${hav(rs[step],rs[step+1]).toFixed(1)} km between stops`;
 }
 function renderDrawer(){
  const rs=routeStops();drawerBody.innerHTML=rs.slice(0,-1).map((a,i)=>`<div class="stepcard" data-step="${i}"><div class="stephead"><div class="num">${i+1}</div><div><h3>${a.name} → ${rs[i+1].name}</h3><p>${a.desc||""}</p><button onclick="selectStep(${i},true)">Show this step</button></div></div></div>`).join("");
@@ -506,8 +593,9 @@ function renderDays(){
 async function setDay(i){
  state.day=i;save();currentIndex=0;routeScrollFloat=0;dayTitle.textContent=days[i].title;daySub.textContent=`${days[i].label} · simplified route`;closeDays();await buildRoute()
 }
-function goCurrent(){if(userPos)syncGps(true);else locateMe()}
+function goCurrent(){gpsFollow=true;if(userPos)syncGps(true);else locateMe()}
 function locateMe(){
+ gpsFollow=true;
  if(!navigator.geolocation){alert("GPS is not available in this browser.");return}
  navigator.geolocation.getCurrentPosition(p=>{userPos={lng:p.coords.longitude,lat:p.coords.latitude};drawUser();syncGps(true);startWatch()},()=>alert("Allow location access for GPS route following."),{enableHighAccuracy:true,timeout:10000,maximumAge:10000})
 }
@@ -522,20 +610,29 @@ function startWatch(){
 }
 function syncGps(animate){
  if(!userPos||!routeCoords.length)return;
- let best=0,bd=Infinity;const u={lat:userPos.lat,lng:userPos.lng};
- routeCoords.forEach((c,i)=>{const d=hav(u,{lat:c[1],lng:c[0]});if(d<bd){bd=d;best=i}});
- currentIndex=best;routeScrollFloat=best;
- map.easeTo({
+
+ let best=0,bd=Infinity;
+ const u={lat:userPos.lat,lng:userPos.lng};
+
+ routeCoords.forEach((c,i)=>{
+  const d=hav(u,{lat:c[1],lng:c[0]});
+  if(d<bd){bd=d;best=i}
+ });
+
+ currentIndex=best;
+ routeScrollFloat=best;
+ updateStepFromCoord();
+
+ // Follow GPS only until the user manually drags/zooms the map.
+ if(gpsFollow){
+  map.easeTo({
    center:[userPos.lng,userPos.lat],
    bearing:0,
    pitch:0,
    zoom:Math.max(map.getZoom(),16),
    duration:animate?350:0
- });
- updateStepFromCoord();
- const st=document.getElementById("statusTitle"),ss=document.getElementById("statusSub");
- if(st)st.textContent=`GPS · ${Math.round(bd*1000)} m from route line`;
- if(ss)ss.textContent="North is always up. Your current GPS position stays centred.";
+  });
+ }
 }
 function zoomIn(){map.zoomIn()} function zoomOut(){map.zoomOut()}
 function renderHeader(){dayTitle.textContent=days[state.day].title;daySub.textContent=`${days[state.day].label} · simplified route`}
