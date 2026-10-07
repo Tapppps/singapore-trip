@@ -75,6 +75,14 @@ button{font:inherit}
 /* V37 free-map interaction */
 .maplibregl-canvas{cursor:grab}
 .maplibregl-canvas:active{cursor:grabbing}
+
+/* V38 */
+#northCue{
+ position:fixed;right:11px;top:214px;z-index:1100;
+ width:36px;height:36px;border:1px solid var(--line);border-radius:50%;
+ background:rgba(255,255,255,.95);display:grid;place-items:center;
+ font-size:11px;font-weight:800;box-shadow:0 2px 8px rgba(0,0,0,.08)
+}
 </style>
 </head>
 <body>
@@ -97,7 +105,7 @@ button{font:inherit}
 
 <div id="map"></div>
 <div id="mapStatus"><b id="statusTitle">Loading route…</b><div id="statusSub">Simplified real map: streets, building shapes and street names.</div></div>
-<div id="mapTools">
+<div id="northCue">N↑</div><div id="mapTools">
  <button class="mapbtn" id="btnCurrentMap" title="Current step">◎</button>
  <button class="mapbtn" id="btnFitMap" title="Full route">↗</button>
 </div>
@@ -283,12 +291,12 @@ const mrtNetworks={
  ]
 };
 
-let state=JSON.parse(localStorage.getItem("sgTripV37")||"null")||{day:0,routes:masterPlans.map(x=>[...x])};
+let state=JSON.parse(localStorage.getItem("sgTripV38")||"null")||{day:0,routes:masterPlans.map(x=>[...x])};
 if(!Array.isArray(state.routes)||state.routes.length<4)state.routes=masterPlans.map(x=>[...x]);
 let map=null,routeCoords=[],routeFeature=null,currentIndex=0,userPos=null,userMarker=null,watchId=null,drawerOpen=false,stopCoordIndex=[];
 let lastTouchY=null,routeScrollFloat=0;
 
-function save(){localStorage.setItem("sgTripV37",JSON.stringify(state))}
+function save(){localStorage.setItem("sgTripV38",JSON.stringify(state))}
 function byId(id){return stops.find(s=>s.id===id)}
 function routeStops(){return state.routes[state.day].map(byId).filter(Boolean)}
 function hav(a,b){const R=6371,p=Math.PI/180,dLat=(b.lat-a.lat)*p,dLon=(b.lng-a.lng)*p,la1=a.lat*p,la2=b.lat*p,x=Math.sin(dLat/2)**2+Math.cos(la1)*Math.cos(la2)*Math.sin(dLon/2)**2;return 2*R*Math.asin(Math.sqrt(x))}
@@ -355,8 +363,26 @@ async function init(){
  boxZoom:true
 });
  map.touchZoomRotate.disableRotation();
+ map.setBearing(0);
+ map.setPitch(0);
  map.on("load",async()=>{await buildRoute();setupGesture();renderDays()});
 }
+function riverCruiseCoords(a,b){
+ if(a.id!=="rivercruise" && b.id!=="rivercruise")return null;
+ return [
+   [103.8475,1.2904],
+   [103.8495,1.2886],
+   [103.8521,1.2868],
+   [103.8548,1.2851],
+   [103.8581,1.2830],
+   [103.8605,1.2825],
+   [103.8588,1.2860],
+   [103.8536,1.2881],
+   [103.8495,1.2900],
+   [103.8475,1.2904]
+ ];
+}
+
 async function buildRoute(){
  const statusTitleEl=document.getElementById("statusTitle");
  const statusSubEl=document.getElementById("statusSub");
@@ -369,9 +395,12 @@ async function buildRoute(){
   stopCoordIndex[i]=idx;
   const a=rs[i],b=rs[i+1];let coords;
   try{
-   coords=smartLeg(a,b)==="walk"
-     ? (await footRoute(a,b)).geometry.coordinates
-     : mrtCoords(a,b);
+   const forceTransit=(a.id==="airport" || b.id==="t4" || (a.id==="hotel"&&b.id==="jewel"));
+   const waterCoords=riverCruiseCoords(a,b);
+   if(waterCoords) coords=waterCoords;
+   else coords=forceTransit
+     ? mrtCoords(a,b)
+     : (await footRoute(a,b)).geometry.coordinates;
   }catch(e){
    coords=[[a.lng,a.lat],[b.lng,b.lat]];
   }
@@ -423,7 +452,9 @@ async function buildRoute(){
 let stopMarkers=[];
 function clearStopMarkers(){stopMarkers.forEach(m=>m.remove());stopMarkers=[]}
 function fitRoute(){
- if(!routeCoords.length)return;const b=routeCoords.reduce((bb,c)=>bb.extend(c),new maplibregl.LngLatBounds(routeCoords[0],routeCoords[0]));
+ if(!routeCoords.length)return;
+ map.easeTo({bearing:0,pitch:0,duration:0});
+ const b=routeCoords.reduce((bb,c)=>bb.extend(c),new maplibregl.LngLatBounds(routeCoords[0],routeCoords[0]));
  map.fitBounds(b,{padding:{top:100,bottom:190,left:40,right:40},duration:700,maxZoom:16});
 }
 function setupGesture(){
@@ -436,9 +467,17 @@ function advanceRoute(delta){
  currentIndex=Math.round(routeScrollFloat);cameraToIndex(currentIndex,false);updateStepFromCoord();
 }
 function cameraToIndex(i,animate=true){
- if(!routeCoords.length)return;i=Math.max(0,Math.min(routeCoords.length-1,i));
- const p=routeCoords[i],q=routeCoords[Math.min(routeCoords.length-1,i+8)]||p,br=bearing(p,q);
- map.easeTo({center:p,bearing:br,zoom:Math.max(map.getZoom(),16),offset:[0,120],duration:animate?350:0});
+ if(!routeCoords.length)return;
+ i=Math.max(0,Math.min(routeCoords.length-1,i));
+ const p=routeCoords[i];
+ map.easeTo({
+   center:p,
+   bearing:0,
+   pitch:0,
+   zoom:Math.max(map.getZoom(),16),
+   offset:[0,120],
+   duration:animate?350:0
+ });
 }
 function updateStepFromCoord(){
  let step=0;for(let i=0;i<stopCoordIndex.length-1;i++)if(currentIndex>=stopCoordIndex[i])step=i;
@@ -485,8 +524,18 @@ function syncGps(animate){
  if(!userPos||!routeCoords.length)return;
  let best=0,bd=Infinity;const u={lat:userPos.lat,lng:userPos.lng};
  routeCoords.forEach((c,i)=>{const d=hav(u,{lat:c[1],lng:c[0]});if(d<bd){bd=d;best=i}});
- currentIndex=best;routeScrollFloat=best;cameraToIndex(best,animate);updateStepFromCoord();
- statusTitle.textContent=`GPS · ${Math.round(bd*1000)} m from route line`;statusSub.textContent="The current position stays near the bottom so the next part of the route is ahead/up-screen."
+ currentIndex=best;routeScrollFloat=best;
+ map.easeTo({
+   center:[userPos.lng,userPos.lat],
+   bearing:0,
+   pitch:0,
+   zoom:Math.max(map.getZoom(),16),
+   duration:animate?350:0
+ });
+ updateStepFromCoord();
+ const st=document.getElementById("statusTitle"),ss=document.getElementById("statusSub");
+ if(st)st.textContent=`GPS · ${Math.round(bd*1000)} m from route line`;
+ if(ss)ss.textContent="North is always up. Your current GPS position stays centred.";
 }
 function zoomIn(){map.zoomIn()} function zoomOut(){map.zoomOut()}
 function renderHeader(){dayTitle.textContent=days[state.day].title;daySub.textContent=`${days[state.day].label} · simplified route`}
