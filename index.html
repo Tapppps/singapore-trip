@@ -147,6 +147,59 @@ button{font:inherit}
 #drawer.expanded .stepcard:last-child{
  margin-bottom:24px;
 }
+
+/* V45 clickable map route steps */
+.route-marker{
+ cursor:pointer;
+}
+.route-step-popup{
+ min-width:210px;
+ max-width:250px;
+ padding:2px;
+}
+.route-step-popup h3{
+ margin:0 0 5px;
+ font-size:14px;
+ line-height:1.25;
+}
+.route-step-popup p{
+ margin:3px 0 8px;
+ font-size:12px;
+ line-height:1.4;
+ color:#4d5660;
+}
+.route-step-popup .distance{
+ font-weight:700;
+ color:#222;
+}
+.route-step-popup button{
+ width:100%;
+ min-height:38px;
+ border:1px solid var(--line);
+ border-radius:999px;
+ background:#111;
+ color:#fff;
+ font-weight:700;
+ font-size:12px;
+ cursor:pointer;
+}
+.maplibregl-popup-content{
+ border-radius:14px!important;
+ padding:10px!important;
+ box-shadow:0 6px 22px rgba(0,0,0,.16)!important;
+}
+
+/* V45 selected route card */
+#drawerBody .stepcard.active{
+ outline:2px solid #111;
+ outline-offset:1px;
+}
+
+/* V46 phone shopping */
+.phone-note{
+ margin-top:6px;padding:7px 9px;border-radius:10px;background:#f5f7fa;
+ font-size:11px;line-height:1.4;color:#47515d
+}
 </style>
 </head>
 <body>
@@ -260,13 +313,19 @@ const stops=[
 {id:"sensoryscape",name:"Sentosa Sensoryscape",lat:1.2514,lng:103.8199,day:2,type:"Outdoor",priority:"Optional",desc:"Landscaped walking route connecting central Sentosa with light, sound and garden installations.",photo:"Best late afternoon into evening"},
 {id:"beachstation",name:"Beach Station",lat:1.2517,lng:103.8179,day:2,type:"Mixed",priority:"Optional",desc:"Main Sentosa beach transport hub, useful as a base for the beach area.",photo:"Useful waypoint"},
 {id:"palawan",name:"Palawan Beach",lat:1.2494,lng:103.8200,day:2,type:"Outdoor",priority:"Optional",desc:"Relaxed Sentosa beach with tropical waterfront views.",photo:"Late afternoon / sunset"},
+
+{id:"misterbugis",name:"Mister Mobile — Bugis Junction",lat:1.299605,lng:103.855485,day:1,type:"Indoor",priority:"Phone Shop",desc:"Used/refurbished phone retailer inside Bugis Junction, 200 Victoria St, #03-26A. Very close to the existing Bugis route, so this is included as a convenient phone-shopping stop.",photo:"Indoor shopping stop; compare condition, battery health and warranty"},
+{id:"misterchinatown",name:"Mister Mobile — Chinatown",lat:1.284056,lng:103.842167,day:2,type:"Indoor",priority:"Phone Shop",desc:"Mister Mobile at People's Park Complex, 1 Park Road #01-14. It sits beside the Chinatown route and is included as a convenient used-phone stop.",photo:"Indoor shopping stop; useful for price comparison"},
+{id:"mobilesquare",name:"Mobile Square — Far East Plaza",lat:1.307177,lng:103.833793,day:2,type:"Indoor",priority:"Optional Phone Shop",desc:"Established phone dealer at Far East Plaza, 14 Scotts Road #02-98. Good place to compare used phones with other shops in the same mall. It is not directly on the main Saturday route, so it starts in Other things to do.",photo:"Phone-shopping comparison stop near Orchard"},
+{id:"compasia",name:"CompAsia — Velocity @ Novena",lat:1.321673,lng:103.844119,day:1,type:"Indoor",priority:"Optional Phone Shop",desc:"Refurbished phone retailer at Velocity @ Novena Square, 238 Thomson Road #02-51. Quality-checked devices with warranty options. It is away from the main Friday walking route, so it starts in Other things to do.",photo:"Safer refurbished purchase / warranty-focused option"},
+{id:"carousellmeet",name:"Carousell meetup — Bugis Junction",lat:1.299605,lng:103.855485,day:1,type:"Indoor",priority:"Optional Phone Shopping",desc:"Carousell is a marketplace, not a shop. If you find a phone there, use a busy public meetup point such as Bugis Junction. Check IMEI/serial, battery health, cameras, Face ID/Touch ID, charging port and make sure there is no iCloud/Google lock before paying.",photo:"Marketplace meetup only; inspect the phone carefully"},
 {id:"jewel",name:"Jewel Changi Airport",lat:1.3603,lng:103.9898,day:3,type:"Indoor",priority:"Must See",desc:"Indoor airport complex centred on the Rain Vortex and tropical garden.",photo:"Morning / indoor light"},
 {id:"t4",name:"Changi Terminal 4",lat:1.3384,lng:103.9832,day:3,type:"Indoor",priority:"Must See",desc:"Your departure terminal for the flight home.",photo:"Travel/documentary shots"}
 ];
 const masterPlans=[
  ["airport","hotel","fullerton","merlion","jubilee","esplanade","helix","mbs","spectra","gardens","flowerdome","f1","hotel"],
- ["hotel","sultan","bussorah","muscat","baghdad","arab","haji","bugis","littleindia","tan","clive","serangoon","tekka","hotel"],
- ["hotel","fort","hillstreet","chinatown","annsiang","telokayer","laupasat","cavenagh","anderson","boat","clarke","rivercruise","hotel"],
+ ["hotel","sultan","bussorah","muscat","baghdad","arab","haji","bugis","misterbugis","littleindia","tan","clive","serangoon","tekka","hotel"],
+ ["hotel","fort","hillstreet","chinatown","misterchinatown","annsiang","telokayer","laupasat","cavenagh","anderson","boat","clarke","rivercruise","hotel"],
  ["hotel","jewel","t4"]
 ];
 const mrt=[
@@ -369,15 +428,35 @@ const mrtNetworks={
  ]
 };
 
-let state=JSON.parse(localStorage.getItem("sgTripV44")||"null")||{day:0,routes:masterPlans.map(x=>[...x]),skipped:[[],[],[],[]],modeOverrides:{}};
+let state=JSON.parse(localStorage.getItem("sgTripV46")||"null")||{day:0,routes:masterPlans.map(x=>[...x]),skipped:[[],[],[],[]],modeOverrides:{}};
 if(!Array.isArray(state.routes)||state.routes.length<4)state.routes=masterPlans.map(x=>[...x]);
 if(!Array.isArray(state.skipped))state.skipped=[[],[],[],[]];
 while(state.skipped.length<4)state.skipped.push([]);
+
+function insertAfterIfMissing(day,afterId,newId){
+ const route=state.routes[day]||[];
+ if(route.includes(newId))return;
+ const idx=route.indexOf(afterId);
+ if(idx>=0)route.splice(idx+1,0,newId);
+}
+function addOptionalIfMissing(day,id){
+ const route=state.routes[day]||[];
+ const skipped=state.skipped[day]||[];
+ if(!route.includes(id) && !skipped.includes(id))skipped.push(id);
+}
+insertAfterIfMissing(1,"bugis","misterbugis");
+insertAfterIfMissing(2,"chinatown","misterchinatown");
+addOptionalIfMissing(2,"mobilesquare");
+addOptionalIfMissing(1,"compasia");
+addOptionalIfMissing(1,"carousellmeet");
+save();
+
 let map=null,routeCoords=[],routeFeature=null,currentIndex=0,userPos=null,userMarker=null,watchId=null,drawerOpen=false,stopCoordIndex=[];
+let stepPopup=null;
 let gpsFollow=false;
 let lastTouchY=null,routeScrollFloat=0;
 
-function save(){localStorage.setItem("sgTripV44",JSON.stringify(state))}
+function save(){localStorage.setItem("sgTripV46",JSON.stringify(state))}
 function byId(id){return stops.find(s=>s.id===id)}
 function routeStops(){return state.routes[state.day].map(byId).filter(Boolean)}
 function hav(a,b){const R=6371,p=Math.PI/180,dLat=(b.lat-a.lat)*p,dLon=(b.lng-a.lng)*p,la1=a.lat*p,la2=b.lat*p,x=Math.sin(dLat/2)**2+Math.cos(la1)*Math.cos(la2)*Math.sin(dLon/2)**2;return 2*R*Math.asin(Math.sqrt(x))}
@@ -606,6 +685,67 @@ function legMode(a,b){
  return "walk";
 }
 
+
+function distanceFromCurrent(stop){
+ if(!userPos)return null;
+ return hav({lat:userPos.lat,lng:userPos.lng},stop);
+}
+function formatDistanceKm(km){
+ if(km===null || !Number.isFinite(km))return "GPS not active";
+ if(km<1)return `${Math.round(km*1000)} m from you`;
+ return `${km.toFixed(1)} km from you`;
+}
+function showMapStepPopup(stopIndex){
+ const rs=routeStops();
+ const stop=rs[stopIndex];
+ if(!stop)return;
+
+ if(stepPopup){stepPopup.remove();stepPopup=null}
+
+ const distance=formatDistanceKm(distanceFromCurrent(stop));
+ const wrap=document.createElement("div");
+ wrap.className="route-step-popup";
+
+ const title=document.createElement("h3");
+ title.textContent=`${stopIndex+1}. ${stop.name}`;
+ wrap.appendChild(title);
+
+ const p=document.createElement("p");
+ p.innerHTML=`<span class="distance">${distance}</span>${stop.desc?`<br>${stop.desc}`:""}`;
+ wrap.appendChild(p);
+
+ const btn=document.createElement("button");
+ btn.type="button";
+ btn.textContent="Details";
+ btn.addEventListener("click",()=>{
+   if(stepPopup){stepPopup.remove();stepPopup=null}
+   const routeStep=Math.min(stopIndex,Math.max(0,rs.length-2));
+   selectStep(routeStep,true);
+   toggleDrawer(true);
+
+   setTimeout(()=>{
+     const card=document.querySelector(`#drawerBody .stepcard[data-step="${routeStep}"]`);
+     if(card){
+       document.querySelectorAll("#drawerBody .stepcard").forEach(x=>x.classList.remove("active"));
+       card.classList.add("active");
+       card.scrollIntoView({behavior:"smooth",block:"nearest"});
+     }
+   },80);
+ });
+
+ wrap.appendChild(btn);
+
+ stepPopup=new maplibregl.Popup({
+   closeButton:true,
+   closeOnClick:false,
+   offset:20,
+   maxWidth:"270px"
+ })
+ .setLngLat([stop.lng,stop.lat])
+ .setDOMContent(wrap)
+ .addTo(map);
+}
+
 async function buildRoute(){
  const rs=routeStops();
  routeCoords=[];
@@ -696,7 +836,11 @@ async function buildRoute(){
   const el=document.createElement("div");
   el.className="route-marker";
   el.textContent=i+1;
-  el.addEventListener("click",()=>{selectStep(Math.min(i,rs.length-2),true);toggleDrawer(false)});
+  el.title=rs[i].name;
+  el.addEventListener("click",e=>{
+   e.stopPropagation();
+   showMapStepPopup(i);
+  });
   stopMarkers.push(
    new maplibregl.Marker({element:el,anchor:"center"})
     .setLngLat([s.lng,s.lat])
@@ -819,7 +963,8 @@ function renderOtherThings(){
    return `<div class="other-item">
      <h3>${s.name}</h3>
      <p>${s.desc||""}</p>
-     ${s.photo?`<p><b>Photo:</b> ${s.photo}</p>`:""}
+     ${(s.priority||"").includes("Phone")?`<div class="phone-note">Phone shopping stop — add it only if you want to compare or buy a handset.</div>`:""}
+     ${s.photo?`<p><b>Note:</b> ${s.photo}</p>`:""}
      <button type="button" data-addback="${s.id}">Add back to today</button>
    </div>`;
  }).join("");
@@ -925,6 +1070,7 @@ function startWatch(){
  watchId=navigator.geolocation.watchPosition(p=>{userPos={lng:p.coords.longitude,lat:p.coords.latitude};drawUser();syncGps(false)},()=>{},{enableHighAccuracy:true,maximumAge:10000,timeout:12000})
 }
 function syncGps(animate){
+ if(stepPopup){stepPopup.remove();stepPopup=null}
  if(!userPos||!routeCoords.length)return;
 
  let best=0,bd=Infinity;

@@ -1,8 +1,10 @@
-Singapore Trip App V44
+Singapore Trip App V46
 
-Changes:
-- Added extra bottom padding to the expanded Today's Route drawer so the final lines/cards are not cut off.
-- Removed Zoom + and Zoom - from the top navigation.
-- Walking route steps now include an 'MRT instead' button.
-- Pressing 'MRT instead' re-routes that leg using MRT and refreshes the route line/details.
-- A 'Use normal route' button appears for a leg manually forced to MRT so it can be reverted.
+Phone-shopping additions:
+- Mister Mobile Bugis Junction is automatically inserted into Friday because it is directly on the Bugis route.
+- Mister Mobile Chinatown is automatically inserted into Saturday because People's Park Complex is directly beside the Chinatown route.
+- Mobile Square, Far East Plaza is added to Other things to do on Saturday.
+- CompAsia Velocity @ Novena is added to Other things to do on Friday because it is not close enough to the main route to force it in.
+- Carousell is not treated as a shop. A suggested public meetup point at Bugis Junction is added to Other things to do with inspection/safety reminders.
+
+Existing saved routes are migrated so the two nearby Mister Mobile stops appear without resetting the user's app data.
