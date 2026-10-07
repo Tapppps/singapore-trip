@@ -1,17 +1,8 @@
-Singapore Trip App V43
+Singapore Trip App V44
 
-Built from V41, the last working version.
-
-Adds:
-- MRT cards show station names/codes, line names, and where to change.
-- Collapsed route summary shows MRT start/end and interchange names.
-- Skip this stop is available on the last destination step too.
-- Step bubble colour/type:
-  black = WALK
-  red = MRT
-  blue = RIVER
-- Preserves V41's working map, buttons, skip-list and More functionality.
-
-Validation:
-- JavaScript syntax checked with Node.
-- Runtime startup smoke-tested with mocked DOM/map objects to catch missing functions.
+Changes:
+- Added extra bottom padding to the expanded Today's Route drawer so the final lines/cards are not cut off.
+- Removed Zoom + and Zoom - from the top navigation.
+- Walking route steps now include an 'MRT instead' button.
+- Pressing 'MRT instead' re-routes that leg using MRT and refreshes the route line/details.
+- A 'Use normal route' button appears for a leg manually forced to MRT so it can be reverted.

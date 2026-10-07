@@ -139,6 +139,14 @@ button{font:inherit}
 .mrt-detail .mrt-title{font-weight:800;margin-bottom:4px;color:#9c1515}
 .mrt-detail .mrt-change{font-weight:800;color:#9c1515;margin:4px 0}
 .mrt-detail .mrt-line{margin:3px 0}
+
+/* V44 */
+#drawer.expanded #drawerBody{
+ padding-bottom:110px;
+}
+#drawer.expanded .stepcard:last-child{
+ margin-bottom:24px;
+}
 </style>
 </head>
 <body>
@@ -155,9 +163,7 @@ button{font:inherit}
    <button class="pill" id="btnCurrent">Current step</button>
    <button class="pill" id="btnFullRoute">Full route</button>
    <button class="pill" id="btnOtherThings">Other things to do <span id="otherCount">0</span></button>
-   <button class="pill" id="btnZoomIn">Zoom +</button>
-   <button class="pill" id="btnZoomOut">Zoom −</button>
- </div>
+       </div>
 </header>
 
 <div id="map"></div>
@@ -363,7 +369,7 @@ const mrtNetworks={
  ]
 };
 
-let state=JSON.parse(localStorage.getItem("sgTripV43")||"null")||{day:0,routes:masterPlans.map(x=>[...x]),skipped:[[],[],[],[]]};
+let state=JSON.parse(localStorage.getItem("sgTripV44")||"null")||{day:0,routes:masterPlans.map(x=>[...x]),skipped:[[],[],[],[]],modeOverrides:{}};
 if(!Array.isArray(state.routes)||state.routes.length<4)state.routes=masterPlans.map(x=>[...x]);
 if(!Array.isArray(state.skipped))state.skipped=[[],[],[],[]];
 while(state.skipped.length<4)state.skipped.push([]);
@@ -371,7 +377,7 @@ let map=null,routeCoords=[],routeFeature=null,currentIndex=0,userPos=null,userMa
 let gpsFollow=false;
 let lastTouchY=null,routeScrollFloat=0;
 
-function save(){localStorage.setItem("sgTripV43",JSON.stringify(state))}
+function save(){localStorage.setItem("sgTripV44",JSON.stringify(state))}
 function byId(id){return stops.find(s=>s.id===id)}
 function routeStops(){return state.routes[state.day].map(byId).filter(Boolean)}
 function hav(a,b){const R=6371,p=Math.PI/180,dLat=(b.lat-a.lat)*p,dLon=(b.lng-a.lng)*p,la1=a.lat*p,la2=b.lat*p,x=Math.sin(dLat/2)**2+Math.cos(la1)*Math.cos(la2)*Math.sin(dLon/2)**2;return 2*R*Math.asin(Math.sqrt(x))}
@@ -565,7 +571,31 @@ function riverCruiseCoords(a,b){
  ];
 }
 
+
+function legKey(a,b){return `${state.day}:${a.id}>${b.id}`}
+function setLegMRT(stepIndex){
+ const rs=routeStops();
+ if(!rs[stepIndex]||!rs[stepIndex+1])return;
+ const a=rs[stepIndex],b=rs[stepIndex+1];
+ state.modeOverrides=state.modeOverrides||{};
+ state.modeOverrides[legKey(a,b)]="mrt";
+ save();
+ buildRoute();
+ renderDrawer();
+}
+function clearLegOverride(stepIndex){
+ const rs=routeStops();
+ if(!rs[stepIndex]||!rs[stepIndex+1])return;
+ const a=rs[stepIndex],b=rs[stepIndex+1];
+ if(state.modeOverrides)delete state.modeOverrides[legKey(a,b)];
+ save();
+ buildRoute();
+ renderDrawer();
+}
+
 function legMode(a,b){
+ const forced=state.modeOverrides&&state.modeOverrides[legKey(a,b)];
+ if(forced==="mrt")return "mrt";
  if(a.id==="clarke" && b.id==="rivercruise")return "river";
  if(
    a.id==="airport" ||
@@ -825,6 +855,8 @@ function renderDrawer(){
       <div class="step-actions">
        <button type="button" data-stepbtn="${i}">Show this step</button>
        <button type="button" data-more-step="${i}">More</button>
+       ${mode==="walk"?`<button type="button" data-mrt-step="${i}">MRT instead</button>`:""}
+       ${mode==="mrt" && state.modeOverrides && state.modeOverrides[legKey(a,b)]==="mrt"?`<button type="button" data-clear-mode="${i}">Use normal route</button>`:""}
        <button type="button" class="skip-btn" data-skip-step="${i}">Skip this stop</button>
       </div>
 
@@ -847,6 +879,12 @@ function renderDrawer(){
  }));
  body.querySelectorAll("[data-more-step]").forEach(btn=>btn.addEventListener("click",()=>{
    toggleStepMore(Number(btn.dataset.moreStep));
+ }));
+ body.querySelectorAll("[data-mrt-step]").forEach(btn=>btn.addEventListener("click",()=>{
+   setLegMRT(Number(btn.dataset.mrtStep));
+ }));
+ body.querySelectorAll("[data-clear-mode]").forEach(btn=>btn.addEventListener("click",()=>{
+   clearLegOverride(Number(btn.dataset.clearMode));
  }));
  body.querySelectorAll("[data-skip-step]").forEach(btn=>btn.addEventListener("click",()=>{
    skipStep(Number(btn.dataset.skipStep));
@@ -924,8 +962,6 @@ function wireV36Buttons(){
  on("btnGps",locateMe);
  on("btnCurrent",goCurrent);
  on("btnFullRoute",fitRoute);
- on("btnZoomIn",zoomIn);
- on("btnZoomOut",zoomOut);
  on("btnCurrentMap",goCurrent);
  on("btnFitMap",fitRoute);
  on("drawerHandle",()=>toggleDrawer());
