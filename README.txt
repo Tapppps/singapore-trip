@@ -1,11 +1,17 @@
-Singapore Trip App V41
+Singapore Trip App V42
 
-Today's Route additions:
-- Each route step now has:
-  * Show this step
-  * More / Less
-  * Skip this stop
-- More expands the individual card with fuller details about the current/next location, photo tip, nearby saved places, and travel mode.
-- Skip removes the destination stop from today's route and recalculates the route.
-- Skipped stops are saved under a new top navigation button: Other things to do.
-- Other things to do shows the skipped list and lets you add stops back to today's route.
+Today's Route improvements:
+- MRT steps now show:
+  * station to walk to
+  * MRT line to take
+  * start and end station names/codes
+  * interchange station name/code
+  * which line to change to
+  * final station and walk to destination
+- Collapsed route summary also shows MRT start/end and change station(s).
+- Skip this stop is now available on the final destination step too.
+- Step bubble now matches travel type:
+  * black = WALK
+  * red = MRT
+  * blue = RIVER
+  with the step number still shown.

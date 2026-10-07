@@ -120,6 +120,25 @@ button{font:inherit}
  display:inline-grid;place-items:center;min-width:18px;height:18px;border-radius:999px;
  background:#eceff3;margin-left:4px;padding:0 5px;font-size:10px
 }
+
+/* V42 */
+.num.travel-walk{background:#111}
+.num.travel-mrt{background:#E32017}
+.num.travel-river{background:#1677FF}
+.num{
+ width:38px;height:38px;position:relative;line-height:1;
+ grid-template-rows:1fr auto;padding:4px 0 3px
+}
+.num .step-number{font-size:13px;font-weight:800;align-self:end}
+.num .travel-letter{font-size:8px;font-weight:800;opacity:.95;align-self:start;margin-top:1px}
+.mrt-detail{
+ margin-top:8px;padding:9px 10px;background:#fff6f6;
+ border-left:4px solid #E32017;border-radius:10px;
+ font-size:12px;line-height:1.5;color:#333
+}
+.mrt-detail .mrt-title{font-weight:800;margin-bottom:4px;color:#9c1515}
+.mrt-detail .mrt-change{font-weight:700;color:#9c1515}
+.mrt-detail .mrt-line{margin:3px 0}
 </style>
 </head>
 <body>
@@ -344,7 +363,7 @@ const mrtNetworks={
  ]
 };
 
-let state=JSON.parse(localStorage.getItem("sgTripV41")||"null")||{day:0,routes:masterPlans.map(x=>[...x]),skipped:[[],[],[],[]]};
+let state=JSON.parse(localStorage.getItem("sgTripV42")||"null")||{day:0,routes:masterPlans.map(x=>[...x]),skipped:[[],[],[],[]]};
 if(!Array.isArray(state.routes)||state.routes.length<4)state.routes=masterPlans.map(x=>[...x]);
 if(!Array.isArray(state.skipped))state.skipped=[[],[],[],[]];
 while(state.skipped.length<4)state.skipped.push([]);
@@ -352,7 +371,7 @@ let map=null,routeCoords=[],routeFeature=null,currentIndex=0,userPos=null,userMa
 let gpsFollow=false;
 let lastTouchY=null,routeScrollFloat=0;
 
-function save(){localStorage.setItem("sgTripV41",JSON.stringify(state))}
+function save(){localStorage.setItem("sgTripV42",JSON.stringify(state))}
 function byId(id){return stops.find(s=>s.id===id)}
 function routeStops(){return state.routes[state.day].map(byId).filter(Boolean)}
 function hav(a,b){const R=6371,p=Math.PI/180,dLat=(b.lat-a.lat)*p,dLon=(b.lng-a.lng)*p,la1=a.lat*p,la2=b.lat*p,x=Math.sin(dLat/2)**2+Math.cos(la1)*Math.cos(la2)*Math.sin(dLon/2)**2;return 2*R*Math.asin(Math.sqrt(x))}
@@ -372,6 +391,89 @@ function shortestMRTPath(a,b){
  if(!Object.prototype.hasOwnProperty.call(prev,b))return [a,b];
  const out=[];let c=b;while(c!==null){out.push(c);c=prev[c]}return out.reverse()
 }
+
+const mrtLineNames={
+ CG:"Changi Airport Branch",
+ EW:"East–West Line",
+ DT:"Downtown Line",
+ NE:"North East Line",
+ NS:"North–South Line",
+ CC:"Circle Line",
+ CE:"Circle Line Extension",
+ TE:"Thomson–East Coast Line"
+};
+function codeOnLine(station,line){
+ const row=(mrtNetworks[line]||[]).find(x=>x[0]===station);
+ return row?row[1]:"";
+}
+function detailedMRTPath(start,end){
+ if(start===end)return {stations:[start],edges:[]};
+ const q=[start],prev={[start]:null},prevLine={};
+ while(q.length){
+  const n=q.shift();
+  for(const e of (mrtGraph[n]||[])){
+   if(Object.prototype.hasOwnProperty.call(prev,e.to))continue;
+   prev[e.to]=n;prevLine[e.to]=e.line;
+   if(e.to===end){q.length=0;break}
+   q.push(e.to);
+  }
+ }
+ if(!Object.prototype.hasOwnProperty.call(prev,end))return {stations:[start,end],edges:[]};
+ const stations=[],edges=[];let cur=end;
+ while(cur!==null){
+  stations.push(cur);
+  const p=prev[cur];
+  if(p!==null)edges.push({from:p,to:cur,line:prevLine[cur]});
+  cur=p;
+ }
+ stations.reverse();edges.reverse();
+ return {stations,edges};
+}
+function mrtSegmentsFor(a,b){
+ const s1=nearestMRT(a),s2=nearestMRT(b);
+ const path=detailedMRTPath(s1.name,s2.name);
+ const segs=[];
+ if(path.edges.length){
+  let seg={line:path.edges[0].line,stations:[path.edges[0].from,path.edges[0].to]};
+  for(let i=1;i<path.edges.length;i++){
+   const e=path.edges[i];
+   if(e.line===seg.line)seg.stations.push(e.to);
+   else{segs.push(seg);seg={line:e.line,stations:[e.from,e.to]}}
+  }
+  segs.push(seg);
+ }
+ return {start:s1,end:s2,path,segments:segs};
+}
+function mrtDirectionsHtml(a,b){
+ const j=mrtSegmentsFor(a,b);
+ if(!j.start||!j.end)return "";
+ if(j.start.name===j.end.name){
+  return `<div class="mrt-detail"><div class="mrt-title">MRT</div>
+   Walk to <b>${j.start.name} ${j.start.code||""}</b>. Both locations use the same nearest MRT station, so walking may be simpler.</div>`;
+ }
+ let out=`<div class="mrt-detail"><div class="mrt-title">MRT directions</div>`;
+ out+=`<div class="mrt-line"><b>Start:</b> Walk to <b>${j.start.name} ${j.start.code||""}</b>.</div>`;
+ j.segments.forEach((seg,i)=>{
+  const first=seg.stations[0],last=seg.stations[seg.stations.length-1];
+  const firstCode=codeOnLine(first,seg.line),lastCode=codeOnLine(last,seg.line);
+  out+=`<div class="mrt-line"><b>${mrtLineNames[seg.line]||seg.line}:</b> ${first} ${firstCode} → ${last} ${lastCode}`;
+  if(seg.stations.length>2)out+=` <span style="color:#666">(${seg.stations.length-2} station${seg.stations.length-2===1?"":"s"} in between)</span>`;
+  out+=`.</div>`;
+  if(i<j.segments.length-1){
+   const next=j.segments[i+1];
+   const change=last;
+   const changeCodes=[codeOnLine(change,seg.line),codeOnLine(change,next.line)].filter(Boolean).join(" / ");
+   out+=`<div class="mrt-change">Change at ${change}${changeCodes?` ${changeCodes}`:""} to the ${mrtLineNames[next.line]||next.line}.</div>`;
+  }
+ });
+ out+=`<div class="mrt-line"><b>Finish:</b> Get off at <b>${j.end.name} ${j.end.code||""}</b>, then walk to ${b.name}.</div></div>`;
+ return out;
+}
+function travelBubble(mode,stepNo){
+ const label=mode==="walk"?"WALK":mode==="river"?"RIVER":"MRT";
+ return `<div class="num travel-${mode}"><span class="step-number">${stepNo}</span><span class="travel-letter">${label}</span></div>`;
+}
+
 function smartLeg(a,b){return hav(a,b)<=.85?"walk":"mrt"}
 async function footRoute(a,b){
  const url=`https://routing.openstreetmap.de/routed-foot/route/v1/driving/${a.lng},${a.lat};${b.lng},${b.lat}?overview=full&geometries=geojson&steps=true`;
@@ -617,91 +719,36 @@ function selectStep(step,animate=true){
  const i=stopCoordIndex[step]||0;currentIndex=i;routeScrollFloat=i;cameraToIndex(i,animate);updateSummary(step);highlightDrawer(step)
 }
 function updateSummary(step){
- const rs=routeStops();if(!rs[step]||!rs[step+1])return;
- summarySmall.textContent=`Step ${step+1} of ${rs.length-1}`;
- summaryTitle.textContent=`${rs[step].name} → ${rs[step+1].name}`;
- const mode=legMode(rs[step],rs[step+1]);
- const label=mode==="walk"?"Walk":mode==="river"?"River":"MRT";
- summaryText.textContent=`${label} · ${hav(rs[step],rs[step+1]).toFixed(1)} km between stops`;
-}
-
-function routeStopById(id){return byId(id)}
-function isRequiredStopIndex(i,rs){
- // protect day start/end anchors
- return i===0 || i===rs.length-1;
-}
-function skipStep(stepIndex){
  const rs=routeStops();
- const targetIndex=stepIndex+1; // skip the destination of this step, preserving the current location
- if(targetIndex<=0 || targetIndex>=rs.length-1)return;
- const stop=rs[targetIndex];
- if(!stop)return;
-
- state.routes[state.day]=state.routes[state.day].filter(id=>id!==stop.id);
- if(!state.skipped[state.day].includes(stop.id))state.skipped[state.day].push(stop.id);
- save();
- renderHeader();
- renderDrawer();
- renderOtherThings();
- buildRoute();
-}
-function addSkippedBack(id){
- state.skipped[state.day]=state.skipped[state.day].filter(x=>x!==id);
- if(!state.routes[state.day].includes(id)){
-   const route=state.routes[state.day];
-   const end=route.pop();
-   route.push(id,end);
+ const small=document.getElementById("summarySmall");
+ const title=document.getElementById("summaryTitle");
+ const text=document.getElementById("summaryText");
+ if(!rs[step]||!rs[step+1])return;
+ const a=rs[step],b=rs[step+1],mode=legMode(a,b);
+ if(small)small.textContent=`Step ${step+1} of ${rs.length-1} · ${mode==="walk"?"WALK":mode==="river"?"RIVER":"MRT"}`;
+ if(title)title.textContent=`${a.name} → ${b.name}`;
+ if(text){
+  if(mode==="mrt"){
+   const j=mrtSegmentsFor(a,b);
+   const changes=j.segments.slice(0,-1).map(seg=>seg.stations[seg.stations.length-1]);
+   text.textContent=`MRT: ${j.start.name} ${j.start.code||""} → ${j.end.name} ${j.end.code||""}${changes.length?` · change at ${changes.join(", ")}`:""}`;
+  }else if(mode==="river"){
+   text.textContent="River route · follow the blue route line";
+  }else{
+   text.textContent="Walk · follow the black route line";
+  }
  }
- save();
- renderDrawer();
- renderOtherThings();
- buildRoute();
 }
-function renderOtherThings(){
- const list=document.getElementById("otherThingsList");
- const count=document.getElementById("otherCount");
- const ids=state.skipped[state.day]||[];
- if(count)count.textContent=ids.length;
- if(!list)return;
- if(!ids.length){
-   list.innerHTML='<div class="other-item"><p>No skipped stops yet.</p></div>';
-   return;
- }
- list.innerHTML=ids.map(id=>{
-   const s=byId(id);
-   if(!s)return "";
-   return `<div class="other-item">
-     <h3>${s.name}</h3>
-     <p>${s.desc||""}</p>
-     ${s.photo?`<p><b>Photo:</b> ${s.photo}</p>`:""}
-     <button type="button" data-addback="${s.id}">Add back to today</button>
-   </div>`;
- }).join("");
- list.querySelectorAll("[data-addback]").forEach(b=>b.addEventListener("click",()=>addSkippedBack(b.dataset.addback)));
-}
-function toggleStepMore(stepIndex){
- const el=document.getElementById(`step-more-${stepIndex}`);
- if(!el)return;
- el.classList.toggle("open");
- const btn=document.querySelector(`[data-more-step="${stepIndex}"]`);
- if(btn)btn.textContent=el.classList.contains("open")?"Less":"More";
-}
-function nearbyDetailForStop(s){
- const nearby=stops.filter(x=>x.id!==s.id && Number.isFinite(x.lat) && hav(s,x)<=1.0)
-  .sort((a,b)=>hav(s,a)-hav(s,b))
-  .slice(0,4);
- return nearby.map(x=>`${x.name} (${hav(s,x).toFixed(1)} km)`).join("<br>") || "No saved nearby stops.";
-}
-
 function renderDrawer(){
  const rs=routeStops(),body=document.getElementById("drawerBody");
  if(!body)return;
  body.innerHTML=rs.slice(0,-1).map((a,i)=>{
    const b=rs[i+1];
-   const canSkip=(i+1)<rs.length-1;
+   const mode=legMode(a,b);
+   const canSkip=(i+1)<rs.length; // includes the final destination
    return `<div class="stepcard" data-step="${i}">
     <div class="stephead">
-     <div class="num">${i+1}</div>
+     ${travelBubble(mode,i+1)}
      <div style="min-width:0;flex:1">
       <h3>${a.name} → ${b.name}</h3>
       <p>${a.desc||""}</p>
@@ -717,7 +764,8 @@ function renderDrawer(){
        <p><b>Next stop — ${b.name}:</b> ${b.desc||""}</p>
        ${b.photo?`<p><b>Photo tip:</b> ${b.photo}</p>`:""}
        <p><b>Nearby:</b><br>${nearbyDetailForStop(b)}</p>
-       <p><b>Travel:</b> ${legMode(a,b)==="walk"?"Walking route":legMode(a,b)==="river"?"River route":"MRT / public transport route"}.</p>
+       <p><b>Travel:</b> ${mode==="walk"?"Walking route":mode==="river"?"River route":"MRT / public transport route"}.</p>
+       ${mode==="mrt"?mrtDirectionsHtml(a,b):""}
       </div>
      </div>
     </div>
