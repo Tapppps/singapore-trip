@@ -71,6 +71,10 @@ button{font:inherit}
  #topbar{height:111px} #map{top:111px} #mapStatus{top:121px} #mapTools{top:121px}
  #drawer.collapsed{height:138px}
 }
+
+/* V37 free-map interaction */
+.maplibregl-canvas{cursor:grab}
+.maplibregl-canvas:active{cursor:grabbing}
 </style>
 </head>
 <body>
@@ -279,12 +283,12 @@ const mrtNetworks={
  ]
 };
 
-let state=JSON.parse(localStorage.getItem("sgTripV36")||"null")||{day:0,routes:masterPlans.map(x=>[...x])};
+let state=JSON.parse(localStorage.getItem("sgTripV37")||"null")||{day:0,routes:masterPlans.map(x=>[...x])};
 if(!Array.isArray(state.routes)||state.routes.length<4)state.routes=masterPlans.map(x=>[...x]);
 let map=null,routeCoords=[],routeFeature=null,currentIndex=0,userPos=null,userMarker=null,watchId=null,drawerOpen=false,stopCoordIndex=[];
 let lastTouchY=null,routeScrollFloat=0;
 
-function save(){localStorage.setItem("sgTripV36",JSON.stringify(state))}
+function save(){localStorage.setItem("sgTripV37",JSON.stringify(state))}
 function byId(id){return stops.find(s=>s.id===id)}
 function routeStops(){return state.routes[state.day].map(byId).filter(Boolean)}
 function hav(a,b){const R=6371,p=Math.PI/180,dLat=(b.lat-a.lat)*p,dLon=(b.lng-a.lng)*p,la1=a.lat*p,la2=b.lat*p,x=Math.sin(dLat/2)**2+Math.cos(la1)*Math.cos(la2)*Math.sin(dLon/2)**2;return 2*R*Math.asin(Math.sqrt(x))}
@@ -337,7 +341,19 @@ function bearing(a,b){
 }
 async function init(){
  const style=await loadSimpleStyle();
- map=new maplibregl.Map({container:"map",style,center:[103.856,1.297],zoom:14,attributionControl:true,dragPan:false,scrollZoom:false,touchZoomRotate:true});
+ map=new maplibregl.Map({
+ container:"map",
+ style,
+ center:[103.856,1.297],
+ zoom:14,
+ attributionControl:true,
+ dragPan:true,
+ scrollZoom:true,
+ touchZoomRotate:true,
+ doubleClickZoom:true,
+ keyboard:true,
+ boxZoom:true
+});
  map.touchZoomRotate.disableRotation();
  map.on("load",async()=>{await buildRoute();setupGesture();renderDays()});
 }
@@ -402,7 +418,7 @@ async function buildRoute(){
  selectStep(0,false);
 
  if(statusTitleEl)statusTitleEl.textContent="V32 map + route line";
- if(statusSubEl)statusSubEl.textContent="Same map view as V32. Follow the coloured line; swipe upward to move forward.";
+ if(statusSubEl)statusSubEl.textContent="Drag the map with your finger or mouse. Pinch or mouse-wheel to zoom. Follow the coloured route line.";
 }
 let stopMarkers=[];
 function clearStopMarkers(){stopMarkers.forEach(m=>m.remove());stopMarkers=[]}
@@ -411,16 +427,8 @@ function fitRoute(){
  map.fitBounds(b,{padding:{top:100,bottom:190,left:40,right:40},duration:700,maxZoom:16});
 }
 function setupGesture(){
- const canvas=map.getCanvasContainer();
- canvas.addEventListener("touchstart",e=>{if(e.touches.length===1)lastTouchY=e.touches[0].clientY},{passive:true});
- canvas.addEventListener("touchmove",e=>{
-  if(e.touches.length!==1||lastTouchY===null)return;
-  e.preventDefault();
-  const y=e.touches[0].clientY,dy=lastTouchY-y;lastTouchY=y;
-  advanceRoute(dy/18)
- },{passive:false});
- canvas.addEventListener("touchend",()=>lastTouchY=null,{passive:true});
- canvas.addEventListener("wheel",e=>{if(e.ctrlKey)return;e.preventDefault();advanceRoute(e.deltaY/22)},{passive:false});
+ // V37: use native map gestures.
+ // One-finger drag pans; mouse drag pans; pinch and wheel zoom.
 }
 function advanceRoute(delta){
  if(!routeCoords.length)return;

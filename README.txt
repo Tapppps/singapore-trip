@@ -1,9 +1,10 @@
-Singapore Trip App V36
+Singapore Trip App V37
 
-This is deliberately based on V32, because V32 had the map view the user preferred.
-
-Only two changes:
-1. Core buttons are explicitly wired so they work reliably.
-2. A thick coloured continuous route line with a white halo is added on top of the V32 map.
-
-No change to the V32 map style, camera concept, map extent, or forward-scroll idea.
+- Free map movement like Google Maps.
+- One-finger drag pans the map on phone/tablet.
+- Click-and-drag pans the map on desktop.
+- Pinch zoom works on touch devices.
+- Mouse-wheel zoom works on desktop.
+- Double-click zoom works.
+- The custom swipe-to-advance gesture was removed because it prevented normal panning.
+- Current Step, Full Route and GPS buttons can re-center the view.
