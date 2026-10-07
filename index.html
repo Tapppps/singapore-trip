@@ -302,13 +302,13 @@ const mrtNetworks={
  ]
 };
 
-let state=JSON.parse(localStorage.getItem("sgTripV39")||"null")||{day:0,routes:masterPlans.map(x=>[...x])};
+let state=JSON.parse(localStorage.getItem("sgTripV40")||"null")||{day:0,routes:masterPlans.map(x=>[...x])};
 if(!Array.isArray(state.routes)||state.routes.length<4)state.routes=masterPlans.map(x=>[...x]);
 let map=null,routeCoords=[],routeFeature=null,currentIndex=0,userPos=null,userMarker=null,watchId=null,drawerOpen=false,stopCoordIndex=[];
 let gpsFollow=false;
 let lastTouchY=null,routeScrollFloat=0;
 
-function save(){localStorage.setItem("sgTripV39",JSON.stringify(state))}
+function save(){localStorage.setItem("sgTripV40",JSON.stringify(state))}
 function byId(id){return stops.find(s=>s.id===id)}
 function routeStops(){return state.routes[state.day].map(byId).filter(Boolean)}
 function hav(a,b){const R=6371,p=Math.PI/180,dLat=(b.lat-a.lat)*p,dLon=(b.lng-a.lng)*p,la1=a.lat*p,la2=b.lat*p,x=Math.sin(dLat/2)**2+Math.cos(la1)*Math.cos(la2)*Math.sin(dLon/2)**2;return 2*R*Math.asin(Math.sqrt(x))}
@@ -521,7 +521,7 @@ async function buildRoute(){
   const el=document.createElement("div");
   el.className="route-marker";
   el.textContent=i+1;
-  el.addEventListener("click",()=>selectStep(Math.min(i,rs.length-2),true));
+  el.addEventListener("click",()=>{selectStep(Math.min(i,rs.length-2),true);toggleDrawer(false)});
   stopMarkers.push(
    new maplibregl.Marker({element:el,anchor:"center"})
     .setLngLat([s.lng,s.lat])
@@ -581,11 +581,17 @@ function updateSummary(step){
  summaryText.textContent=`${label} · ${hav(rs[step],rs[step+1]).toFixed(1)} km between stops`;
 }
 function renderDrawer(){
- const rs=routeStops();drawerBody.innerHTML=rs.slice(0,-1).map((a,i)=>`<div class="stepcard" data-step="${i}"><div class="stephead"><div class="num">${i+1}</div><div><h3>${a.name} → ${rs[i+1].name}</h3><p>${a.desc||""}</p><button onclick="selectStep(${i},true)">Show this step</button></div></div></div>`).join("");
+ const rs=routeStops();drawerBody.innerHTML=rs.slice(0,-1).map((a,i)=>`<div class="stepcard" data-step="${i}"><div class="stephead"><div class="num">${i+1}</div><div><h3>${a.name} → ${rs[i+1].name}</h3><p>${a.desc||""}</p><button onclick="selectStep(${i},true);toggleDrawer(false)">Show this step</button></div></div></div>`).join("");
  updateSummary(0);highlightDrawer(0)
 }
 function highlightDrawer(step){document.querySelectorAll(".stepcard").forEach(c=>c.classList.toggle("active",Number(c.dataset.step)===step))}
-function toggleDrawer(force){drawerOpen=typeof force==="boolean"?force:!drawerOpen;drawer.classList.toggle("expanded",drawerOpen);drawer.classList.toggle("collapsed",!drawerOpen)}
+function toggleDrawer(force){
+ drawerOpen=typeof force==="boolean"?force:!drawerOpen;
+ drawer.classList.toggle("expanded",drawerOpen);
+ drawer.classList.toggle("collapsed",!drawerOpen);
+ const b=document.getElementById("drawerMore");
+ if(b)b.textContent=drawerOpen?"Hide":"More";
+}
 function openDays(){daySheet.classList.add("open")} function closeDays(){daySheet.classList.remove("open")}
 function renderDays(){
  dayRows.innerHTML=days.map((d,i)=>`<div class="dayrow"><div><b>${d.label}</b><div style="font-size:12px;color:#667">${d.title}</div></div><button onclick="setDay(${i})">${i===state.day?"Current":"Open"}</button></div>`).join("")
