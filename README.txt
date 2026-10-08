@@ -1,12 +1,17 @@
-Singapore Trip App V51
+Singapore Trip App V52
 
-Fixes:
-- Restores Day 1 travel:
-  Changi Airport T4 -> Hotel Boss -> sightseeing -> Hotel Boss.
-- Airport and Hotel Boss are protected on Day 1 so they cannot accidentally be skipped/deleted again.
-- Removes these locations completely:
-  * Mobile Square — Far East Plaza
-  * CompAsia — Velocity @ Novena
-  * Carousell meetup — Bugis Junction
-- Also removes those three locations from previously saved routes / Other things to do.
-- Mister Mobile Bugis and Mister Mobile Chinatown remain.
+Each Today's Route card now shows estimated travel distance and time.
+
+Walking:
+- Uses actual routed walking geometry when available.
+- Time assumes a comfortable sightseeing pace of about 4.5 km/h.
+
+MRT:
+- Shows approximate distance plus estimated journey time.
+- Time includes an allowance for walking into/out of stations, station-to-station travel, and extra time for line changes.
+
+River cruise:
+- Shows the routed water distance.
+- Uses approximately 40 minutes for the sightseeing cruise loop.
+
+The collapsed route summary and expanded More details also include the estimate.

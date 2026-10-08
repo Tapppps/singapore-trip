@@ -257,6 +257,13 @@ button{font:inherit}
  border-bottom:10px solid #1677FF;
  filter:drop-shadow(0 1px 1px rgba(0,0,0,.2));
 }
+
+/* V52 step distance / time */
+.step-estimate{
+ margin:4px 0 6px!important;
+ font-size:12px!important;
+ color:#26313c!important;
+}
 </style>
 </head>
 <body>
@@ -482,7 +489,7 @@ const mrtNetworks={
  ]
 };
 
-let state=JSON.parse(localStorage.getItem("sgTripV51")||"null")||{day:0,routes:masterPlans.map(x=>[...x]),skipped:[[],[],[],[]],modeOverrides:{}};
+let state=JSON.parse(localStorage.getItem("sgTripV52")||"null")||{day:0,routes:masterPlans.map(x=>[...x]),skipped:[[],[],[],[]],modeOverrides:{}};
 if(!Array.isArray(state.routes)||state.routes.length<4)state.routes=masterPlans.map(x=>[...x]);
 if(!Array.isArray(state.skipped))state.skipped=[[],[],[],[]];
 while(state.skipped.length<4)state.skipped.push([]);
@@ -527,6 +534,7 @@ save();
 save();
 
 let map=null,routeCoords=[],routeFeature=null,currentIndex=0,userPos=null,userMarker=null,watchId=null,drawerOpen=false,stopCoordIndex=[];
+let legEstimates={};
 let userHeading=null;
 let headingWatchBound=false;
 let stepPopup=null;
@@ -535,7 +543,7 @@ let drawerDragActive=false;
 let gpsFollow=false;
 let lastTouchY=null,routeScrollFloat=0;
 
-function save(){localStorage.setItem("sgTripV51",JSON.stringify(state))}
+function save(){localStorage.setItem("sgTripV52",JSON.stringify(state))}
 function byId(id){return stops.find(s=>s.id===id)}
 function routeStops(){return state.routes[state.day].map(byId).filter(Boolean)}
 function hav(a,b){const R=6371,p=Math.PI/180,dLat=(b.lat-a.lat)*p,dLon=(b.lng-a.lng)*p,la1=a.lat*p,la2=b.lat*p,x=Math.sin(dLat/2)**2+Math.cos(la1)*Math.cos(la2)*Math.sin(dLon/2)**2;return 2*R*Math.asin(Math.sqrt(x))}
@@ -828,8 +836,67 @@ function showMapStepPopup(stopIndex){
  .addTo(map);
 }
 
+
+function coordsDistanceKm(coords){
+ if(!Array.isArray(coords) || coords.length<2)return 0;
+ let total=0;
+ for(let i=1;i<coords.length;i++){
+  const a={lng:coords[i-1][0],lat:coords[i-1][1]};
+  const b={lng:coords[i][0],lat:coords[i][1]};
+  total+=hav(a,b);
+ }
+ return total;
+}
+function estimateLeg(mode,coords,a,b){
+ let km=coordsDistanceKm(coords);
+ if(!km || !Number.isFinite(km))km=hav(a,b);
+
+ let minutes=0;
+ if(mode==="walk"){
+  // Comfortable sightseeing pace, including crossings.
+  minutes=Math.max(2,Math.round((km/4.5)*60));
+ }else if(mode==="mrt"){
+  const j=mrtSegmentsFor(a,b);
+  const stationCount=Math.max(1,(j.path?.stations?.length||2)-1);
+  const changes=Math.max(0,(j.segments?.length||1)-1);
+  // Approx: station running time + interchange + access/exit walking.
+  minutes=Math.round(8 + stationCount*2.2 + changes*6);
+ }else if(mode==="river"){
+  // Singapore River sightseeing cruise is roughly 40 minutes;
+  // use that for the cruise loop rather than deriving boat speed.
+  minutes=40;
+ }
+
+ return {
+  km,
+  minutes,
+  distanceText: km<1 ? `${Math.round(km*1000)} m` : `${km.toFixed(1)} km`,
+  timeText: minutes<60 ? `~${minutes} min` : `~${Math.floor(minutes/60)} hr ${minutes%60?`${minutes%60} min`:""}`
+ };
+}
+function estimateTextForStep(a,b){
+ const key=legKey(a,b);
+ const est=legEstimates[key];
+ if(est)return `${est.distanceText} · ${est.timeText}`;
+
+ // Fallback before routing geometry has loaded.
+ const km=hav(a,b);
+ const mode=legMode(a,b);
+ if(mode==="river")return `${km.toFixed(1)} km · ~40 min`;
+ if(mode==="mrt"){
+  const j=mrtSegmentsFor(a,b);
+  const stationCount=Math.max(1,(j.path?.stations?.length||2)-1);
+  const changes=Math.max(0,(j.segments?.length||1)-1);
+  const mins=Math.round(8+stationCount*2.2+changes*6);
+  return `${km.toFixed(1)} km approx · ~${mins} min`;
+ }
+ const mins=Math.max(2,Math.round((km/4.5)*60));
+ return `${km<1?`${Math.round(km*1000)} m`:`${km.toFixed(1)} km`} approx · ~${mins} min`;
+}
+
 async function buildRoute(){
  const rs=routeStops();
+ legEstimates={};
  routeCoords=[];
  stopCoordIndex=[];
  let idx=0;
@@ -855,6 +922,8 @@ async function buildRoute(){
 
   coords=(coords||[]).filter(c=>Array.isArray(c)&&Number.isFinite(c[0])&&Number.isFinite(c[1]));
   if(!coords.length)continue;
+
+  legEstimates[legKey(a,b)]=estimateLeg(mode,coords,a,b);
 
   features.push({
    type:"Feature",
@@ -988,11 +1057,11 @@ function updateSummary(step){
   if(mode==="mrt"){
    const j=mrtSegmentsFor(a,b);
    const changes=j.segments.slice(0,-1).map(seg=>seg.stations[seg.stations.length-1]);
-   text.textContent=`MRT: ${j.start.name} ${j.start.code||""} → ${j.end.name} ${j.end.code||""}${changes.length?` · change at ${changes.join(", ")}`:""}`;
+   text.textContent=`MRT · ${estimateTextForStep(a,b)} · ${j.start.name} ${j.start.code||""} → ${j.end.name} ${j.end.code||""}${changes.length?` · change at ${changes.join(", ")}`:""}`;
   }else if(mode==="river"){
-   text.textContent="River route · follow the blue route line";
+   text.textContent=`River cruise · ${estimateTextForStep(a,b)} · follow the blue route line`;
   }else{
-   text.textContent="Walk · follow the black route line";
+   text.textContent=`Walk · ${estimateTextForStep(a,b)} · follow the black route line`;
   }
  }
 }
@@ -1087,6 +1156,7 @@ function renderDrawer(){
      ${travelBubble(mode,i+1)}
      <div style="min-width:0;flex:1">
       <h3>${a.name} → ${b.name}</h3>
+      <p class="step-estimate"><b>${mode==="walk"?"Walk":mode==="river"?"River cruise":"MRT"}:</b> ${estimateTextForStep(a,b)}</p>
       <p>${a.desc||""}</p>
 
       <div class="step-actions">
@@ -1104,7 +1174,7 @@ function renderDrawer(){
        <p><b>Next stop — ${b.name}:</b> ${b.desc||""}</p>
        ${b.photo?`<p><b>Photo tip:</b> ${b.photo}</p>`:""}
        <p><b>Nearby:</b><br>${nearbyDetailForStop(b)}</p>
-       <p><b>Travel:</b> ${mode==="walk"?"Walking route":mode==="river"?"River route":"MRT / public transport route"}.</p>
+       <p><b>Travel:</b> ${mode==="walk"?"Walking route":mode==="river"?"River cruise":"MRT / public transport route"} · ${estimateTextForStep(a,b)}.</p>
        ${mode==="mrt"?mrtDirectionsHtml(a,b):""}
       </div>
      </div>
