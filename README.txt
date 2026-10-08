@@ -1,8 +1,12 @@
-Singapore Trip App V50
+Singapore Trip App V51
 
-Changes:
-- GPS/current-position dot now has a small direction pointer.
-- Pointer uses device compass heading where supported and geolocation heading while moving when available.
-- The map itself remains north-up.
-- Every stop skipped with 'Skip this stop' is now always added to 'Other things to do', including the final stop.
-- Skipped stops can still be added back later from 'Other things to do'.
+Fixes:
+- Restores Day 1 travel:
+  Changi Airport T4 -> Hotel Boss -> sightseeing -> Hotel Boss.
+- Airport and Hotel Boss are protected on Day 1 so they cannot accidentally be skipped/deleted again.
+- Removes these locations completely:
+  * Mobile Square — Far East Plaza
+  * CompAsia — Velocity @ Novena
+  * Carousell meetup — Bugis Junction
+- Also removes those three locations from previously saved routes / Other things to do.
+- Mister Mobile Bugis and Mister Mobile Chinatown remain.

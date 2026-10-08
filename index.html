@@ -373,9 +373,6 @@ const stops=[
 
 {id:"misterbugis",name:"Mister Mobile — Bugis Junction",lat:1.299605,lng:103.855485,day:1,type:"Indoor",priority:"Phone Shop",desc:"Used/refurbished phone retailer inside Bugis Junction, 200 Victoria St, #03-26A. Very close to the existing Bugis route, so this is included as a convenient phone-shopping stop.",photo:"Indoor shopping stop; compare condition, battery health and warranty"},
 {id:"misterchinatown",name:"Mister Mobile — Chinatown",lat:1.284056,lng:103.842167,day:2,type:"Indoor",priority:"Phone Shop",desc:"Mister Mobile at People's Park Complex, 1 Park Road #01-14. It sits beside the Chinatown route and is included as a convenient used-phone stop.",photo:"Indoor shopping stop; useful for price comparison"},
-{id:"mobilesquare",name:"Mobile Square — Far East Plaza",lat:1.307177,lng:103.833793,day:2,type:"Indoor",priority:"Optional Phone Shop",desc:"Established phone dealer at Far East Plaza, 14 Scotts Road #02-98. Good place to compare used phones with other shops in the same mall. It is not directly on the main Saturday route, so it starts in Other things to do.",photo:"Phone-shopping comparison stop near Orchard"},
-{id:"compasia",name:"CompAsia — Velocity @ Novena",lat:1.321673,lng:103.844119,day:1,type:"Indoor",priority:"Optional Phone Shop",desc:"Refurbished phone retailer at Velocity @ Novena Square, 238 Thomson Road #02-51. Quality-checked devices with warranty options. It is away from the main Friday walking route, so it starts in Other things to do.",photo:"Safer refurbished purchase / warranty-focused option"},
-{id:"carousellmeet",name:"Carousell meetup — Bugis Junction",lat:1.299605,lng:103.855485,day:1,type:"Indoor",priority:"Optional Phone Shopping",desc:"Carousell is a marketplace, not a shop. If you find a phone there, use a busy public meetup point such as Bugis Junction. Check IMEI/serial, battery health, cameras, Face ID/Touch ID, charging port and make sure there is no iCloud/Google lock before paying.",photo:"Marketplace meetup only; inspect the phone carefully"},
 {id:"jewel",name:"Jewel Changi Airport",lat:1.3603,lng:103.9898,day:3,type:"Indoor",priority:"Must See",desc:"Indoor airport complex centred on the Rain Vortex and tropical garden.",photo:"Morning / indoor light"},
 {id:"t4",name:"Changi Terminal 4",lat:1.3384,lng:103.9832,day:3,type:"Indoor",priority:"Must See",desc:"Your departure terminal for the flight home.",photo:"Travel/documentary shots"}
 ];
@@ -485,7 +482,7 @@ const mrtNetworks={
  ]
 };
 
-let state=JSON.parse(localStorage.getItem("sgTripV50")||"null")||{day:0,routes:masterPlans.map(x=>[...x]),skipped:[[],[],[],[]],modeOverrides:{}};
+let state=JSON.parse(localStorage.getItem("sgTripV51")||"null")||{day:0,routes:masterPlans.map(x=>[...x]),skipped:[[],[],[],[]],modeOverrides:{}};
 if(!Array.isArray(state.routes)||state.routes.length<4)state.routes=masterPlans.map(x=>[...x]);
 if(!Array.isArray(state.skipped))state.skipped=[[],[],[],[]];
 while(state.skipped.length<4)state.skipped.push([]);
@@ -503,9 +500,30 @@ function addOptionalIfMissing(day,id){
 }
 insertAfterIfMissing(1,"bugis","misterbugis");
 insertAfterIfMissing(2,"chinatown","misterchinatown");
-addOptionalIfMissing(2,"mobilesquare");
-addOptionalIfMissing(1,"compasia");
-addOptionalIfMissing(1,"carousellmeet");
+
+const removedPhoneStops=["mobilesquare","compasia","carousellmeet"];
+
+// Remove deleted optional phone-shopping items from any previously saved data.
+for(let d=0;d<4;d++){
+ state.routes[d]=(state.routes[d]||[]).filter(id=>!removedPhoneStops.includes(id));
+ state.skipped[d]=(state.skipped[d]||[]).filter(id=>!removedPhoneStops.includes(id));
+}
+
+// Restore the Day 1 travel anchors if they were previously skipped/deleted.
+// Required order:
+// Changi Airport T4 -> Hotel Boss -> sightseeing -> Hotel Boss.
+(function restoreArrivalDayTravel(){
+ let r=(state.routes[0]||[]).filter(id=>id!=="airport" && id!=="hotel");
+
+ // Keep the user's remaining Day 1 stops in their current order,
+ // but force the required arrival/departure anchors back in.
+ state.routes[0]=["airport","hotel",...r,"hotel"];
+
+ // Airport and Hotel Boss are required travel anchors, not skipped attractions.
+ state.skipped[0]=(state.skipped[0]||[]).filter(id=>id!=="airport" && id!=="hotel");
+})();
+save();
+
 save();
 
 let map=null,routeCoords=[],routeFeature=null,currentIndex=0,userPos=null,userMarker=null,watchId=null,drawerOpen=false,stopCoordIndex=[];
@@ -517,7 +535,7 @@ let drawerDragActive=false;
 let gpsFollow=false;
 let lastTouchY=null,routeScrollFloat=0;
 
-function save(){localStorage.setItem("sgTripV50",JSON.stringify(state))}
+function save(){localStorage.setItem("sgTripV51",JSON.stringify(state))}
 function byId(id){return stops.find(s=>s.id===id)}
 function routeStops(){return state.routes[state.day].map(byId).filter(Boolean)}
 function hav(a,b){const R=6371,p=Math.PI/180,dLat=(b.lat-a.lat)*p,dLon=(b.lng-a.lng)*p,la1=a.lat*p,la2=b.lat*p,x=Math.sin(dLat/2)**2+Math.cos(la1)*Math.cos(la2)*Math.sin(dLon/2)**2;return 2*R*Math.asin(Math.sqrt(x))}
@@ -1076,7 +1094,9 @@ function renderDrawer(){
        <button type="button" data-more-step="${i}">More</button>
        ${mode==="walk"?`<button type="button" data-mrt-step="${i}">MRT instead</button>`:""}
        ${mode==="mrt" && state.modeOverrides && state.modeOverrides[legKey(a,b)]==="mrt"?`<button type="button" data-clear-mode="${i}">Use normal route</button>`:""}
-       <button type="button" class="skip-btn" data-skip-step="${i}">Skip this stop</button>
+       ${((state.day===0 && (b.id==="hotel" || b.id==="airport")) || (state.day===3 && b.id==="t4"))
+          ? ""
+          : `<button type="button" class="skip-btn" data-skip-step="${i}">Skip this stop</button>`}
       </div>
 
       <div class="step-more" id="step-more-${i}">
