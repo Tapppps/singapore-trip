@@ -264,6 +264,25 @@ button{font:inherit}
  font-size:12px!important;
  color:#26313c!important;
 }
+
+/* V53 location type + cost */
+.stop-meta{
+ display:flex;gap:6px;flex-wrap:wrap;margin:5px 0 6px
+}
+.place-type,.place-cost{
+ display:inline-flex;align-items:center;
+ min-height:22px;padding:3px 7px;border-radius:999px;
+ font-size:10px;font-weight:800;border:1px solid var(--line);
+ background:#f5f7f9;color:#333
+}
+.place-type.indoor{background:#eef5ff}
+.place-type.outdoor{background:#f1f8ef}
+.place-type.mixed{background:#f7f3ff}
+.place-cost.free{
+ background:#eaf7ee;
+ border-color:#cce8d3;
+ color:#176b34
+}
 </style>
 </head>
 <body>
@@ -380,9 +399,64 @@ const stops=[
 
 {id:"misterbugis",name:"Mister Mobile — Bugis Junction",lat:1.299605,lng:103.855485,day:1,type:"Indoor",priority:"Phone Shop",desc:"Used/refurbished phone retailer inside Bugis Junction, 200 Victoria St, #03-26A. Very close to the existing Bugis route, so this is included as a convenient phone-shopping stop.",photo:"Indoor shopping stop; compare condition, battery health and warranty"},
 {id:"misterchinatown",name:"Mister Mobile — Chinatown",lat:1.284056,lng:103.842167,day:2,type:"Indoor",priority:"Phone Shop",desc:"Mister Mobile at People's Park Complex, 1 Park Road #01-14. It sits beside the Chinatown route and is included as a convenient used-phone stop.",photo:"Indoor shopping stop; useful for price comparison"},
+{id:"botanic",name:"Singapore Botanic Gardens",lat:1.3138,lng:103.8159,day:1,type:"Outdoor",priority:"Optional",desc:"UNESCO-listed tropical garden with lakes, rainforest paths and landscaped gardens. The main gardens are free. Optional National Orchid Garden is inside and ticketed.",photo:"Best in the morning or later afternoon; shaded but mainly outdoors"},
 {id:"jewel",name:"Jewel Changi Airport",lat:1.3603,lng:103.9898,day:3,type:"Indoor",priority:"Must See",desc:"Indoor airport complex centred on the Rain Vortex and tropical garden.",photo:"Morning / indoor light"},
 {id:"t4",name:"Changi Terminal 4",lat:1.3384,lng:103.9832,day:3,type:"Indoor",priority:"Must See",desc:"Your departure terminal for the flight home.",photo:"Travel/documentary shots"}
 ];
+
+const stopCosts={
+ airport:{label:"FREE",detail:"No attraction entry fee. MRT/transport costs extra."},
+ hotel:{label:"PREPAID / varies",detail:"Hotel stay cost depends on your booking; no separate attraction fee."},
+ fullerton:{label:"FREE",detail:"Public waterfront promenade."},
+ jubilee:{label:"FREE",detail:"Public pedestrian bridge."},
+ esplanade:{label:"FREE",detail:"Waterfront promenade is free; paid performances are optional."},
+ merlion:{label:"FREE",detail:"Public park and viewpoint."},
+ helix:{label:"FREE",detail:"Public pedestrian bridge."},
+ mbs:{label:"FREE",detail:"Promenade and mall entry are free; shopping/food cost extra."},
+ spectra:{label:"FREE",detail:"Spectra light & water show is free."},
+ gardens:{label:"FREE",detail:"Outdoor Gardens by the Bay and Supertree areas are free; conservatories are ticketed."},
+ flowerdome:{label:"S$46 adult",detail:"Current non-resident adult ticket is S$46 for Flower Dome + Cloud Forest. Tourist pricing can change."},
+ flyer:{label:"S$40 adult",detail:"Standard Singapore Flyer ticket currently S$40 adult."},
+ f1:{label:"FREE",detail:"Walking public-road sections of the street circuit is free outside ticketed race events."},
+ sultan:{label:"FREE",detail:"No standard admission fee; donations may be welcomed."},
+ bussorah:{label:"FREE",detail:"Public pedestrian street."},
+ muscat:{label:"FREE",detail:"Public street / arch area."},
+ baghdad:{label:"FREE",detail:"Public streets."},
+ tan:{label:"FREE",detail:"Exterior viewpoint / public street area."},
+ clive:{label:"FREE",detail:"Public street murals."},
+ serangoon:{label:"FREE",detail:"Public street walk."},
+ haji:{label:"FREE",detail:"Public lane; cafés and shopping extra."},
+ arab:{label:"FREE",detail:"Public street; cafés and shopping extra."},
+ bugis:{label:"FREE",detail:"Free to enter/browse; shopping and food extra."},
+ bugisplus:{label:"FREE",detail:"Mall entry is free; shopping, food and cinema extra."},
+ littleindia:{label:"FREE",detail:"Free to browse; purchases extra."},
+ tekka:{label:"FREE",detail:"Free to enter; food and shopping extra."},
+ somerset313:{label:"FREE",detail:"Mall entry is free; shopping and food extra."},
+ fort:{label:"FREE",detail:"Public park."},
+ hillstreet:{label:"FREE",detail:"Exterior/photo stop from public area."},
+ cavenagh:{label:"FREE",detail:"Public bridge."},
+ anderson:{label:"FREE",detail:"Public bridge."},
+ annsiang:{label:"FREE",detail:"Public street / hill area."},
+ telokayer:{label:"FREE",detail:"Public street."},
+ clarke:{label:"FREE",detail:"Public riverside area; food/drinks extra."},
+ rivercruise:{label:"S$28 adult",detail:"Singapore River Experience is currently S$28 adult / S$18 child and lasts about 40 minutes."},
+ boat:{label:"FREE",detail:"Public riverside promenade."},
+ chinatown:{label:"FREE",detail:"Public street market area; shopping/food extra."},
+ laupasat:{label:"FREE",detail:"Free to enter; food/drinks extra."},
+ vivo:{label:"FREE",detail:"Mall entry is free; shopping/food extra."},
+ sensoryscape:{label:"FREE",detail:"Public Sentosa Sensoryscape walkway."},
+ beachstation:{label:"FREE",detail:"Public transport hub; onward transport/attractions may cost extra."},
+ palawan:{label:"FREE",detail:"Public beach."},
+ misterbugis:{label:"FREE",detail:"Free to browse; phone purchase depends on device."},
+ misterchinatown:{label:"FREE",detail:"Free to browse; phone purchase depends on device."},
+ botanic:{label:"FREE",detail:"Singapore Botanic Gardens entry is free. National Orchid Garden: S$15 standard adult / S$3 standard senior 60+."},
+ jewel:{label:"FREE",detail:"Jewel and Rain Vortex viewing are free; paid attractions, food and shopping extra."},
+ t4:{label:"FREE",detail:"No attraction entry fee; flight/airport purchases extra."}
+};
+function costForStop(stop){
+ return stopCosts[stop.id] || {label:"FREE",detail:"No known admission charge; spending is optional."};
+}
+
 const masterPlans=[
  ["airport","hotel","fullerton","merlion","jubilee","esplanade","helix","mbs","spectra","gardens","flowerdome","f1","hotel"],
  ["hotel","sultan","bussorah","muscat","baghdad","arab","haji","bugis","misterbugis","littleindia","tan","clive","serangoon","tekka","hotel"],
@@ -489,10 +563,18 @@ const mrtNetworks={
  ]
 };
 
-let state=JSON.parse(localStorage.getItem("sgTripV52")||"null")||{day:0,routes:masterPlans.map(x=>[...x]),skipped:[[],[],[],[]],modeOverrides:{}};
+let state=JSON.parse(localStorage.getItem("sgTripV53")||"null")||{day:0,routes:masterPlans.map(x=>[...x]),skipped:[[],[],[],[]],modeOverrides:{}};
 if(!Array.isArray(state.routes)||state.routes.length<4)state.routes=masterPlans.map(x=>[...x]);
 if(!Array.isArray(state.skipped))state.skipped=[[],[],[],[]];
 while(state.skipped.length<4)state.skipped.push([]);
+
+for(let d=0;d<4;d++){
+ if(!(state.routes[d]||[]).includes("botanic") && !(state.skipped[d]||[]).includes("botanic")){
+  state.skipped[d].push("botanic");
+ }
+}
+save();
+
 
 function insertAfterIfMissing(day,afterId,newId){
  const route=state.routes[day]||[];
@@ -543,7 +625,7 @@ let drawerDragActive=false;
 let gpsFollow=false;
 let lastTouchY=null,routeScrollFloat=0;
 
-function save(){localStorage.setItem("sgTripV52",JSON.stringify(state))}
+function save(){localStorage.setItem("sgTripV53",JSON.stringify(state))}
 function byId(id){return stops.find(s=>s.id===id)}
 function routeStops(){return state.routes[state.day].map(byId).filter(Boolean)}
 function hav(a,b){const R=6371,p=Math.PI/180,dLat=(b.lat-a.lat)*p,dLon=(b.lng-a.lng)*p,la1=a.lat*p,la2=b.lat*p,x=Math.sin(dLat/2)**2+Math.cos(la1)*Math.cos(la2)*Math.sin(dLon/2)**2;return 2*R*Math.asin(Math.sqrt(x))}
@@ -798,7 +880,7 @@ function showMapStepPopup(stopIndex){
  wrap.appendChild(title);
 
  const p=document.createElement("p");
- p.innerHTML=`<span class="distance">${distance}</span>${stop.desc?`<br>${stop.desc}`:""}`;
+ p.innerHTML=`<span class="distance">${distance}</span><br><b>${stop.type}</b> · <b>${costForStop(stop).label}</b>${stop.desc?`<br>${stop.desc}`:""}`;
  wrap.appendChild(p);
 
  const btn=document.createElement("button");
@@ -1123,7 +1205,12 @@ function renderOtherThings(){
    if(!s)return "";
    return `<div class="other-item">
      <h3>${s.name}</h3>
+     <div class="stop-meta">
+      <span class="place-type ${s.type.toLowerCase()}">${s.type}</span>
+      <span class="place-cost ${costForStop(s).label==="FREE"?"free":""}">${costForStop(s).label}</span>
+     </div>
      <p>${s.desc||""}</p>
+     <p><b>Cost:</b> ${costForStop(s).detail}</p>
      ${(s.priority||"").includes("Phone")?`<div class="phone-note">Phone shopping stop — add it only if you want to compare or buy a handset.</div>`:""}
      ${s.photo?`<p><b>Note:</b> ${s.photo}</p>`:""}
      <button type="button" data-addback="${s.id}">Add back to today</button>
@@ -1156,6 +1243,10 @@ function renderDrawer(){
      ${travelBubble(mode,i+1)}
      <div style="min-width:0;flex:1">
       <h3>${a.name} → ${b.name}</h3>
+      <div class="stop-meta">
+       <span class="place-type ${a.type.toLowerCase()}">${a.type}</span>
+       <span class="place-cost ${costForStop(a).label==="FREE"?"free":""}">${costForStop(a).label}</span>
+      </div>
       <p class="step-estimate"><b>${mode==="walk"?"Walk":mode==="river"?"River cruise":"MRT"}:</b> ${estimateTextForStep(a,b)}</p>
       <p>${a.desc||""}</p>
 
@@ -1172,6 +1263,8 @@ function renderDrawer(){
       <div class="step-more" id="step-more-${i}">
        <p><b>At ${a.name}:</b> ${a.desc||"Continue along the planned route."}</p>
        <p><b>Next stop — ${b.name}:</b> ${b.desc||""}</p>
+       <p><b>Location:</b> ${b.type} · <b>Cost:</b> ${costForStop(b).label}</p>
+       <p>${costForStop(b).detail}</p>
        ${b.photo?`<p><b>Photo tip:</b> ${b.photo}</p>`:""}
        <p><b>Nearby:</b><br>${nearbyDetailForStop(b)}</p>
        <p><b>Travel:</b> ${mode==="walk"?"Walking route":mode==="river"?"River cruise":"MRT / public transport route"} · ${estimateTextForStep(a,b)}.</p>

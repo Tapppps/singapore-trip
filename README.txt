@@ -1,17 +1,14 @@
-Singapore Trip App V52
+Singapore Trip App V53
 
-Each Today's Route card now shows estimated travel distance and time.
-
-Walking:
-- Uses actual routed walking geometry when available.
-- Time assumes a comfortable sightseeing pace of about 4.5 km/h.
-
-MRT:
-- Shows approximate distance plus estimated journey time.
-- Time includes an allowance for walking into/out of stations, station-to-station travel, and extra time for line changes.
-
-River cruise:
-- Shows the routed water distance.
-- Uses approximately 40 minutes for the sightseeing cruise loop.
-
-The collapsed route summary and expanded More details also include the estimate.
+Adds:
+- Singapore Botanic Gardens to Other things to do on every day, so it can be added to any day's route.
+- Every route card now shows whether the location is Indoor / Outdoor / Mixed.
+- Every location shows a cost / admission label.
+- FREE attractions are clearly highlighted.
+- Paid highlights include:
+  * Singapore Flyer: S$40 adult
+  * Singapore River Cruise: S$28 adult
+  * Flower Dome/Cloud Forest tourist combo: S$46 adult
+  * Botanic Gardens: FREE
+  * National Orchid Garden: S$15 standard adult / S$3 standard senior 60+
+- Other things to do and map-step popups also show Indoor/Outdoor and cost information.
