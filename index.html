@@ -223,6 +223,40 @@ button{font:inherit}
 #drawer.expanded #drawerBody{
  padding-top:14px;
 }
+
+/* V50 GPS direction pointer */
+.user-location-wrap{
+ position:relative;
+ width:28px;
+ height:28px;
+}
+.user-location-dot{
+ position:absolute;
+ left:8px;top:8px;
+ width:12px;height:12px;
+ border-radius:50%;
+ background:#1677FF;
+ border:3px solid #fff;
+ box-shadow:0 0 0 2px rgba(22,119,255,.25);
+}
+.user-location-arrow{
+ position:absolute;
+ left:7px;
+ top:-5px;
+ width:14px;
+ height:16px;
+ transform-origin:50% 19px;
+}
+.user-location-arrow:before{
+ content:"";
+ position:absolute;
+ left:3px;top:0;
+ width:0;height:0;
+ border-left:4px solid transparent;
+ border-right:4px solid transparent;
+ border-bottom:10px solid #1677FF;
+ filter:drop-shadow(0 1px 1px rgba(0,0,0,.2));
+}
 </style>
 </head>
 <body>
@@ -451,7 +485,7 @@ const mrtNetworks={
  ]
 };
 
-let state=JSON.parse(localStorage.getItem("sgTripV49")||"null")||{day:0,routes:masterPlans.map(x=>[...x]),skipped:[[],[],[],[]],modeOverrides:{}};
+let state=JSON.parse(localStorage.getItem("sgTripV50")||"null")||{day:0,routes:masterPlans.map(x=>[...x]),skipped:[[],[],[],[]],modeOverrides:{}};
 if(!Array.isArray(state.routes)||state.routes.length<4)state.routes=masterPlans.map(x=>[...x]);
 if(!Array.isArray(state.skipped))state.skipped=[[],[],[],[]];
 while(state.skipped.length<4)state.skipped.push([]);
@@ -475,13 +509,15 @@ addOptionalIfMissing(1,"carousellmeet");
 save();
 
 let map=null,routeCoords=[],routeFeature=null,currentIndex=0,userPos=null,userMarker=null,watchId=null,drawerOpen=false,stopCoordIndex=[];
+let userHeading=null;
+let headingWatchBound=false;
 let stepPopup=null;
 let drawerDragStartY=null;
 let drawerDragActive=false;
 let gpsFollow=false;
 let lastTouchY=null,routeScrollFloat=0;
 
-function save(){localStorage.setItem("sgTripV49",JSON.stringify(state))}
+function save(){localStorage.setItem("sgTripV50",JSON.stringify(state))}
 function byId(id){return stops.find(s=>s.id===id)}
 function routeStops(){return state.routes[state.day].map(byId).filter(Boolean)}
 function hav(a,b){const R=6371,p=Math.PI/180,dLat=(b.lat-a.lat)*p,dLon=(b.lng-a.lng)*p,la1=a.lat*p,la2=b.lat*p,x=Math.sin(dLat/2)**2+Math.cos(la1)*Math.cos(la2)*Math.sin(dLon/2)**2;return 2*R*Math.asin(Math.sqrt(x))}
@@ -950,13 +986,23 @@ function isRequiredStopIndex(i,rs){
 }
 function skipStep(stepIndex){
  const rs=routeStops();
- const targetIndex=stepIndex+1; // skip the destination of this step, preserving the current location
+ const targetIndex=stepIndex+1;
  if(targetIndex<=0 || targetIndex>=rs.length)return;
+
  const stop=rs[targetIndex];
  if(!stop)return;
 
+ state.skipped=state.skipped||[[],[],[],[]];
+ while(state.skipped.length<4)state.skipped.push([]);
+
+ // Always save skipped stop in Other things to do.
+ if(!state.skipped[state.day].includes(stop.id)){
+  state.skipped[state.day].push(stop.id);
+ }
+
+ // Remove only that stop from today's active route.
  state.routes[state.day]=state.routes[state.day].filter(id=>id!==stop.id);
- if(!state.skipped[state.day].includes(stop.id))state.skipped[state.day].push(stop.id);
+
  save();
  renderHeader();
  renderDrawer();
@@ -982,7 +1028,7 @@ function renderOtherThings(){
  if(count)count.textContent=ids.length;
  if(!list)return;
  if(!ids.length){
-   list.innerHTML='<div class="other-item"><p>No skipped stops yet.</p></div>';
+   list.innerHTML='<div class="other-item"><p>No skipped stops yet. Anything you choose “Skip this stop” for will appear here.</p></div>';
    return;
  }
  list.innerHTML=ids.map(id=>{
@@ -1085,18 +1131,75 @@ async function setDay(i){
 }
 function goCurrent(){gpsFollow=true;if(userPos)syncGps(true);else locateMe()}
 function locateMe(){
+ bindDeviceHeading();
  gpsFollow=true;
  if(!navigator.geolocation){alert("GPS is not available in this browser.");return}
  navigator.geolocation.getCurrentPosition(p=>{userPos={lng:p.coords.longitude,lat:p.coords.latitude};drawUser();syncGps(true);startWatch()},()=>alert("Allow location access for GPS route following."),{enableHighAccuracy:true,timeout:10000,maximumAge:10000})
 }
-function drawUser(){
- if(userMarker)userMarker.remove();
- const el=document.createElement("div");el.style.cssText="width:18px;height:18px;border-radius:50%;background:#1677ff;border:4px solid white;box-shadow:0 2px 8px #0005";
- userMarker=new maplibregl.Marker({element:el}).setLngLat([userPos.lng,userPos.lat]).addTo(map)
+function applyUserHeading(){
+ if(!userMarker)return;
+ const el=userMarker.getElement ? userMarker.getElement() : null;
+ const arrow=el?.querySelector(".user-location-arrow");
+ if(!arrow)return;
+ if(Number.isFinite(userHeading)){
+  arrow.style.display="block";
+  arrow.style.transform=`rotate(${userHeading}deg)`;
+ }else{
+  arrow.style.display="none";
+ }
 }
-function startWatch(){
- if(watchId!==null)return;
- watchId=navigator.geolocation.watchPosition(p=>{userPos={lng:p.coords.longitude,lat:p.coords.latitude};drawUser();syncGps(false)},()=>{},{enableHighAccuracy:true,maximumAge:10000,timeout:12000})
+function drawUser(){
+ if(!userPos)return;
+
+ if(!userMarker){
+  const el=document.createElement("div");
+  el.className="user-location-wrap";
+  el.innerHTML='<div class="user-location-arrow"></div><div class="user-location-dot"></div>';
+  userMarker=new maplibregl.Marker({element:el,anchor:"center"})
+    .setLngLat([userPos.lng,userPos.lat])
+    .addTo(map);
+ }else{
+  userMarker.setLngLat([userPos.lng,userPos.lat]);
+ }
+
+ applyUserHeading();
+}
+function bindDeviceHeading(){
+ if(headingWatchBound)return;
+ headingWatchBound=true;
+
+ const update=e=>{
+  let h=null;
+
+  // iOS Safari provides webkitCompassHeading.
+  if(Number.isFinite(e.webkitCompassHeading)){
+   h=e.webkitCompassHeading;
+  }else if(Number.isFinite(e.alpha)){
+   // Approximate compass heading from device orientation.
+   h=(360-e.alpha)%360;
+  }
+
+  if(Number.isFinite(h)){
+   userHeading=h;
+   applyUserHeading();
+  }
+ };
+
+ const attach=()=>{
+  if("DeviceOrientationEvent" in window){
+   window.addEventListener("deviceorientationabsolute",update,true);
+   window.addEventListener("deviceorientation",update,true);
+  }
+ };
+
+ if(typeof DeviceOrientationEvent!=="undefined" &&
+    typeof DeviceOrientationEvent.requestPermission==="function"){
+   DeviceOrientationEvent.requestPermission()
+     .then(state=>{if(state==="granted")attach()})
+     .catch(()=>{});
+ }else{
+   attach();
+ }
 }
 function syncGps(animate){
  if(stepPopup){stepPopup.remove();stepPopup=null}
