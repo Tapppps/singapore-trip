@@ -200,6 +200,15 @@ button{font:inherit}
  margin-top:6px;padding:7px 9px;border-radius:10px;background:#f5f7fa;
  font-size:11px;line-height:1.4;color:#47515d
 }
+
+/* V47 drawer closing */
+#drawer .handle{
+ touch-action:none;
+ cursor:grab;
+ padding:10px 0 8px;
+}
+#drawer .handle:active{cursor:grabbing}
+#drawer{transition:transform .22s ease,height .22s ease}
 </style>
 </head>
 <body>
@@ -240,7 +249,7 @@ button{font:inherit}
    <h2 id="summaryTitle">Loading current step…</h2>
    <p id="summaryText">Street and direction details will appear here.</p>
   </div>
-  <button class="more" id="drawerMore">More</button>
+  <button class="more" id="drawerMore">More</button><button class="more" id="drawerClose" style="display:none">Close</button>
  </div>
  <div id="drawerBody"></div>
 </div>
@@ -428,7 +437,7 @@ const mrtNetworks={
  ]
 };
 
-let state=JSON.parse(localStorage.getItem("sgTripV46")||"null")||{day:0,routes:masterPlans.map(x=>[...x]),skipped:[[],[],[],[]],modeOverrides:{}};
+let state=JSON.parse(localStorage.getItem("sgTripV47")||"null")||{day:0,routes:masterPlans.map(x=>[...x]),skipped:[[],[],[],[]],modeOverrides:{}};
 if(!Array.isArray(state.routes)||state.routes.length<4)state.routes=masterPlans.map(x=>[...x]);
 if(!Array.isArray(state.skipped))state.skipped=[[],[],[],[]];
 while(state.skipped.length<4)state.skipped.push([]);
@@ -453,10 +462,12 @@ save();
 
 let map=null,routeCoords=[],routeFeature=null,currentIndex=0,userPos=null,userMarker=null,watchId=null,drawerOpen=false,stopCoordIndex=[];
 let stepPopup=null;
+let drawerDragStartY=null;
+let drawerDragActive=false;
 let gpsFollow=false;
 let lastTouchY=null,routeScrollFloat=0;
 
-function save(){localStorage.setItem("sgTripV46",JSON.stringify(state))}
+function save(){localStorage.setItem("sgTripV47",JSON.stringify(state))}
 function byId(id){return stops.find(s=>s.id===id)}
 function routeStops(){return state.routes[state.day].map(byId).filter(Boolean)}
 function hav(a,b){const R=6371,p=Math.PI/180,dLat=(b.lat-a.lat)*p,dLon=(b.lng-a.lng)*p,la1=a.lat*p,la2=b.lat*p,x=Math.sin(dLat/2)**2+Math.cos(la1)*Math.cos(la2)*Math.sin(dLon/2)**2;return 2*R*Math.asin(Math.sqrt(x))}
@@ -723,14 +734,17 @@ function showMapStepPopup(stopIndex){
    selectStep(routeStep,true);
    toggleDrawer(true);
 
+   const drawerEl=document.getElementById("drawer");
+   if(drawerEl)drawerEl.style.transform="";
+
    setTimeout(()=>{
      const card=document.querySelector(`#drawerBody .stepcard[data-step="${routeStep}"]`);
      if(card){
        document.querySelectorAll("#drawerBody .stepcard").forEach(x=>x.classList.remove("active"));
        card.classList.add("active");
-       card.scrollIntoView({behavior:"smooth",block:"nearest"});
+       card.scrollIntoView({behavior:"smooth",block:"center"});
      }
-   },80);
+   },120);
  });
 
  wrap.appendChild(btn);
@@ -1042,10 +1056,13 @@ function renderDrawer(){
 function highlightDrawer(step){document.querySelectorAll(".stepcard").forEach(c=>c.classList.toggle("active",Number(c.dataset.step)===step))}
 function toggleDrawer(force){
  drawerOpen=typeof force==="boolean"?force:!drawerOpen;
+ if(drawer)drawer.style.transform="";
  drawer.classList.toggle("expanded",drawerOpen);
  drawer.classList.toggle("collapsed",!drawerOpen);
  const b=document.getElementById("drawerMore");
  if(b)b.textContent=drawerOpen?"Hide":"More";
+ const c=document.getElementById("drawerClose");
+ if(c)c.style.display=drawerOpen?"inline-flex":"none";
 }
 function openDays(){daySheet.classList.add("open")} function closeDays(){daySheet.classList.remove("open")}
 function renderDays(){
@@ -1112,6 +1129,38 @@ function wireV36Buttons(){
  on("btnFitMap",fitRoute);
  on("drawerHandle",()=>toggleDrawer());
  on("drawerMore",e=>{e.stopPropagation();toggleDrawer()});
+
+ on("drawerClose",e=>{e.stopPropagation();toggleDrawer(false)});
+
+ const drawerEl=document.getElementById("drawer");
+ const handleEl=document.getElementById("drawerHandle") || drawerEl?.querySelector(".handle");
+
+ const drawerPointerDown=e=>{
+   if(!drawerOpen)return;
+   drawerDragStartY=e.clientY;
+   drawerDragActive=true;
+   try{e.currentTarget.setPointerCapture(e.pointerId)}catch(_){}
+ };
+ const drawerPointerMove=e=>{
+   if(!drawerDragActive || drawerDragStartY===null)return;
+   const dy=e.clientY-drawerDragStartY;
+   if(dy>0 && drawerEl)drawerEl.style.transform=`translateY(${Math.min(dy,160)}px)`;
+ };
+ const drawerPointerUp=e=>{
+   if(!drawerDragActive || drawerDragStartY===null)return;
+   const dy=e.clientY-drawerDragStartY;
+   drawerDragActive=false;
+   drawerDragStartY=null;
+   if(drawerEl)drawerEl.style.transform="";
+   if(dy>55)toggleDrawer(false);
+ };
+ if(handleEl){
+   ["pointerdown","pointermove","pointerup","pointercancel"].forEach(type=>{
+     const fn=type==="pointerdown"?drawerPointerDown:type==="pointermove"?drawerPointerMove:drawerPointerUp;
+     handleEl.addEventListener(type,fn);
+   });
+ }
+
  on("btnCloseDays",closeDays);
  on("btnOtherThings",()=>{renderOtherThings();document.getElementById("otherSheet")?.classList.add("open")});
  on("btnCloseOther",()=>document.getElementById("otherSheet")?.classList.remove("open"));
