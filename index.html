@@ -323,6 +323,42 @@ button{font:inherit}
  width:20px;height:20px;
  font-size:14px;
 }
+
+/* V57 zoomed-in POIs */
+.zoom-poi-dot{
+ width:11px;
+ height:11px;
+ border-radius:50%;
+ border:2px solid #fff;
+ box-shadow:0 1px 4px rgba(0,0,0,.35);
+ cursor:pointer;
+}
+#poiLegend{
+ position:fixed;
+ left:10px;
+ top:151px;
+ z-index:1099;
+ display:flex;
+ gap:7px;
+ flex-wrap:wrap;
+ max-width:300px;
+ background:rgba(255,255,255,.9);
+ border:1px solid var(--line);
+ border-radius:12px;
+ padding:5px 7px;
+ font-size:9px;
+ box-shadow:0 2px 7px rgba(0,0,0,.06);
+}
+#poiLegend span{display:flex;align-items:center;gap:3px}
+#poiLegend i{width:8px;height:8px;border-radius:50%;display:inline-block}
+#poiLegend .attraction{background:#1677FF}
+#poiLegend .shopping{background:#7b61ff}
+#poiLegend .mrt{background:#E32017}
+#poiLegend .toilet{background:#4f6b7a}
+#poiLegend .smoking{background:#8b6b4a}
+@media(max-width:699px){
+ #poiLegend{top:154px;max-width:260px}
+}
 </style>
 </head>
 <body>
@@ -346,6 +382,13 @@ button{font:inherit}
 <div id="map"></div>
 </div>
 
+<div id="poiLegend">
+ <span><i class="attraction"></i>Places</span>
+ <span><i class="shopping"></i>Shops</span>
+ <span><i class="mrt"></i>MRT</span>
+ <span><i class="toilet"></i>Toilet</span>
+ <span><i class="smoking"></i>Smoking</span>
+</div>
 <div id="routeKey">
  <span><i class="walk"></i>Walk</span>
  <span><i class="mrt"></i>MRT</span>
@@ -439,6 +482,7 @@ const stops=[
 {id:"telokayer",name:"Telok Ayer Street",lat:1.2824,lng:103.8484,day:2,type:"Outdoor",priority:"Would Like",desc:"Historic street of preserved façades and temples linking Chinatown with the CBD.",photo:"Daylight architectural details"},
 {id:"clarke",name:"Clarke Quay",lat:1.2906,lng:103.8465,day:2,type:"Mixed",priority:"Would Like",desc:"Colourful riverside district with restored warehouses and river views.",photo:"Late afternoon into evening"},
 {id:"rivercruise",name:"Singapore River Cruise",lat:1.2906,lng:103.8465,day:2,type:"Mixed",priority:"Optional",desc:"Optional sightseeing boat loop starting and finishing at Clarke Quay Jetty, passing Boat Quay, Merlion / Marina Bay, Marina Bay Sands and the Esplanade area before returning to Clarke Quay.",photo:"Best around sunset into blue hour for skyline and reflections"},
+{id:"southbridge",name:"Southbridge Rooftop",lat:1.28725,lng:103.84933,day:2,type:"Mixed",priority:"Optional",desc:"Rooftop bar above Boat Quay with river and city skyline views. Good value rooftop option directly beside the Saturday route.",photo:"Best around sunset / early evening for river and skyline views"},
 {id:"boat",name:"Boat Quay",lat:1.2875,lng:103.8498,day:2,type:"Outdoor",priority:"Would Like",desc:"Historic Singapore River promenade lined with shophouses and skyline views.",photo:"Blue hour / night reflections"},
 {id:"chinatown",name:"Chinatown Street Market",lat:1.2838,lng:103.8435,day:2,type:"Mixed",priority:"Must See",desc:"Lively streets of traditional shophouses, markets, food and souvenirs.",photo:"Late afternoon / evening lights"},
 {id:"laupasat",name:"Lau Pa Sat",lat:1.2806,lng:103.8504,day:2,type:"Indoor",priority:"Would Like",desc:"Historic covered food hall in the CBD, good for an inexpensive meal and shelter.",photo:"Evening exterior / food scenes"},
@@ -453,6 +497,50 @@ const stops=[
 {id:"jewel",name:"Jewel Changi Airport",lat:1.3603,lng:103.9898,day:3,type:"Indoor",priority:"Must See",desc:"Indoor airport complex centred on the Rain Vortex and tropical garden.",photo:"Morning / indoor light"},
 {id:"t4",name:"Changi Terminal 4",lat:1.3384,lng:103.9832,day:3,type:"Indoor",priority:"Must See",desc:"Your departure terminal for the flight home.",photo:"Travel/documentary shots"}
 ];
+
+
+const extraMapPOIs=[
+ {id:"shop-bugis-junction",name:"Bugis Junction",lat:1.29953,lng:103.85554,category:"Shopping",detail:"Main Friday shopping mall. Fashion, cafés, restaurants, phone shops and indoor wet-weather shelter."},
+ {id:"shop-bugis-plus",name:"Bugis+",lat:1.29998,lng:103.85496,category:"Shopping",detail:"Modern indoor mall opposite Bugis Junction, with fashion, food and cinema."},
+ {id:"shop-bugis-street",name:"Bugis Street",lat:1.30073,lng:103.85511,category:"Shopping",detail:"Budget clothing, souvenirs and snacks. Partly sheltered."},
+ {id:"shop-mbs",name:"The Shoppes at Marina Bay Sands",lat:1.28357,lng:103.86072,category:"Shopping",detail:"Large indoor mall on the Thursday Marina route."},
+ {id:"shop-marina-square",name:"Marina Square",lat:1.29132,lng:103.85709,category:"Shopping",detail:"Large indoor mall beside Esplanade; useful in heavy rain."},
+ {id:"shop-suntec",name:"Suntec City",lat:1.29354,lng:103.85723,category:"Shopping",detail:"Very large indoor mall with many shops and restaurants."},
+ {id:"shop-chinatown-point",name:"Chinatown Point",lat:1.28584,lng:103.84468,category:"Shopping",detail:"Air-conditioned mall beside Chinatown MRT."},
+ {id:"shop-peoples-park",name:"People's Park Complex",lat:1.28420,lng:103.84212,category:"Shopping",detail:"Older local mall with phone shops, food and budget retail."},
+
+ {id:"toilet-bugis",name:"Toilets — Bugis Junction",lat:1.29953,lng:103.85554,category:"Toilet",detail:"Public toilets inside Bugis Junction."},
+ {id:"toilet-tekka",name:"Toilets — Tekka Centre",lat:1.30666,lng:103.85082,category:"Toilet",detail:"Public toilets within Tekka Centre."},
+ {id:"toilet-fort",name:"Toilets — Fort Canning Centre",lat:1.29556,lng:103.84631,category:"Toilet",detail:"Public toilets near Fort Canning Centre."},
+ {id:"toilet-chinatown",name:"Toilets — Chinatown Complex",lat:1.28265,lng:103.84315,category:"Toilet",detail:"Public toilets inside Chinatown Complex."},
+ {id:"toilet-laupasat",name:"Toilets — Lau Pa Sat",lat:1.28063,lng:103.85042,category:"Toilet",detail:"Public toilets within Lau Pa Sat."},
+ {id:"toilet-mbs",name:"Toilets — Marina Bay Sands",lat:1.28357,lng:103.86072,category:"Toilet",detail:"Public toilets inside The Shoppes at Marina Bay Sands."},
+ {id:"toilet-gardens",name:"Toilets — Gardens by the Bay",lat:1.28157,lng:103.86361,category:"Toilet",detail:"Public toilets in the Gardens by the Bay visitor areas."},
+ {id:"toilet-jewel",name:"Toilets — Jewel Changi",lat:1.36021,lng:103.98916,category:"Toilet",detail:"Public toilets throughout Jewel Changi Airport."},
+
+ {id:"smoke-t4",name:"Smoking Area — Changi T4",lat:1.33975,lng:103.98353,category:"Smoking",detail:"Use the designated smoking area shown by current airport signage."},
+ {id:"smoke-bugis",name:"Smoking Area — Bugis area",lat:1.30015,lng:103.85625,category:"Smoking",detail:"Use only a clearly marked Designated Smoking Area; local signage takes priority."},
+ {id:"smoke-chinatown",name:"Smoking Area — Chinatown area",lat:1.28484,lng:103.84338,category:"Smoking",detail:"Use only a clearly marked Designated Smoking Area; check on-site signage."},
+
+ {id:"mrt-lavender",name:"Lavender MRT EW11",lat:1.30722,lng:103.86292,category:"MRT",detail:"Nearest MRT to Hotel Boss. East–West Line."},
+ {id:"mrt-bugis",name:"Bugis MRT EW12 / DT14",lat:1.30089,lng:103.85651,category:"MRT",detail:"East–West and Downtown Line interchange."},
+ {id:"mrt-littleindia",name:"Little India MRT NE7 / DT12",lat:1.30680,lng:103.84960,category:"MRT",detail:"North East and Downtown Line interchange."},
+ {id:"mrt-chinatown",name:"Chinatown MRT NE4 / DT19",lat:1.28423,lng:103.84319,category:"MRT",detail:"North East and Downtown Line interchange."},
+ {id:"mrt-clarkequay",name:"Clarke Quay MRT NE5",lat:1.28847,lng:103.84687,category:"MRT",detail:"North East Line."},
+ {id:"mrt-bayfront",name:"Bayfront MRT CE1 / DT16",lat:1.28168,lng:103.85919,category:"MRT",detail:"Best MRT for Marina Bay Sands and Gardens by the Bay."},
+ {id:"mrt-promenade",name:"Promenade MRT CC4 / DT15",lat:1.29302,lng:103.86039,category:"MRT",detail:"Circle and Downtown Line interchange near Marina Square / Suntec."},
+ {id:"mrt-changi",name:"Changi Airport MRT CG2",lat:1.35733,lng:103.98837,category:"MRT",detail:"Airport MRT at Terminals 2/3. Terminal 4 uses the free shuttle transfer."},
+ {id:"mrt-expo",name:"Expo MRT CG1 / DT35",lat:1.33537,lng:103.96147,category:"MRT",detail:"Airport branch and Downtown Line interchange."},
+ {id:"mrt-tanahmerah",name:"Tanah Merah MRT EW4",lat:1.32726,lng:103.94651,category:"MRT",detail:"Change here between the Changi Airport branch and East–West Line."}
+];
+
+const poiCategoryColors={
+ Attraction:"#1677FF",
+ Shopping:"#7b61ff",
+ MRT:"#E32017",
+ Toilet:"#4f6b7a",
+ Smoking:"#8b6b4a"
+};
 
 const stopCosts={
  airport:{label:"FREE",detail:"No attraction entry fee. MRT/transport costs extra."},
@@ -490,6 +578,7 @@ const stopCosts={
  telokayer:{label:"FREE",detail:"Public street."},
  clarke:{label:"FREE",detail:"Public riverside area; food/drinks extra."},
  rivercruise:{label:"S$28 adult",detail:"Singapore River Experience is currently S$28 adult / S$18 child and lasts about 40 minutes."},
+ southbridge:{label:"FREE entry",detail:"No admission fee. Allow roughly S$10–18+ for a drink depending on choice / happy hour."},
  boat:{label:"FREE",detail:"Public riverside promenade."},
  chinatown:{label:"FREE",detail:"Public street market area; shopping/food extra."},
  laupasat:{label:"FREE",detail:"Free to enter; food/drinks extra."},
@@ -613,10 +702,14 @@ const mrtNetworks={
  ]
 };
 
-let state=JSON.parse(localStorage.getItem("sgTripV56")||"null")||{day:0,routes:masterPlans.map(x=>[...x]),skipped:[[],[],[],[]],modeOverrides:{},weatherMode:"normal"};
+let state=JSON.parse(localStorage.getItem("sgTripV57")||"null")||{day:0,routes:masterPlans.map(x=>[...x]),skipped:[[],[],[],[]],modeOverrides:{},weatherMode:"normal"};
 if(!Array.isArray(state.routes)||state.routes.length<4)state.routes=masterPlans.map(x=>[...x]);
 if(!Array.isArray(state.skipped))state.skipped=[[],[],[],[]];
 while(state.skipped.length<4)state.skipped.push([]);
+if(!(state.routes[2]||[]).includes("southbridge") && !(state.skipped[2]||[]).includes("southbridge")){
+ state.skipped[2].push("southbridge");
+}
+
 
 // V56: default weather mode is Dry.
 state.weatherMode="dry";
@@ -702,12 +795,13 @@ let legEstimates={};
 let userHeading=null;
 let headingWatchBound=false;
 let stepPopup=null;
+let extraPoiMarkers=[];
 let drawerDragStartY=null;
 let drawerDragActive=false;
 let gpsFollow=false;
 let lastTouchY=null,routeScrollFloat=0;
 
-function save(){localStorage.setItem("sgTripV56",JSON.stringify(state))}
+function save(){localStorage.setItem("sgTripV57",JSON.stringify(state))}
 function byId(id){return stops.find(s=>s.id===id)}
 function routeStops(){return state.routes[state.day].map(byId).filter(Boolean)}
 function hav(a,b){const R=6371,p=Math.PI/180,dLat=(b.lat-a.lat)*p,dLon=(b.lng-a.lng)*p,la1=a.lat*p,la2=b.lat*p,x=Math.sin(dLat/2)**2+Math.cos(la1)*Math.cos(la2)*Math.sin(dLon/2)**2;return 2*R*Math.asin(Math.sqrt(x))}
@@ -863,6 +957,8 @@ async function init(){
  await buildRoute();
  setupGesture();
  renderDays();
+ renderExtraPOIs();
+ map.on("zoomend",renderExtraPOIs);
  map.on("dragstart",()=>{gpsFollow=false});
  map.on("zoomstart",e=>{if(e && e.originalEvent)gpsFollow=false});
 });
@@ -946,6 +1042,99 @@ function formatDistanceKm(km){
  if(km<1)return `${Math.round(km*1000)} m from you`;
  return `${km.toFixed(1)} km from you`;
 }
+
+function clearExtraPoiMarkers(){
+ extraPoiMarkers.forEach(m=>m.remove());
+ extraPoiMarkers=[];
+}
+
+function showPoiDetails(p){
+ const list=document.getElementById("otherThingsList");
+ const sheet=document.getElementById("otherSheet");
+ if(!list||!sheet)return;
+
+ list.innerHTML=`<div class="other-item">
+   <h3>${p.name}</h3>
+   <div class="stop-meta">
+    <span class="place-type">${p.category}</span>
+   </div>
+   <p>${p.detail||""}</p>
+  </div>`;
+ sheet.classList.add("open");
+}
+
+function poiPopupContent(p){
+ const wrap=document.createElement("div");
+ wrap.className="route-step-popup";
+
+ const h=document.createElement("h3");
+ h.textContent=p.name;
+ wrap.appendChild(h);
+
+ const meta=document.createElement("p");
+ meta.innerHTML=`<b>${p.category}</b><br>${p.detail||""}`;
+ wrap.appendChild(meta);
+
+ const btn=document.createElement("button");
+ btn.type="button";
+ btn.textContent="More";
+ btn.addEventListener("click",()=>{
+  if(stepPopup){stepPopup.remove();stepPopup=null}
+  showPoiDetails(p);
+ });
+ wrap.appendChild(btn);
+
+ return wrap;
+}
+
+function renderExtraPOIs(){
+ if(!map)return;
+
+ clearExtraPoiMarkers();
+
+ // Keep the normal numbered route uncluttered until the user zooms in.
+ if(map.getZoom()<15.6)return;
+
+ const tripPlaces=stops
+  .filter(s=>Number.isFinite(s.lat)&&Number.isFinite(s.lng))
+  .map(s=>({
+    id:`stop-${s.id}`,
+    name:s.name,
+    lat:s.lat,
+    lng:s.lng,
+    category:"Attraction",
+    detail:`${s.type} · ${costForStop(s).label}. ${s.desc||""}`
+  }));
+
+ [...tripPlaces,...extraMapPOIs].forEach(p=>{
+  const el=document.createElement("div");
+  el.className="zoom-poi-dot";
+  el.style.background=poiCategoryColors[p.category]||"#1677FF";
+  el.title=p.name;
+
+  el.addEventListener("click",e=>{
+   e.stopPropagation();
+   if(stepPopup){stepPopup.remove();stepPopup=null}
+
+   stepPopup=new maplibregl.Popup({
+    closeButton:true,
+    closeOnClick:false,
+    offset:14,
+    maxWidth:"280px"
+   })
+   .setLngLat([p.lng,p.lat])
+   .setDOMContent(poiPopupContent(p))
+   .addTo(map);
+  });
+
+  extraPoiMarkers.push(
+   new maplibregl.Marker({element:el,anchor:"center"})
+    .setLngLat([p.lng,p.lat])
+    .addTo(map)
+  );
+ });
+}
+
 function showMapStepPopup(stopIndex){
  const rs=routeStops();
  const stop=rs[stopIndex];
@@ -1274,6 +1463,7 @@ async function buildRoute(){
  routeScrollFloat=0;
  renderDrawer();
  selectStep(0,false);
+ renderExtraPOIs();
 }
 
 let stopMarkers=[];
