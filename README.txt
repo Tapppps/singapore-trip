@@ -1,14 +1,9 @@
-Singapore Trip App V57
+Singapore Trip App V62
 
-Adds:
-- Southbridge Rooftop as an optional Saturday stop under Other things to do.
-- When zoomed in to about 15.6+, extra POI dots appear.
-- POIs include:
-  * all trip / optional places
-  * shopping malls and shopping areas
-  * relevant MRT stations
-  * known public toilets
-  * smoking-area guidance points where we have a useful reference
-- Tap/click a dot to see place name, category and details.
-- More opens a larger details card.
-- Smoking points are guidance only; current Designated Smoking Area signage always takes priority.
+Added at the very top of the lower Today's Route drawer:
+- Today at a glance
+- Location name
+- Activity
+- Travel type: Walk / MRT / River
+
+The normal detailed route cards remain underneath.

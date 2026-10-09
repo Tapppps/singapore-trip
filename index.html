@@ -75,18 +75,6 @@ button{font:inherit}
 
 
 /* V39 */
-#routeKey{
- position:fixed;left:10px;top:118px;z-index:1100;
- display:flex;align-items:center;gap:10px;
- padding:6px 9px;background:rgba(255,255,255,.9);
- border:1px solid var(--line);border-radius:999px;
- font-size:10px;box-shadow:0 2px 7px rgba(0,0,0,.06)
-}
-#routeKey span{display:flex;align-items:center;gap:4px}
-#routeKey i{display:block;width:18px;height:4px;border-radius:4px}
-#routeKey .walk{background:#111}
-#routeKey .mrt{background:#E32017}
-#routeKey .river{background:#1677FF}
 @media(max-width:699px){#routeKey{top:121px}}
 
 /* V41 route-step controls */
@@ -297,13 +285,17 @@ button{font:inherit}
 .weather-day h3{margin:0 0 5px;font-size:14px}
 .weather-day p{margin:3px 0;font-size:12px;color:#505966}
 .weather-icon{
- display:inline-grid;place-items:center;width:24px;height:24px;
- border-radius:50%;font-weight:900;font-size:16px;vertical-align:middle
+ display:inline-block;
+ width:auto;
+ height:auto;
+ border-radius:0;
+ background:none!important;
+ font-weight:400;
+ font-size:22px;
+ line-height:1;
+ vertical-align:middle;
+ color:inherit!important;
 }
-.weather-sun{color:#e5a900;background:#fff7d6}
-.weather-cloud{color:#6f7780;background:#eef1f4}
-.weather-rain{color:#1677FF;background:#eaf3ff}
-.weather-storm{color:#6b46c1;background:#f1ebff}
 .step-weather{
  display:inline-flex;align-items:center;gap:5px;
  margin-left:6px;font-size:11px;font-weight:700;color:#46515c
@@ -326,38 +318,65 @@ button{font:inherit}
 
 /* V57 zoomed-in POIs */
 .zoom-poi-dot{
- width:11px;
- height:11px;
+ width:22px;
+ height:22px;
  border-radius:50%;
- border:2px solid #fff;
+ border:3px solid #fff;
  box-shadow:0 1px 4px rgba(0,0,0,.35);
  cursor:pointer;
 }
-#poiLegend{
- position:fixed;
- left:10px;
- top:151px;
- z-index:1099;
- display:flex;
- gap:7px;
- flex-wrap:wrap;
- max-width:300px;
- background:rgba(255,255,255,.9);
- border:1px solid var(--line);
- border-radius:12px;
- padding:5px 7px;
- font-size:9px;
- box-shadow:0 2px 7px rgba(0,0,0,.06);
+
+
+/* V58 */
+.step-weather .weather-icon{
+ width:auto!important;
+ height:auto!important;
+ font-size:24px!important;
+ line-height:1!important;
 }
-#poiLegend span{display:flex;align-items:center;gap:3px}
-#poiLegend i{width:8px;height:8px;border-radius:50%;display:inline-block}
-#poiLegend .attraction{background:#1677FF}
-#poiLegend .shopping{background:#7b61ff}
-#poiLegend .mrt{background:#E32017}
-#poiLegend .toilet{background:#4f6b7a}
-#poiLegend .smoking{background:#8b6b4a}
-@media(max-width:699px){
- #poiLegend{top:154px;max-width:260px}
+#weatherMapIcon{
+ font-size:22px;
+ line-height:1;
+}
+.day-schedule{
+ margin:0 0 12px;
+ padding:10px 10px 8px;
+ border:1px solid var(--line);
+ border-radius:14px;
+ background:#f8fafb;
+}
+.day-schedule-title{
+ font-size:12px;
+ font-weight:800;
+ margin-bottom:7px;
+}
+.day-schedule-row{
+ display:grid;
+ grid-template-columns:minmax(0,1.5fr) minmax(0,1fr) auto;
+ gap:8px;
+ align-items:center;
+ padding:5px 0;
+ border-top:1px solid #e8ebef;
+ font-size:11px;
+}
+.day-schedule-row:first-of-type{border-top:0}
+.day-schedule-name{font-weight:700;min-width:0}
+.day-schedule-activity{color:#56616d;min-width:0}
+.day-schedule-travel{
+ font-weight:800;
+ padding:3px 7px;
+ border-radius:999px;
+ background:#eef1f4;
+ white-space:nowrap
+}
+@media(max-width:520px){
+ .day-schedule-row{
+  grid-template-columns:minmax(0,1fr) auto;
+ }
+ .day-schedule-activity{
+  grid-column:1 / -1;
+  margin-top:-2px;
+ }
 }
 </style>
 </head>
@@ -373,26 +392,12 @@ button{font:inherit}
    <button class="pill" id="btnChooseDay">Choose day</button>
    <button class="pill" id="btnGps">GPS</button>
    <button class="pill" id="btnCurrent">Current step</button>
-   <button class="pill" id="btnFullRoute">Full route</button>
-   <button class="pill" id="btnOtherThings">Other things to do <span id="otherCount">0</span></button>
+      <button class="pill" id="btnOtherThings">Other things to do <span id="otherCount">0</span></button>
    <button class="pill dark" id="btnWeatherMode">Dry day</button>
        </div>
 </header>
 
 <div id="map"></div>
-</div>
-
-<div id="poiLegend">
- <span><i class="attraction"></i>Places</span>
- <span><i class="shopping"></i>Shops</span>
- <span><i class="mrt"></i>MRT</span>
- <span><i class="toilet"></i>Toilet</span>
- <span><i class="smoking"></i>Smoking</span>
-</div>
-<div id="routeKey">
- <span><i class="walk"></i>Walk</span>
- <span><i class="mrt"></i>MRT</span>
- <span><i class="river"></i>River</span>
 </div>
 <div id="mapTools">
  <button class="mapbtn" id="btnWeather" title="Weather"><span id="weatherMapIcon">☀</span></button>
@@ -702,7 +707,7 @@ const mrtNetworks={
  ]
 };
 
-let state=JSON.parse(localStorage.getItem("sgTripV57")||"null")||{day:0,routes:masterPlans.map(x=>[...x]),skipped:[[],[],[],[]],modeOverrides:{},weatherMode:"normal"};
+let state=JSON.parse(localStorage.getItem("sgTripV62")||"null")||{day:0,routes:masterPlans.map(x=>[...x]),skipped:[[],[],[],[]],modeOverrides:{},weatherMode:"normal"};
 if(!Array.isArray(state.routes)||state.routes.length<4)state.routes=masterPlans.map(x=>[...x]);
 if(!Array.isArray(state.skipped))state.skipped=[[],[],[],[]];
 while(state.skipped.length<4)state.skipped.push([]);
@@ -801,7 +806,7 @@ let drawerDragActive=false;
 let gpsFollow=false;
 let lastTouchY=null,routeScrollFloat=0;
 
-function save(){localStorage.setItem("sgTripV57",JSON.stringify(state))}
+function save(){localStorage.setItem("sgTripV62",JSON.stringify(state))}
 function byId(id){return stops.find(s=>s.id===id)}
 function routeStops(){return state.routes[state.day].map(byId).filter(Boolean)}
 function hav(a,b){const R=6371,p=Math.PI/180,dLat=(b.lat-a.lat)*p,dLon=(b.lng-a.lng)*p,la1=a.lat*p,la2=b.lat*p,x=Math.sin(dLat/2)**2+Math.cos(la1)*Math.cos(la2)*Math.sin(dLon/2)**2;return 2*R*Math.asin(Math.sqrt(x))}
@@ -1253,12 +1258,9 @@ let weatherError=false;
 
 function weatherInfo(code){
  if(code===0)return {icon:"☀",cls:"weather-sun",label:"Sunny"};
- if([1,2].includes(code))return {icon:"◐",cls:"weather-cloud",label:"Partly cloudy"};
- if(code===3)return {icon:"☁",cls:"weather-cloud",label:"Cloudy"};
- if([45,48].includes(code))return {icon:"☁",cls:"weather-cloud",label:"Foggy"};
- if([51,53,55,56,57,61,63,65,66,67,80,81,82].includes(code))return {icon:"☂",cls:"weather-rain",label:"Rain"};
- if([71,73,75,77,85,86].includes(code))return {icon:"❄",cls:"weather-cloud",label:"Snow"};
- if([95,96,99].includes(code))return {icon:"⚡",cls:"weather-storm",label:"Thunderstorm"};
+ if([1,2,3,45,48].includes(code))return {icon:"☁",cls:"weather-cloud",label:"Cloudy"};
+ if([51,53,55,56,57,61,63,65,66,67,80,81,82].includes(code))return {icon:"🌧",cls:"weather-rain",label:"Rain"};
+ if([95,96,99].includes(code))return {icon:"⛈",cls:"weather-storm",label:"Thunderstorm"};
  return {icon:"☁",cls:"weather-cloud",label:"Cloudy"};
 }
 function tripHourForStep(stepIndex,totalSteps){
@@ -1662,11 +1664,46 @@ function nearbyDetailForStop(s){
  return nearby.map(x=>`${x.name} (${hav(s,x).toFixed(1)} km)`).join("<br>") || "No saved nearby stops.";
 }
 
+
+function activityLabel(stop){
+ const id=stop.id;
+ if(["airport","t4"].includes(id))return "Airport / travel";
+ if(id==="hotel")return "Hotel";
+ if((stop.priority||"").includes("Phone"))return "Phone shopping";
+ if(["bugis","bugisplus","misterbugis","misterchinatown","chinatown","laupasat","tekka","mbs","flowerdome","southbridge"].includes(id)){
+  if(id==="southbridge")return "Rooftop drinks / view";
+  if(id==="flowerdome")return "Indoor attraction";
+  if(["bugis","bugisplus","misterbugis","misterchinatown"].includes(id))return "Shopping";
+  if(id==="laupasat"||id==="tekka")return "Food / explore";
+  if(id==="mbs")return "Mall / Marina Bay";
+ }
+ if(id==="rivercruise")return "River cruise";
+ return stop.type==="Indoor"?"Indoor visit":"Sightseeing";
+}
+function simpleTravelLabel(a,b){
+ const m=legMode(a,b);
+ return m==="mrt"?"MRT":m==="river"?"River":"Walk";
+}
+function dayScheduleHtml(rs){
+ const rows=rs.slice(0,-1).map((a,i)=>{
+  const b=rs[i+1];
+  return `<div class="day-schedule-row">
+    <div class="day-schedule-name">${b.name}</div>
+    <div class="day-schedule-activity">${activityLabel(b)}</div>
+    <div class="day-schedule-travel">${simpleTravelLabel(a,b)}</div>
+   </div>`;
+ }).join("");
+ return `<div class="day-schedule">
+   <div class="day-schedule-title">Today at a glance</div>
+   ${rows}
+  </div>`;
+}
+
 function renderDrawer(){
  const rs=routeStops(),body=document.getElementById("drawerBody");
  if(!body)return;
 
- body.innerHTML=rs.slice(0,-1).map((a,i)=>{
+ body.innerHTML=dayScheduleHtml(rs)+rs.slice(0,-1).map((a,i)=>{
    const b=rs[i+1],mode=legMode(a,b);
    return `<div class="stepcard" data-step="${i}">
     <div class="stephead">
@@ -1852,7 +1889,6 @@ function wireV36Buttons(){
  on("btnChooseDay",openDays);
  on("btnGps",locateMe);
  on("btnCurrent",goCurrent);
- on("btnFullRoute",fitRoute);
  on("btnCurrentMap",goCurrent);
  on("btnFitMap",fitRoute);
  on("drawerHandle",()=>toggleDrawer());
