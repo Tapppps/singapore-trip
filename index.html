@@ -407,6 +407,40 @@ button{font:inherit}
  font-size:11px;
  cursor:pointer;
 }
+
+/* V68 route-card destination images */
+.route-card-image-wrap{
+ position:relative;
+ width:100%;
+ height:150px;
+ margin:0 0 9px;
+ border-radius:12px;
+ overflow:hidden;
+ background:#eef1f4;
+}
+.route-card-image-wrap img{
+ width:100%;
+ height:100%;
+ display:block;
+ object-fit:cover;
+}
+.route-card-image-wrap.image-missing{display:none}
+.route-card-image-label{
+ position:absolute;
+ left:8px;
+ bottom:8px;
+ max-width:calc(100% - 16px);
+ padding:4px 7px;
+ border-radius:8px;
+ background:rgba(0,0,0,.58);
+ color:#fff;
+ font-size:10px;
+ font-weight:800;
+ line-height:1.2;
+}
+@media(max-width:520px){
+ .route-card-image-wrap{height:135px}
+}
 </style>
 </head>
 <body>
@@ -749,7 +783,7 @@ const mrtNetworks={
  ]
 };
 
-let state=JSON.parse(localStorage.getItem("sgTripV67")||"null")||{day:0,routes:masterPlans.map(x=>[...x]),skipped:[[],[],[],[]],modeOverrides:{},weatherMode:"normal"};
+let state=JSON.parse(localStorage.getItem("sgTripV68")||"null")||{day:0,routes:masterPlans.map(x=>[...x]),skipped:[[],[],[],[]],modeOverrides:{},weatherMode:"normal"};
 if(!Array.isArray(state.routes)||state.routes.length<4)state.routes=masterPlans.map(x=>[...x]);
 if(!Array.isArray(state.skipped))state.skipped=[[],[],[],[]];
 while(state.skipped.length<4)state.skipped.push([]);
@@ -848,7 +882,7 @@ let drawerDragActive=false;
 let gpsFollow=false;
 let lastTouchY=null,routeScrollFloat=0;
 
-function save(){localStorage.setItem("sgTripV67",JSON.stringify(state))}
+function save(){localStorage.setItem("sgTripV68",JSON.stringify(state))}
 function byId(id){return stops.find(s=>s.id===id)}
 function routeStops(){return state.routes[state.day].map(byId).filter(Boolean)}
 function hav(a,b){const R=6371,p=Math.PI/180,dLat=(b.lat-a.lat)*p,dLon=(b.lng-a.lng)*p,la1=a.lat*p,la2=b.lat*p,x=Math.sin(dLat/2)**2+Math.cos(la1)*Math.cos(la2)*Math.sin(dLon/2)**2;return 2*R*Math.asin(Math.sqrt(x))}
@@ -1757,6 +1791,92 @@ function dayScheduleHtml(rs){
 }
 
 
+
+const locationImageTitles={
+ airport:"Singapore Changi Airport",
+ t4shuttle:"Singapore Changi Airport",
+ changimrt:"Singapore Changi Airport",
+ hotel:"Hotel Boss Singapore",
+ fullerton:"The Fullerton Hotel Singapore",
+ merlion:"Merlion",
+ jubilee:"Jubilee Bridge Singapore",
+ esplanade:"Esplanade – Theatres on the Bay",
+ helix:"Helix Bridge",
+ mbs:"Marina Bay Sands",
+ spectra:"Marina Bay Sands",
+ gardens:"Gardens by the Bay",
+ flowerdome:"Gardens by the Bay",
+ f1:"Marina Bay Street Circuit",
+ sultan:"Sultan Mosque",
+ bussorah:"Kampong Glam",
+ muscat:"Kampong Glam",
+ baghdad:"Kampong Glam",
+ arab:"Arab Street",
+ haji:"Haji Lane",
+ bugis:"Bugis Singapore",
+ misterbugis:"Bugis Singapore",
+ littleindia:"Little India Singapore",
+ tan:"House of Tan Teng Niah",
+ clive:"Little India Singapore",
+ serangoon:"Serangoon Road",
+ tekka:"Tekka Centre",
+ fort:"Fort Canning Park",
+ hillstreet:"Old Hill Street Police Station",
+ chinatown:"Chinatown Singapore",
+ misterchinatown:"People's Park Complex",
+ annsiang:"Ann Siang Hill",
+ telokayer:"Telok Ayer Street",
+ laupasat:"Lau Pa Sat",
+ cavenagh:"Cavenagh Bridge",
+ anderson:"Anderson Bridge Singapore",
+ boat:"Boat Quay",
+ clarke:"Clarke Quay",
+ rivercruise:"Singapore River",
+ southbridge:"Boat Quay",
+ botanic:"Singapore Botanic Gardens",
+ jewel:"Jewel Changi Airport",
+ t4:"Singapore Changi Airport"
+};
+const routeImageCache={};
+
+function imageTitleForStop(stop){
+ return locationImageTitles[stop?.id] || `${stop?.name||""} Singapore`;
+}
+async function loadRouteCardImage(img){
+ const stop=byId(img.dataset.stopId);
+ if(!stop)return;
+ const cached=routeImageCache[stop.id];
+ if(cached===null){
+  img.closest(".route-card-image-wrap")?.classList.add("image-missing");
+  return;
+ }
+ if(cached){
+  img.src=cached;
+  return;
+ }
+ try{
+  const title=imageTitleForStop(stop).replaceAll(" ","_");
+  const url=`https://en.wikipedia.org/api/rest_v1/page/summary/${encodeURIComponent(title)}`;
+  const r=await fetch(url,{cache:"force-cache"});
+  if(!r.ok)throw new Error("image");
+  const data=await r.json();
+  const src=data?.thumbnail?.source || data?.originalimage?.source;
+  if(!src)throw new Error("image");
+  routeImageCache[stop.id]=src;
+  img.src=src;
+ }catch(e){
+  routeImageCache[stop.id]=null;
+  img.closest(".route-card-image-wrap")?.classList.add("image-missing");
+ }
+}
+function loadVisibleRouteImages(){
+ document.querySelectorAll("img[data-route-image]").forEach(img=>{
+  if(img.dataset.loaded)return;
+  img.dataset.loaded="1";
+  loadRouteCardImage(img);
+ });
+}
+
 function openStepInGoogleMaps(stepIndex){
  const rs=routeStops();
  const a=rs[stepIndex];
@@ -1785,6 +1905,10 @@ function renderDrawer(){
  body.innerHTML=dayScheduleHtml(rs)+rs.slice(0,-1).map((a,i)=>{
    const b=rs[i+1],mode=legMode(a,b);
    return `<div class="stepcard" data-step="${i}">
+    <div class="route-card-image-wrap">
+     <img data-route-image data-stop-id="${b.id}" alt="${b.name}" loading="lazy">
+     <div class="route-card-image-label">${b.name}</div>
+    </div>
     <div class="stephead">
      ${travelBubble(mode,i+1)}
      <div style="min-width:0;flex:1">
@@ -1825,6 +1949,7 @@ function renderDrawer(){
  body.querySelectorAll("[data-gmaps-step]").forEach(btn=>btn.addEventListener("click",()=>{
    openStepInGoogleMaps(Number(btn.dataset.gmapsStep));
  }));
+ loadVisibleRouteImages();
  body.querySelectorAll("[data-stepbtn]").forEach(btn=>btn.addEventListener("click",()=>{
    selectStep(Number(btn.dataset.stepbtn),true);
    toggleDrawer(false);
