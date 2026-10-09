@@ -390,6 +390,23 @@ button{font:inherit}
  font-weight:700;
  cursor:pointer;
 }
+
+/* V65 hawker-centre map ratings */
+.poi-rating{
+ font-weight:800;
+ white-space:nowrap;
+}
+
+/* V67 Google Maps */
+.google-maps-btn{
+ padding:8px 10px;
+ border:1px solid var(--line);
+ border-radius:10px;
+ background:#fff;
+ font-weight:800;
+ font-size:11px;
+ cursor:pointer;
+}
 </style>
 </head>
 <body>
@@ -414,8 +431,7 @@ button{font:inherit}
 <div id="mapTools">
  <button class="mapbtn" id="btnWeather" title="Weather"><span id="weatherMapIcon">☀</span></button>
  <button class="mapbtn" id="btnCurrentMap" title="Current step">◎</button>
- <button class="mapbtn" id="btnFitMap" title="Full route">↗</button>
-</div>
+ </div>
 
 <div id="drawer" class="collapsed">
  <div class="handle" id="drawerHandle"><span></span></div>
@@ -464,6 +480,9 @@ const days=[
 ];
 const stops=[
 {id:"airport",name:"Changi Airport T4 Arrivals",lat:1.3384,lng:103.9832,day:0,type:"Indoor",priority:"Must See",desc:"Arrival at Terminal 4. Take the free terminal shuttle to T2/MRT, then continue by MRT to Lavender.",photo:"Arrival / travel documentary"},
+{id:"t4shuttle",name:"Free Shuttle T4 → T2",lat:1.3392,lng:103.9834,day:0,type:"Indoor",priority:"Transport",desc:"From Terminal 4 Arrivals, follow the signs to the free inter-terminal shuttle bus. Take it to Terminal 2 for the MRT.",photo:"Free airport shuttle transfer"},
+{id:"changimrt",name:"Changi Airport MRT CG2",lat:1.3572,lng:103.9880,day:0,type:"Indoor",priority:"Transport",desc:"At Terminal 2 follow MRT signs to Changi Airport CG2. Take the train to Expo, continue to Tanah Merah, then change to the East–West Line toward Lavender.",photo:"Airport MRT station"},
+
 {id:"hotel",name:"Hotel Boss",lat:1.3057,lng:103.8603,day:0,type:"Indoor",priority:"Must See",desc:"Your base at Jalan Sultan, close to Kampong Glam and Lavender MRT.",photo:"Useful base / street scenes nearby"},
 {id:"fullerton",name:"Fullerton Waterfront",lat:1.2860,lng:103.8530,day:0,type:"Outdoor",priority:"Would Like",desc:"Historic waterfront beside the Fullerton Hotel with strong river-to-skyline views.",photo:"Best at blue hour / night reflections"},
 {id:"jubilee",name:"Jubilee Bridge",lat:1.2889,lng:103.8542,day:0,type:"Outdoor",priority:"Would Like",desc:"Pedestrian bridge linking the civic waterfront to Merlion Park with open Marina Bay views.",photo:"Excellent sunset / blue hour viewpoint"},
@@ -551,16 +570,27 @@ const extraMapPOIs=[
  {id:"mrt-tanahmerah",name:"Tanah Merah MRT EW4",lat:1.32726,lng:103.94651,category:"MRT",detail:"Change here between the Changi Airport branch and East–West Line."}
 ];
 
+
+const hawkerMapPOIs=[
+ {id:"hawker-laupasat",name:"Lau Pa Sat",lat:1.28061,lng:103.85048,category:"Hawker",rating:4.4,detail:"Historic CBD hawker centre and Satay Street. Free to enter; food extra."},
+ {id:"hawker-tekka",name:"Tekka Centre",lat:1.30666,lng:103.85082,category:"Hawker",rating:4.2,detail:"Little India hawker centre and market. Good-value Indian and local food."},
+ {id:"hawker-chinatown",name:"Chinatown Complex Food Centre",lat:1.28270,lng:103.84289,category:"Hawker",rating:4.2,detail:"Large Chinatown hawker centre with hundreds of stalls and cheap local food."},
+ {id:"hawker-goldenmile",name:"Golden Mile Food Centre",lat:1.30287,lng:103.86388,category:"Hawker",rating:4.3,detail:"Local hawker centre near Beach Road / Hotel Boss area. Good-value Singapore food."}
+];
+
 const poiCategoryColors={
  Attraction:"#1677FF",
  Shopping:"#7b61ff",
  MRT:"#E32017",
  Toilet:"#4f6b7a",
- Smoking:"#8b6b4a"
+ Smoking:"#8b6b4a",
+ Hawker:"#f59e0b"
 };
 
 const stopCosts={
- airport:{label:"FREE",detail:"No attraction entry fee. MRT/transport costs extra."},
+ airport:{label:"FREE",detail:"No attraction entry fee. Airport shuttle is free; MRT fare applies after T2."},
+ t4shuttle:{label:"FREE",detail:"Free Changi Airport shuttle bus from Terminal 4 to Terminal 2."},
+ changimrt:{label:"MRT fare",detail:"Standard Singapore MRT fare to Lavender; pay by contactless card / mobile wallet."},
  hotel:{label:"PREPAID / varies",detail:"Hotel stay cost depends on your booking; no separate attraction fee."},
  fullerton:{label:"FREE",detail:"Public waterfront promenade."},
  jubilee:{label:"FREE",detail:"Public pedestrian bridge."},
@@ -614,7 +644,7 @@ function costForStop(stop){
 }
 
 const masterPlans=[
- ["airport","hotel","fullerton","merlion","jubilee","esplanade","helix","mbs","spectra","gardens","flowerdome","f1","hotel"],
+ ["airport","t4shuttle","changimrt","hotel","fullerton","merlion","jubilee","esplanade","helix","mbs","spectra","gardens","flowerdome","f1","hotel"],
  ["hotel","sultan","bussorah","muscat","baghdad","arab","haji","bugis","misterbugis","littleindia","tan","clive","serangoon","tekka","hotel"],
  ["hotel","fort","hillstreet","chinatown","misterchinatown","annsiang","telokayer","laupasat","cavenagh","anderson","boat","clarke","rivercruise","hotel"],
  ["hotel","jewel","t4"]
@@ -719,7 +749,7 @@ const mrtNetworks={
  ]
 };
 
-let state=JSON.parse(localStorage.getItem("sgTripV63")||"null")||{day:0,routes:masterPlans.map(x=>[...x]),skipped:[[],[],[],[]],modeOverrides:{},weatherMode:"normal"};
+let state=JSON.parse(localStorage.getItem("sgTripV67")||"null")||{day:0,routes:masterPlans.map(x=>[...x]),skipped:[[],[],[],[]],modeOverrides:{},weatherMode:"normal"};
 if(!Array.isArray(state.routes)||state.routes.length<4)state.routes=masterPlans.map(x=>[...x]);
 if(!Array.isArray(state.skipped))state.skipped=[[],[],[],[]];
 while(state.skipped.length<4)state.skipped.push([]);
@@ -737,10 +767,10 @@ function ensureHotelReturn(dayIndex){
 
  // Day 1 must begin Changi T4 -> Hotel Boss.
  if(dayIndex===0){
-   route=route.filter((id,idx)=>!(id==="airport" && idx!==0));
+   route=route.filter(id=>!["airport","t4shuttle","changimrt"].includes(id));
    route=route.filter((id,idx)=>!(id==="hotel" && idx===0));
-   if(route[0]!=="airport")route.unshift("airport");
-   if(route[1]!=="hotel")route.splice(1,0,"hotel");
+   route.unshift("airport","t4shuttle","changimrt");
+   if(route[3]!=="hotel")route.splice(3,0,"hotel");
  }else{
    // Friday/Saturday start at Hotel Boss.
    route=route.filter((id,idx)=>!(id==="hotel" && idx===0));
@@ -794,14 +824,14 @@ for(let d=0;d<4;d++){
 // Required order:
 // Changi Airport T4 -> Hotel Boss -> sightseeing -> Hotel Boss.
 (function restoreArrivalDayTravel(){
- let r=(state.routes[0]||[]).filter(id=>id!=="airport" && id!=="hotel");
+ let r=(state.routes[0]||[]).filter(id=>!["airport","t4shuttle","changimrt","hotel"].includes(id));
 
- // Keep the user's remaining Day 1 stops in their current order,
- // but force the required arrival/departure anchors back in.
- state.routes[0]=["airport","hotel",...r,"hotel"];
+ // Required arrival sequence:
+ // T4 Arrivals -> free shuttle to T2 -> Changi Airport MRT -> Hotel Boss.
+ state.routes[0]=["airport","t4shuttle","changimrt","hotel",...r,"hotel"];
 
- // Airport and Hotel Boss are required travel anchors, not skipped attractions.
- state.skipped[0]=(state.skipped[0]||[]).filter(id=>id!=="airport" && id!=="hotel");
+ // These are required travel anchors, not skipped attractions.
+ state.skipped[0]=(state.skipped[0]||[]).filter(id=>!["airport","t4shuttle","changimrt","hotel"].includes(id));
 })();
 save();
 
@@ -818,7 +848,7 @@ let drawerDragActive=false;
 let gpsFollow=false;
 let lastTouchY=null,routeScrollFloat=0;
 
-function save(){localStorage.setItem("sgTripV63",JSON.stringify(state))}
+function save(){localStorage.setItem("sgTripV67",JSON.stringify(state))}
 function byId(id){return stops.find(s=>s.id===id)}
 function routeStops(){return state.routes[state.day].map(byId).filter(Boolean)}
 function hav(a,b){const R=6371,p=Math.PI/180,dLat=(b.lat-a.lat)*p,dLon=(b.lng-a.lng)*p,la1=a.lat*p,la2=b.lat*p,x=Math.sin(dLat/2)**2+Math.cos(la1)*Math.cos(la2)*Math.sin(dLon/2)**2;return 2*R*Math.asin(Math.sqrt(x))}
@@ -1039,6 +1069,8 @@ function clearLegOverride(stepIndex){
 function legMode(a,b){
  const forced=state.modeOverrides&&state.modeOverrides[legKey(a,b)];
  if(forced==="mrt")return "mrt";
+ if((a.id==="airport" && b.id==="t4shuttle") || (a.id==="t4shuttle" && b.id==="changimrt"))return "shuttle";
+ if(a.id==="changimrt" && b.id==="hotel")return "mrt";
  if(a.id==="clarke" && b.id==="rivercruise")return "river";
  if(
    a.id==="airport" ||
@@ -1089,7 +1121,7 @@ function poiPopupContent(p){
  wrap.appendChild(h);
 
  const meta=document.createElement("p");
- meta.innerHTML=`<b>${p.category}</b><br>${p.detail||""}`;
+ meta.innerHTML=`<b>${p.category}</b>${Number.isFinite(p.rating)?` · <span class="poi-rating">★ ${p.rating.toFixed(1)}</span>`:""}<br>${p.detail||""}`;
  wrap.appendChild(meta);
 
  const btn=document.createElement("button");
@@ -1123,7 +1155,7 @@ function renderExtraPOIs(){
     detail:`${s.type} · ${costForStop(s).label}. ${s.desc||""}`
   }));
 
- [...tripPlaces,...extraMapPOIs].forEach(p=>{
+ [...tripPlaces,...extraMapPOIs,...hawkerMapPOIs].forEach(p=>{
   const el=document.createElement("div");
   el.className="zoom-poi-dot";
   el.style.background=poiCategoryColors[p.category]||"#1677FF";
@@ -1218,6 +1250,10 @@ function coordsDistanceKm(coords){
  return total;
 }
 function estimateLeg(mode,coords,a,b){
+ if(mode==="shuttle"){
+  if(a.id==="airport")return {km:0.2,minutes:5,distanceText:"T4",timeText:"~5 min to shuttle"};
+  return {km:3.5,minutes:15,distanceText:"T4 → T2",timeText:"~15 min"};
+ }
  let km=coordsDistanceKm(coords);
  if(!km || !Number.isFinite(km))km=hav(a,b);
 
@@ -1252,6 +1288,9 @@ function estimateTextForStep(a,b){
  // Fallback before routing geometry has loaded.
  const km=hav(a,b);
  const mode=legMode(a,b);
+ if(mode==="shuttle"){
+  return a.id==="airport" ? `Terminal 4 · ~5 min to shuttle` : `T4 → T2 · ~15 min`;
+ }
  if(mode==="river")return `${km.toFixed(1)} km · ~40 min`;
  if(mode==="mrt"){
   const j=mrtSegmentsFor(a,b);
@@ -1387,6 +1426,8 @@ async function buildRoute(){
     coords=riverCruiseCoords(a,b);
    }else if(mode==="mrt"){
     coords=mrtCoords(a,b);
+   }else if(mode==="shuttle"){
+    coords=[[a.lng,a.lat],[b.lng,b.lat]];
    }else{
     coords=(await footRoute(a,b)).geometry.coordinates;
    }
@@ -1443,6 +1484,7 @@ async function buildRoute(){
     "walk","#111111",
     "mrt","#E32017",
     "river","#1677FF",
+    "shuttle","#D97706",
     "#111111"
    ],
    "line-width":[
@@ -1450,6 +1492,7 @@ async function buildRoute(){
     "walk",7,
     "mrt",8,
     "river",8,
+    "shuttle",8,
     7
    ],
    "line-opacity":1
@@ -1680,6 +1723,8 @@ function nearbyDetailForStop(s){
 function activityLabel(stop){
  const id=stop.id;
  if(["airport","t4"].includes(id))return "Airport / travel";
+ if(id==="t4shuttle")return "Free shuttle to T2";
+ if(id==="changimrt")return "MRT to city";
  if(id==="hotel")return "Hotel";
  if((stop.priority||"").includes("Phone"))return "Phone shopping";
  if(["bugis","bugisplus","misterbugis","misterchinatown","chinatown","laupasat","tekka","mbs","flowerdome","southbridge"].includes(id)){
@@ -1694,7 +1739,7 @@ function activityLabel(stop){
 }
 function simpleTravelLabel(a,b){
  const m=legMode(a,b);
- return m==="mrt"?"MRT":m==="river"?"River":"Walk";
+ return m==="shuttle"?"Shuttle":m==="mrt"?"MRT":m==="river"?"River":"Walk";
 }
 function dayScheduleHtml(rs){
  const rows=rs.slice(0,-1).map((a,i)=>{
@@ -1709,6 +1754,28 @@ function dayScheduleHtml(rs){
    <div class="day-schedule-title">Today at a glance</div>
    ${rows}
   </div>`;
+}
+
+
+function openStepInGoogleMaps(stepIndex){
+ const rs=routeStops();
+ const a=rs[stepIndex];
+ const b=rs[stepIndex+1];
+ if(!a||!b)return;
+
+ const mode=legMode(a,b);
+ const travelmode=mode==="mrt" ? "transit" : "walking";
+ const destination=`${b.lat},${b.lng}`;
+
+ let url=`https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(destination)}&travelmode=${travelmode}`;
+
+ // Use the app's live GPS position when available.
+ // Otherwise Google Maps can use the phone's current location.
+ if(userPos && Number.isFinite(userPos.lat) && Number.isFinite(userPos.lng)){
+  url+=`&origin=${encodeURIComponent(`${userPos.lat},${userPos.lng}`)}`;
+ }
+
+ window.open(url,"_blank","noopener");
 }
 
 function renderDrawer(){
@@ -1726,10 +1793,11 @@ function renderDrawer(){
        <span class="place-type ${a.type.toLowerCase()}">${a.type}</span>
        <span class="place-cost ${costForStop(a).label==="FREE"?"free":""}">${costForStop(a).label}</span>
       </div>
-      <p class="step-estimate"><b>${mode==="walk"?"Walk":mode==="river"?"River cruise":"MRT"}:</b> ${estimateTextForStep(a,b)} ${stepWeatherHtml(i,rs.length-1)}</p>
+      <p class="step-estimate"><b>${mode==="shuttle"?"Shuttle":mode==="walk"?"Walk":mode==="river"?"River cruise":"MRT"}:</b> ${estimateTextForStep(a,b)} ${stepWeatherHtml(i,rs.length-1)}</p>
       <p>${a.desc||""}</p>
 
       <div class="step-actions">
+       <button type="button" class="google-maps-btn" data-gmaps-step="${i}">See in Google Maps</button>
        <button type="button" data-stepbtn="${i}">Show this step</button>
        <button type="button" data-more-step="${i}">More</button>
        ${mode==="walk"?`<button type="button" data-mrt-step="${i}">MRT instead</button>`:""}
@@ -1746,7 +1814,7 @@ function renderDrawer(){
        <p>${costForStop(b).detail}</p>
        ${b.photo?`<p><b>Photo tip:</b> ${b.photo}</p>`:""}
        <p><b>Nearby:</b><br>${nearbyDetailForStop(b)}</p>
-       <p><b>Travel:</b> ${mode==="walk"?"Walking route":mode==="river"?"River cruise":"MRT / public transport route"} · ${estimateTextForStep(a,b)}.</p>
+       <p><b>Travel:</b> ${mode==="shuttle"?"Free airport shuttle bus":mode==="walk"?"Walking route":mode==="river"?"River cruise":"MRT / public transport route"} · ${estimateTextForStep(a,b)}.</p>
        ${mode==="mrt"?mrtDirectionsHtml(a,b):""}
       </div>
      </div>
@@ -1754,6 +1822,9 @@ function renderDrawer(){
    </div>`;
  }).join("");
 
+ body.querySelectorAll("[data-gmaps-step]").forEach(btn=>btn.addEventListener("click",()=>{
+   openStepInGoogleMaps(Number(btn.dataset.gmapsStep));
+ }));
  body.querySelectorAll("[data-stepbtn]").forEach(btn=>btn.addEventListener("click",()=>{
    selectStep(Number(btn.dataset.stepbtn),true);
    toggleDrawer(false);
@@ -1902,7 +1973,6 @@ function wireV36Buttons(){
  on("btnGps",locateMe);
  on("btnCurrent",goCurrent);
  on("btnCurrentMap",goCurrent);
- on("btnFitMap",fitRoute);
  on("drawerHandle",()=>toggleDrawer());
  on("drawerMore",e=>{e.stopPropagation();toggleDrawer()});
 

@@ -1,6 +1,11 @@
-Singapore Trip App V63
+Singapore Trip App V67
 
-Change:
-- Extra zoomed-in dot location popups no longer show a More button.
-- They now show a single Close button.
-- The built-in popup X was removed so the popup has just one clear Close control.
+Added to every route step card:
+- See in Google Maps
+
+Behaviour:
+- Opens directions from your CURRENT LOCATION to that step's destination.
+- If the Singapore Trip app already has a GPS fix, that exact position is passed to Google Maps.
+- If not, Google Maps is allowed to use the phone's current location.
+- MRT legs open in transit mode.
+- Walking and other local legs open in walking mode.
