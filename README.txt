@@ -1,9 +1,6 @@
-Singapore Trip App V62
+Singapore Trip App V63
 
-Added at the very top of the lower Today's Route drawer:
-- Today at a glance
-- Location name
-- Activity
-- Travel type: Walk / MRT / River
-
-The normal detailed route cards remain underneath.
+Change:
+- Extra zoomed-in dot location popups no longer show a More button.
+- They now show a single Close button.
+- The built-in popup X was removed so the popup has just one clear Close control.
