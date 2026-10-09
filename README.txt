@@ -1,7 +1,22 @@
-Singapore Trip App V68
+Singapore Trip App V69
 
-Route-card images:
-- Each detailed route step card now shows a photo of the destination at the top.
-- Photos load from Wikipedia/Wikimedia when online.
-- Destination name overlays the image.
-- If a suitable photo is unavailable, the photo area hides instead of showing a broken image.
+New Add-ons button:
+- Optional places can be added to the current day.
+- Added stops immediately become part of the route, map and Today at a glance.
+- Routing recalculates through them.
+
+Current add-ons:
+Thursday: Marina Square, Suntec City
+Friday: Botanic Gardens, extra Bugis+ shopping, evening Kampong Glam
+Saturday: Southbridge Rooftop
+Sunday: none
+
+New route-step controls:
+- Move earlier
+- Move later
+
+This lets you reorder sightseeing steps on the day.
+Protected travel anchors cannot be moved:
+- Thursday: T4 -> shuttle -> Changi MRT -> first Hotel Boss, plus final Hotel Boss
+- Friday/Saturday: starting and final Hotel Boss
+- Sunday: starting Hotel Boss and final T4

@@ -441,6 +441,22 @@ button{font:inherit}
 @media(max-width:520px){
  .route-card-image-wrap{height:135px}
 }
+
+/* V69 add-ons + move steps */
+#addonSheet{
+ position:fixed;inset:0;z-index:3000;background:rgba(0,0,0,.35);
+ display:none;align-items:flex-end;
+}
+#addonSheet.open{display:flex}
+.addon-add-btn,.move-step-btn{font-weight:800}
+.move-step-btn{
+ padding:8px 10px;
+ border:1px solid var(--line);
+ border-radius:10px;
+ background:#fff;
+ font-size:11px;
+ cursor:pointer;
+}
 </style>
 </head>
 <body>
@@ -456,6 +472,7 @@ button{font:inherit}
    <button class="pill" id="btnGps">GPS</button>
    <button class="pill" id="btnCurrent">Current step</button>
       <button class="pill" id="btnOtherThings">Other things to do <span id="otherCount">0</span></button>
+   <button class="pill" id="btnAddOns">Add-ons <span id="addonCount">0</span></button>
    <button class="pill dark" id="btnWeatherMode">Dry day</button>
        </div>
 </header>
@@ -487,6 +504,15 @@ button{font:inherit}
   <p class="other-intro">Forecast for Singapore during your trip. This updates when the app is online.</p>
   <div id="weatherDays"></div>
   <button class="pill" id="btnCloseWeather" style="width:100%;margin-top:8px">Close</button>
+ </div>
+</div>
+
+<div id="addonSheet">
+ <div class="sheet">
+  <h2>Today's Add-ons</h2>
+  <p class="other-intro">Optional stops for this day. Add one and it becomes part of today's route and map.</p>
+  <div id="addonList"></div>
+  <button class="pill" id="btnCloseAddOns" style="width:100%;margin-top:8px">Close</button>
  </div>
 </div>
 <div id="otherSheet">
@@ -648,6 +674,8 @@ const stopCosts={
  arab:{label:"FREE",detail:"Public street; cafés and shopping extra."},
  bugis:{label:"FREE",detail:"Free to enter/browse; shopping and food extra."},
  bugisplus:{label:"FREE",detail:"Mall entry is free; shopping, food and cinema extra."},
+ marinasquare:{label:"FREE",detail:"Mall entry is free; shopping and food extra."},
+ suntec:{label:"FREE",detail:"Mall entry is free; shopping and food extra."},
  littleindia:{label:"FREE",detail:"Free to browse; purchases extra."},
  tekka:{label:"FREE",detail:"Free to enter; food and shopping extra."},
  somerset313:{label:"FREE",detail:"Mall entry is free; shopping and food extra."},
@@ -676,6 +704,32 @@ const stopCosts={
 function costForStop(stop){
  return stopCosts[stop.id] || {label:"FREE",detail:"No known admission charge; spending is optional."};
 }
+
+
+const dayAddOns={
+ 0:[
+   {id:"marinasquare",name:"Marina Square",type:"Indoor",desc:"Indoor mall near Esplanade. Good wet-weather stop.",activity:"Shopping / rain shelter"},
+   {id:"suntec",name:"Suntec City",type:"Indoor",desc:"Large indoor mall near Marina Bay.",activity:"Shopping / food"}
+ ],
+ 1:[
+   {id:"botanic",name:"Singapore Botanic Gardens",type:"Outdoor",desc:"FREE gardens. Best if weather is dry.",activity:"Gardens / sightseeing"},
+   {id:"bugisplus",name:"Bugis+ extra shopping",type:"Indoor",desc:"Extra shopping and food around Bugis.",activity:"Shopping"},
+   {id:"arab",name:"Evening Kampong Glam",type:"Outdoor",desc:"Return to Arab Street / Haji Lane area for dinner or drinks.",activity:"Dinner / evening walk"}
+ ],
+ 2:[
+   {id:"southbridge",name:"Southbridge Rooftop",type:"Mixed",desc:"Rooftop river/city view near Boat Quay.",activity:"Rooftop drink / skyline"}
+ ],
+ 3:[]
+};
+
+const addonVirtualStops={
+ marinasquare:{id:"marinasquare",name:"Marina Square",lat:1.29132,lng:103.85709,day:0,type:"Indoor",priority:"Optional",desc:"Large indoor mall beside Esplanade. Useful as a wet-weather stop.",photo:"Indoor shopping"},
+ suntec:{id:"suntec",name:"Suntec City",lat:1.29354,lng:103.85723,day:0,type:"Indoor",priority:"Optional",desc:"Large indoor shopping mall and food stop near Marina Bay.",photo:"Indoor shopping"},
+ bugisplus:{id:"bugisplus",name:"Bugis+",lat:1.29998,lng:103.85496,day:1,type:"Indoor",priority:"Optional",desc:"Extra indoor shopping and food beside Bugis Junction.",photo:"Shopping mall"}
+};
+Object.values(addonVirtualStops).forEach(s=>{
+ if(!stops.some(x=>x.id===s.id))stops.push(s);
+});
 
 const masterPlans=[
  ["airport","t4shuttle","changimrt","hotel","fullerton","merlion","jubilee","esplanade","helix","mbs","spectra","gardens","flowerdome","f1","hotel"],
@@ -783,7 +837,7 @@ const mrtNetworks={
  ]
 };
 
-let state=JSON.parse(localStorage.getItem("sgTripV68")||"null")||{day:0,routes:masterPlans.map(x=>[...x]),skipped:[[],[],[],[]],modeOverrides:{},weatherMode:"normal"};
+let state=JSON.parse(localStorage.getItem("sgTripV69")||"null")||{day:0,routes:masterPlans.map(x=>[...x]),skipped:[[],[],[],[]],modeOverrides:{},weatherMode:"normal"};
 if(!Array.isArray(state.routes)||state.routes.length<4)state.routes=masterPlans.map(x=>[...x]);
 if(!Array.isArray(state.skipped))state.skipped=[[],[],[],[]];
 while(state.skipped.length<4)state.skipped.push([]);
@@ -882,7 +936,7 @@ let drawerDragActive=false;
 let gpsFollow=false;
 let lastTouchY=null,routeScrollFloat=0;
 
-function save(){localStorage.setItem("sgTripV68",JSON.stringify(state))}
+function save(){localStorage.setItem("sgTripV69",JSON.stringify(state))}
 function byId(id){return stops.find(s=>s.id===id)}
 function routeStops(){return state.routes[state.day].map(byId).filter(Boolean)}
 function hav(a,b){const R=6371,p=Math.PI/180,dLat=(b.lat-a.lat)*p,dLon=(b.lng-a.lng)*p,la1=a.lat*p,la2=b.lat*p,x=Math.sin(dLat/2)**2+Math.cos(la1)*Math.cos(la2)*Math.sin(dLon/2)**2;return 2*R*Math.asin(Math.sqrt(x))}
@@ -1711,6 +1765,62 @@ function addSkippedBack(id){
  renderOtherThings();
  buildRoute();
 }
+
+function availableAddOns(){
+ return (dayAddOns[state.day]||[]).filter(a=>!(state.routes[state.day]||[]).includes(a.id));
+}
+function addonInsertIndex(route){
+ if(state.day===3)return Math.max(0,route.length-1);
+ const lastHotel=route.lastIndexOf("hotel");
+ return lastHotel>=0 ? lastHotel : route.length;
+}
+function addAddonToToday(id){
+ const route=[...(state.routes[state.day]||[])];
+ if(route.includes(id))return;
+ route.splice(addonInsertIndex(route),0,id);
+ state.routes[state.day]=route;
+ state.skipped[state.day]=(state.skipped[state.day]||[]).filter(x=>x!==id);
+ ensureHotelReturn(state.day);
+ save();
+ renderHeader();
+ renderAddOns();
+ renderOtherThings();
+ renderDrawer();
+ buildRoute();
+}
+function renderAddOns(){
+ const box=document.getElementById("addonList");
+ if(!box)return;
+ const items=availableAddOns();
+ const count=document.getElementById("addonCount");
+ if(count)count.textContent=items.length;
+
+ if(!items.length){
+  box.innerHTML='<div class="other-item"><p>No unused add-ons for this day.</p></div>';
+  return;
+ }
+
+ box.innerHTML=items.map(a=>{
+  const s=byId(a.id);
+  const type=s?.type||a.type||"Mixed";
+  const cost=s?costForStop(s):{label:"FREE"};
+  return `<div class="other-item">
+    <h3>${a.name}</h3>
+    <div class="stop-meta">
+      <span class="place-type">${type}</span>
+      <span class="place-cost ${cost.label==="FREE"?"free":""}">${cost.label}</span>
+    </div>
+    <p>${a.activity||""}</p>
+    <p>${a.desc||""}</p>
+    <button class="pill addon-add-btn" data-addon-id="${a.id}" style="width:100%">Add to today's route</button>
+   </div>`;
+ }).join("");
+
+ box.querySelectorAll("[data-addon-id]").forEach(btn=>btn.addEventListener("click",()=>{
+   addAddonToToday(btn.dataset.addonId);
+ }));
+}
+
 function renderOtherThings(){
  const list=document.getElementById("otherThingsList");
  const count=document.getElementById("otherCount");
@@ -1877,6 +1987,39 @@ function loadVisibleRouteImages(){
  });
 }
 
+
+function isLockedRouteIndex(route,index){
+ const id=route[index];
+ if(state.day===0){
+  // Keep arrival transfer fixed and keep final hotel fixed.
+  if(index<=3)return true; // airport, shuttle, MRT, first Hotel Boss
+  if(index===route.length-1 && id==="hotel")return true;
+ }
+ if(state.day===1 || state.day===2){
+  if(index===0 && id==="hotel")return true;
+  if(index===route.length-1 && id==="hotel")return true;
+ }
+ if(state.day===3){
+  if(index===0 && id==="hotel")return true;
+  if(index===route.length-1 && id==="t4")return true;
+ }
+ return false;
+}
+function moveRouteStop(stopIndex,direction){
+ const route=[...(state.routes[state.day]||[])];
+ const target=stopIndex+direction;
+ if(stopIndex<0 || stopIndex>=route.length || target<0 || target>=route.length)return;
+ if(isLockedRouteIndex(route,stopIndex) || isLockedRouteIndex(route,target))return;
+
+ [route[stopIndex],route[target]]=[route[target],route[stopIndex]];
+ state.routes[state.day]=route;
+ ensureHotelReturn(state.day);
+ save();
+ renderDrawer();
+ renderAddOns();
+ buildRoute();
+}
+
 function openStepInGoogleMaps(stepIndex){
  const rs=routeStops();
  const a=rs[stepIndex];
@@ -1922,6 +2065,8 @@ function renderDrawer(){
 
       <div class="step-actions">
        <button type="button" class="google-maps-btn" data-gmaps-step="${i}">See in Google Maps</button>
+       ${!isLockedRouteIndex(rs,i+1) && i>0?`<button type="button" class="move-step-btn" data-move-step="${i+1}" data-move-dir="-1">Move earlier</button>`:""}
+       ${!isLockedRouteIndex(rs,i+1) && i<rs.length-2?`<button type="button" class="move-step-btn" data-move-step="${i+1}" data-move-dir="1">Move later</button>`:""}
        <button type="button" data-stepbtn="${i}">Show this step</button>
        <button type="button" data-more-step="${i}">More</button>
        ${mode==="walk"?`<button type="button" data-mrt-step="${i}">MRT instead</button>`:""}
@@ -1948,6 +2093,9 @@ function renderDrawer(){
 
  body.querySelectorAll("[data-gmaps-step]").forEach(btn=>btn.addEventListener("click",()=>{
    openStepInGoogleMaps(Number(btn.dataset.gmapsStep));
+ }));
+ body.querySelectorAll("[data-move-step]").forEach(btn=>btn.addEventListener("click",()=>{
+   moveRouteStop(Number(btn.dataset.moveStep),Number(btn.dataset.moveDir));
  }));
  loadVisibleRouteImages();
  body.querySelectorAll("[data-stepbtn]").forEach(btn=>btn.addEventListener("click",()=>{
@@ -2133,17 +2281,21 @@ function wireV36Buttons(){
 
  on("btnCloseDays",closeDays);
  on("btnOtherThings",()=>{renderOtherThings();document.getElementById("otherSheet")?.classList.add("open")});
+ on("btnAddOns",()=>{renderAddOns();document.getElementById("addonSheet")?.classList.add("open")});
+ on("btnCloseAddOns",()=>document.getElementById("addonSheet")?.classList.remove("open"));
  on("btnWeatherMode",toggleWeatherMode);
  on("btnWeather",()=>{renderWeatherSheet();document.getElementById("weatherSheet")?.classList.add("open")});
  on("btnCloseWeather",()=>document.getElementById("weatherSheet")?.classList.remove("open"));
  on("btnCloseOther",()=>document.getElementById("otherSheet")?.classList.remove("open"));
  document.getElementById("daySheet")?.addEventListener("click",e=>{if(e.target.id==="daySheet")closeDays()});
  document.getElementById("otherSheet")?.addEventListener("click",e=>{if(e.target.id==="otherSheet")e.currentTarget.classList.remove("open")});
+ document.getElementById("addonSheet")?.addEventListener("click",e=>{if(e.target.id==="addonSheet")e.currentTarget.classList.remove("open")});
  document.getElementById("weatherSheet")?.addEventListener("click",e=>{if(e.target.id==="weatherSheet")e.currentTarget.classList.remove("open")});
 }
 wireV36Buttons();
 renderHeader();
 renderOtherThings();
+renderAddOns();
 updateWeatherModeButtons();
 fetchTripWeather();
 init();
