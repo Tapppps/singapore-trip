@@ -339,8 +339,7 @@ button{font:inherit}
    <button class="pill" id="btnCurrent">Current step</button>
    <button class="pill" id="btnFullRoute">Full route</button>
    <button class="pill" id="btnOtherThings">Other things to do <span id="otherCount">0</span></button>
-   <button class="pill" id="btnDryDay">Dry day</button>
-   <button class="pill" id="btnWetDay">Wet day</button>
+   <button class="pill dark" id="btnWeatherMode">Dry day</button>
        </div>
 </header>
 
@@ -614,10 +613,42 @@ const mrtNetworks={
  ]
 };
 
-let state=JSON.parse(localStorage.getItem("sgTripV55")||"null")||{day:0,routes:masterPlans.map(x=>[...x]),skipped:[[],[],[],[]],modeOverrides:{},weatherMode:"normal"};
+let state=JSON.parse(localStorage.getItem("sgTripV56")||"null")||{day:0,routes:masterPlans.map(x=>[...x]),skipped:[[],[],[],[]],modeOverrides:{},weatherMode:"normal"};
 if(!Array.isArray(state.routes)||state.routes.length<4)state.routes=masterPlans.map(x=>[...x]);
 if(!Array.isArray(state.skipped))state.skipped=[[],[],[],[]];
 while(state.skipped.length<4)state.skipped.push([]);
+
+// V56: default weather mode is Dry.
+state.weatherMode="dry";
+
+function ensureHotelReturn(dayIndex){
+ if(dayIndex===3)return; // final day ends at Changi T4
+ let route=state.routes[dayIndex]||[];
+
+ // Day 1 must begin Changi T4 -> Hotel Boss.
+ if(dayIndex===0){
+   route=route.filter((id,idx)=>!(id==="airport" && idx!==0));
+   route=route.filter((id,idx)=>!(id==="hotel" && idx===0));
+   if(route[0]!=="airport")route.unshift("airport");
+   if(route[1]!=="hotel")route.splice(1,0,"hotel");
+ }else{
+   // Friday/Saturday start at Hotel Boss.
+   route=route.filter((id,idx)=>!(id==="hotel" && idx===0));
+   if(route[0]!=="hotel")route.unshift("hotel");
+ }
+
+ // All sightseeing days must finish at Hotel Boss.
+ if(route[route.length-1]!=="hotel")route.push("hotel");
+
+ state.routes[dayIndex]=route;
+}
+
+// Repair all sightseeing-day route endings immediately.
+ensureHotelReturn(0);
+ensureHotelReturn(1);
+ensureHotelReturn(2);
+save();
+
 
 for(let d=0;d<4;d++){
  if(!(state.routes[d]||[]).includes("botanic") && !(state.skipped[d]||[]).includes("botanic")){
@@ -676,7 +707,7 @@ let drawerDragActive=false;
 let gpsFollow=false;
 let lastTouchY=null,routeScrollFloat=0;
 
-function save(){localStorage.setItem("sgTripV55",JSON.stringify(state))}
+function save(){localStorage.setItem("sgTripV56",JSON.stringify(state))}
 function byId(id){return stops.find(s=>s.id===id)}
 function routeStops(){return state.routes[state.day].map(byId).filter(Boolean)}
 function hav(a,b){const R=6371,p=Math.PI/180,dLat=(b.lat-a.lat)*p,dLon=(b.lng-a.lng)*p,la1=a.lat*p,la2=b.lat*p,x=Math.sin(dLat/2)**2+Math.cos(la1)*Math.cos(la2)*Math.sin(dLon/2)**2;return 2*R*Math.asin(Math.sqrt(x))}
@@ -1333,11 +1364,12 @@ function setWeatherRouteMode(mode){
  state.weatherMode=mode;
  if(mode==="wet"){
   state.routes[state.day]=wetAlternativesForDay(state.day);
- }else if(mode==="dry"){
-  state.routes[state.day]=dryRouteForDay(state.day);
  }else{
-  state.routes[state.day]=[...(masterPlans[state.day]||state.routes[state.day]||[])];
+  state.routes[state.day]=dryRouteForDay(state.day);
  }
+
+ ensureHotelReturn(state.day);
+
  save();
  renderHeader();
  renderDrawer();
@@ -1346,10 +1378,15 @@ function setWeatherRouteMode(mode){
  updateWeatherModeButtons();
 }
 function updateWeatherModeButtons(){
- const dry=document.getElementById("btnDryDay");
- const wet=document.getElementById("btnWetDay");
- if(dry)dry.classList.toggle("dark",state.weatherMode==="dry");
- if(wet)wet.classList.toggle("dark",state.weatherMode==="wet");
+ const btn=document.getElementById("btnWeatherMode");
+ if(!btn)return;
+ const wet=state.weatherMode==="wet";
+ btn.textContent=wet?"Wet day":"Dry day";
+ btn.classList.toggle("dark",!wet);
+}
+function toggleWeatherMode(){
+ const next=state.weatherMode==="wet"?"dry":"wet";
+ setWeatherRouteMode(next);
 }
 
 function isRequiredStopIndex(i,rs){
@@ -1663,8 +1700,7 @@ function wireV36Buttons(){
 
  on("btnCloseDays",closeDays);
  on("btnOtherThings",()=>{renderOtherThings();document.getElementById("otherSheet")?.classList.add("open")});
- on("btnDryDay",()=>setWeatherRouteMode("dry"));
- on("btnWetDay",()=>setWeatherRouteMode("wet"));
+ on("btnWeatherMode",toggleWeatherMode);
  on("btnWeather",()=>{renderWeatherSheet();document.getElementById("weatherSheet")?.classList.add("open")});
  on("btnCloseWeather",()=>document.getElementById("weatherSheet")?.classList.remove("open"));
  on("btnCloseOther",()=>document.getElementById("otherSheet")?.classList.remove("open"));
