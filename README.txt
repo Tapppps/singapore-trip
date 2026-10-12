@@ -1,22 +1,18 @@
-Singapore Trip App V69
+Singapore Trip App V75
 
-New Add-ons button:
-- Optional places can be added to the current day.
-- Added stops immediately become part of the route, map and Today at a glance.
-- Routing recalculates through them.
+Happy-hour details added.
 
-Current add-ons:
-Thursday: Marina Square, Suntec City
-Friday: Botanic Gardens, extra Bugis+ shopping, evening Kampong Glam
-Saturday: Southbridge Rooftop
-Sunday: none
+ROBERTSON QUAY
+- The Best Brew: DAILY 5:00pm–8:30pm
+- Privé Robertson Quay: DAILY 4:00pm–8:00pm, up to 40% off selected draught beer, wine, spirits & cocktails; 20% off small bites
+- D.O.P Mozzarella Bar: DAILY 4:00pm–7:30pm, selected drinks S$9++
 
-New route-step controls:
-- Move earlier
-- Move later
+CLARKE QUAY
+- Octapas: weekend happy-hour offers until 9:00pm
+- Helen's / Chupitos cheap-drink notes remain in the route cards
 
-This lets you reorder sightseeing steps on the day.
-Protected travel anchors cannot be moved:
-- Thursday: T4 -> shuttle -> Changi MRT -> first Hotel Boss, plus final Hotel Boss
-- Friday/Saturday: starting and final Hotel Boss
-- Sunday: starting Hotel Boss and final T4
+SOUTHBRIDGE
+- No standard Saturday happy hour is listed.
+- Friday/Saturday promo is mainly discounted champagne bottles, so it remains a view-first rooftop option rather than the cheapest-drink choice.
+
+All these appear as zoomed-in map dots and in the relevant route-card cheap/happy-hour box.

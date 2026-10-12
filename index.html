@@ -457,6 +457,67 @@ button{font:inherit}
  font-size:11px;
  cursor:pointer;
 }
+
+/* V70 cheap nearby */
+.cheap-nearby{
+ margin:7px 0;
+ padding:8px 9px;
+ border-radius:10px;
+ background:#f7faf7;
+ border:1px solid #e2ebe2;
+ font-size:11px;
+ line-height:1.45;
+}
+
+/* V71 special map POIs */
+.mrt-change-dot{
+ width:26px!important;
+ height:26px!important;
+ border:4px solid #fff!important;
+ box-shadow:0 2px 7px rgba(0,0,0,.38)!important;
+}
+.sim-dot{
+ width:24px!important;
+ height:24px!important;
+ border:4px solid #fff!important;
+}
+
+/* V72 higher contrast controls */
+[data-more],
+#btnHideDrawer{
+ background:#111!important;
+ color:#fff!important;
+ border-color:#111!important;
+ font-weight:800!important;
+ box-shadow:0 1px 3px rgba(0,0,0,.18);
+}
+[data-more]:hover,
+#btnHideDrawer:hover{
+ background:#2b2b2b!important;
+}
+
+/* V73 daylight / evening scheduling */
+.timing-badge{
+ display:inline-flex;
+ align-items:center;
+ min-height:22px;
+ padding:3px 7px;
+ border-radius:999px;
+ font-size:10px;
+ font-weight:900;
+ border:1px solid var(--line);
+}
+.timing-badge.daytime{background:#fff5cc;color:#7a5b00;border-color:#eadb98}
+.timing-badge.evening{background:#ece9ff;color:#4d3a9c;border-color:#d7cff9}
+.timing-badge.closing{background:#fff0e6;color:#944500;border-color:#f0cfb4}
+.timing-note{
+ margin:5px 0!important;
+ padding:6px 8px;
+ border-radius:9px;
+ background:#fff9e8;
+ font-size:11px!important;
+ font-weight:700;
+}
 </style>
 </head>
 <body>
@@ -567,6 +628,7 @@ const stops=[
 {id:"bugis",name:"Bugis Street",lat:1.3008,lng:103.8552,day:1,type:"Indoor",priority:"Must See",desc:"Busy covered shopping area known for inexpensive clothes, snacks and souvenirs.",photo:"Daytime / busy street scenes"},
 {id:"bugisplus",name:"Bugis+",lat:1.2996,lng:103.8554,day:1,type:"Indoor",priority:"Optional",desc:"Modern fashion and lifestyle mall beside Bugis Street. Good Friday shopping break because it sits directly on the Kampong Glam / Bugis route.",photo:"Shopper: indoors. Explorer: Haji Lane, Arab Street, Bugis street scenes"},
 
+{id:"simlim",name:"Sim Lim Square",lat:1.30303,lng:103.85303,day:1,type:"Indoor",priority:"Would Like",desc:"Electronics and IT mall at 1 Rochor Canal Road. Good stop for comparing electronics and second-hand / refurbished phones. Compare condition, warranty and final price carefully before buying.",photo:"Indoor electronics shopping"},
 {id:"littleindia",name:"Little India Arcade",lat:1.3068,lng:103.8518,day:1,type:"Indoor",priority:"Must See",desc:"Colourful heritage shopping arcade in the heart of Little India.",photo:"Late morning / afternoon colour"},
 {id:"tekka",name:"Tekka Centre",lat:1.3062,lng:103.8504,day:1,type:"Indoor",priority:"Would Like",desc:"Local market and hawker centre, useful for inexpensive food and indoor shelter.",photo:"Daytime market scenes"},
 {id:"somerset313",name:"313@somerset",lat:1.3010,lng:103.8384,day:2,type:"Indoor",priority:"Optional",desc:"Large fashion-focused Orchard Road mall directly above Somerset MRT. Good Saturday shopping alternative while the other person explores nearby photo spots.",photo:"Explorer: Orchard Central rooftop, Orchard Road architecture, Emerald Hill shophouses"},
@@ -574,9 +636,14 @@ const stops=[
 {id:"hillstreet",name:"Old Hill Street Police Station",lat:1.2905,lng:103.8482,day:2,type:"Outdoor",priority:"Must See",desc:"Landmark building with hundreds of colourful window shutters beside the river district.",photo:"Good daylight colour; late afternoon softer"},
 {id:"cavenagh",name:"Cavenagh Bridge",lat:1.2869,lng:103.8524,day:2,type:"Outdoor",priority:"Would Like",desc:"Historic iron bridge across the Singapore River with Fullerton and river views.",photo:"Late afternoon / blue hour"},
 {id:"anderson",name:"Anderson Bridge",lat:1.2862,lng:103.8531,day:2,type:"Outdoor",priority:"Would Like",desc:"Elegant historic bridge at the river mouth leading naturally toward Marina Bay.",photo:"Blue hour / night reflections"},
+{id:"pagoda",name:"Pagoda Street",lat:1.28272,lng:103.84546,day:2,type:"Outdoor",priority:"Must See",desc:"Pedestrian Chinatown street with colourful shophouses, souvenirs and classic Chinatown atmosphere.",photo:"Daylight / late afternoon street photography"},
+{id:"maxwell",name:"Maxwell Food Centre",lat:1.28033,lng:103.84475,day:2,type:"Mixed",priority:"Must See",desc:"Classic Chinatown hawker centre at 1 Kadayanallur Street. Good-value local food and a natural lunch stop on the Chinatown day.",photo:"Lunch / daytime hawker scenes"},
+{id:"keongsaik",name:"Keong Saik Road",lat:1.28098,lng:103.84174,day:2,type:"Mixed",priority:"Would Like",desc:"Historic shophouse street with restaurants, bars and evening atmosphere. Best used for an early-evening drink or dinner rather than a daytime photo-only stop.",photo:"Late afternoon / evening shophouses"},
+{id:"robertson",name:"Robertson Quay",lat:1.29129,lng:103.83706,day:2,type:"Outdoor",priority:"Must See",desc:"Relaxed riverside promenade upstream from Clarke Quay with restaurants, bars and a calmer evening atmosphere. Good Saturday happy-hour choices include The Best Brew (5:00–8:30pm), Privé (4:00–8:00pm) and D.O.P (4:00–7:30pm).",photo:"Sunset / evening riverside"},
 {id:"annsiang",name:"Ann Siang Hill",lat:1.2819,lng:103.8461,day:2,type:"Outdoor",priority:"Would Like",desc:"Sloping heritage street with colourful shophouses and a quieter Chinatown feel.",photo:"Late afternoon side light"},
 {id:"telokayer",name:"Telok Ayer Street",lat:1.2824,lng:103.8484,day:2,type:"Outdoor",priority:"Would Like",desc:"Historic street of preserved façades and temples linking Chinatown with the CBD.",photo:"Daylight architectural details"},
 {id:"clarke",name:"Clarke Quay",lat:1.2906,lng:103.8465,day:2,type:"Mixed",priority:"Would Like",desc:"Colourful riverside district with restored warehouses and river views.",photo:"Late afternoon into evening"},
+{id:"clarkejetty",name:"Clarke Quay Jetty Ticket Counter",lat:1.28999,lng:103.84595,day:2,type:"Outdoor",priority:"Must See",desc:"Singapore River Cruise ticket counter on the Clarke Quay riverside, between Blocks C and D. Buy or redeem tickets here and arrive about 15 minutes before departure.",photo:"River Cruise ticket counter"},
 {id:"rivercruise",name:"Singapore River Cruise",lat:1.2906,lng:103.8465,day:2,type:"Mixed",priority:"Optional",desc:"Optional sightseeing boat loop starting and finishing at Clarke Quay Jetty, passing Boat Quay, Merlion / Marina Bay, Marina Bay Sands and the Esplanade area before returning to Clarke Quay.",photo:"Best around sunset into blue hour for skyline and reflections"},
 {id:"southbridge",name:"Southbridge Rooftop",lat:1.28725,lng:103.84933,day:2,type:"Mixed",priority:"Optional",desc:"Rooftop bar above Boat Quay with river and city skyline views. Good value rooftop option directly beside the Saturday route.",photo:"Best around sunset / early evening for river and skyline views"},
 {id:"boat",name:"Boat Quay",lat:1.2875,lng:103.8498,day:2,type:"Outdoor",priority:"Would Like",desc:"Historic Singapore River promenade lined with shophouses and skyline views.",photo:"Blue hour / night reflections"},
@@ -590,12 +657,17 @@ const stops=[
 {id:"misterbugis",name:"Mister Mobile — Bugis Junction",lat:1.299605,lng:103.855485,day:1,type:"Indoor",priority:"Phone Shop",desc:"Used/refurbished phone retailer inside Bugis Junction, 200 Victoria St, #03-26A. Very close to the existing Bugis route, so this is included as a convenient phone-shopping stop.",photo:"Indoor shopping stop; compare condition, battery health and warranty"},
 {id:"misterchinatown",name:"Mister Mobile — Chinatown",lat:1.284056,lng:103.842167,day:2,type:"Indoor",priority:"Phone Shop",desc:"Mister Mobile at People's Park Complex, 1 Park Road #01-14. It sits beside the Chinatown route and is included as a convenient used-phone stop.",photo:"Indoor shopping stop; useful for price comparison"},
 {id:"botanic",name:"Singapore Botanic Gardens",lat:1.3138,lng:103.8159,day:1,type:"Outdoor",priority:"Optional",desc:"UNESCO-listed tropical garden with lakes, rainforest paths and landscaped gardens. The main gardens are free. Optional National Orchid Garden is inside and ticketed.",photo:"Best in the morning or later afternoon; shaded but mainly outdoors"},
+{id:"koksen",name:"Kok Sen Restaurant",lat:1.28098,lng:103.84174,day:2,type:"Indoor",priority:"Optional",desc:"Long-running Singaporean zi char restaurant on Keong Saik Road. Good optional dinner if you want a proper local Chinese meal rather than hawker food.",photo:"Dinner stop"},
+{id:"sinhoisai",name:"Sin Hoi Sai Seafood — Tiong Bahru",lat:1.28485,lng:103.83399,day:2,type:"Mixed",priority:"Optional",desc:"Chinese seafood / zi char restaurant at 55 Tiong Bahru Road. Sam's recommendation; useful as an optional dinner detour rather than a compulsory route stop.",photo:"Dinner stop"},
 {id:"jewel",name:"Jewel Changi Airport",lat:1.3603,lng:103.9898,day:3,type:"Indoor",priority:"Must See",desc:"Indoor airport complex centred on the Rain Vortex and tropical garden.",photo:"Morning / indoor light"},
 {id:"t4",name:"Changi Terminal 4",lat:1.3384,lng:103.9832,day:3,type:"Indoor",priority:"Must See",desc:"Your departure terminal for the flight home.",photo:"Travel/documentary shots"}
 ];
 
 
 const extraMapPOIs=[
+
+ {id:"sim-t4-m1",name:"Tourist SIM — M1 Meet & Greet T4",lat:1.33915,lng:103.98330,category:"SIM",detail:"Terminal 4, Public Level 1 Arrival Hall Central, counter #01-K3. Physical M1 tourist SIMs available here. Tourist SIM options start from about S$12. Near T4 arrivals."},
+
  {id:"shop-bugis-junction",name:"Bugis Junction",lat:1.29953,lng:103.85554,category:"Shopping",detail:"Main Friday shopping mall. Fashion, cafés, restaurants, phone shops and indoor wet-weather shelter."},
  {id:"shop-bugis-plus",name:"Bugis+",lat:1.29998,lng:103.85496,category:"Shopping",detail:"Modern indoor mall opposite Bugis Junction, with fashion, food and cinema."},
  {id:"shop-bugis-street",name:"Bugis Street",lat:1.30073,lng:103.85511,category:"Shopping",detail:"Budget clothing, souvenirs and snacks. Partly sheltered."},
@@ -631,6 +703,50 @@ const extraMapPOIs=[
 ];
 
 
+
+const cheapFoodDrinkPOIs=[
+ {id:"cheap-kampongglam",name:"Kampong Glam Cafe",lat:1.30257,lng:103.85902,category:"Cheap Eats",rating:4.2,price:"S$1–10",detail:"Good-value breakfast / local food on Bussorah Street. Handy first stop on Friday."},
+ {id:"cheap-zamzam",name:"Singapore Zam Zam",lat:1.30295,lng:103.85886,category:"Cheap Eats",rating:4.2,price:"S$10–20",detail:"Classic Indian-Muslim food near Sultan Mosque."},
+ {id:"cheap-bugis-hot",name:"A Hot Hideout @ Bugis Junction",lat:1.29953,lng:103.85554,category:"Cheap Eats",rating:4.9,price:"S$10–20",detail:"Well-rated casual Chinese meal inside Bugis Junction."},
+ {id:"cheap-madras",name:"Madras New Woodlands",lat:1.30774,lng:103.85215,category:"Cheap Eats",rating:4.2,price:"Budget",detail:"Vegetarian Indian food near Little India."},
+ {id:"cheap-xiaolongbao",name:"Zhong Guo La Mian Xiao Long Bao",lat:1.28272,lng:103.84314,category:"Cheap Eats",rating:4.5,price:"S$1–10",detail:"Cheap dumplings / noodles in Chinatown Complex Food Centre."},
+ {id:"cheap-bk",name:"BK Eating House",lat:1.28687,lng:103.84886,category:"Cheap Eats",rating:4.0,price:"S$1–10",detail:"Simple 24-hour coffee-shop style food near Boat Quay / Clarke Quay."},
+ {id:"cheap-yakun-cq",name:"Ya Kun Kaya Toast — Clarke Quay Central",lat:1.28877,lng:103.84664,category:"Cheap Eats",rating:3.6,price:"S$1–10",detail:"Cheap toast / coffee / light meal at Clarke Quay Central."},
+ {id:"cheap-helens",name:"Helen's Bar — Clarke Quay",lat:1.29036,lng:103.84639,category:"Cheap Drinks",rating:4.8,price:"Beer from ~S$5.99",detail:"One of the cheaper bar options around Clarke Quay. Bottled beer around S$5.99; pints from about S$8.99."},
+ {id:"cheap-chupitos",name:"Chupitos — Clarke Quay",lat:1.29020,lng:103.84656,category:"Cheap Drinks",rating:4.6,price:"Happy-hour items from ~S$8",detail:"Selected happy-hour drinks around S$8."}
+];
+
+
+const mrtChangePOIs=[
+ {id:"change-expo",name:"CHANGE — Expo MRT CG1 / DT35",lat:1.33537,lng:103.96147,category:"MRT Change",detail:"Airport journey: stay on the Changi branch through Expo. Expo is the intermediate station between Changi Airport and Tanah Merah."},
+ {id:"change-tanahmerah",name:"CHANGE — Tanah Merah MRT EW4",lat:1.32726,lng:103.94651,category:"MRT Change",detail:"Important airport interchange. Change here from the Changi Airport branch to the westbound East–West Line toward Lavender / city."},
+ {id:"change-bugis",name:"CHANGE — Bugis MRT EW12 / DT14",lat:1.30089,lng:103.85651,category:"MRT Change",detail:"East–West / Downtown Line interchange used around Bugis and central-city journeys."},
+ {id:"change-littleindia",name:"CHANGE — Little India MRT NE7 / DT12",lat:1.30680,lng:103.84960,category:"MRT Change",detail:"North East / Downtown Line interchange for Little India."},
+ {id:"change-chinatown",name:"CHANGE — Chinatown MRT NE4 / DT19",lat:1.28423,lng:103.84319,category:"MRT Change",detail:"North East / Downtown Line interchange for Chinatown."},
+ {id:"change-promenade",name:"CHANGE — Promenade MRT CC4 / DT15",lat:1.29302,lng:103.86039,category:"MRT Change",detail:"Circle / Downtown Line interchange near Marina Square and Suntec."},
+ {id:"change-bayfront",name:"CHANGE — Bayfront MRT CE1 / DT16",lat:1.28168,lng:103.85919,category:"MRT Change",detail:"Circle Line extension / Downtown Line interchange for Marina Bay Sands and Gardens by the Bay."}
+];
+
+
+
+const happyHourPOIs=[
+ {id:"hh-bestbrew",name:"The Best Brew — Robertson Quay",lat:1.28984,lng:103.83568,category:"Happy Hour",price:"Daily 5:00–8:30pm",detail:"Craft-beer bar on the Singapore River at 382 Havelock Road. Happy hour runs DAILY 5:00–8:30pm. Good fit for Saturday after Robertson Quay."},
+ {id:"hh-prive",name:"Privé Robertson Quay",lat:1.29074,lng:103.83742,category:"Happy Hour",price:"Daily 4:00–8:00pm",detail:"Riverside café/bar at 41 Robertson Quay. Daily happy hour 4:00–8:00pm with up to 40% off selected draught beer, wine, spirits and cocktails; 20% off small bites."},
+ {id:"hh-dop",name:"D.O.P Mozzarella Bar & Restaurant",lat:1.29055,lng:103.83814,category:"Happy Hour",price:"Daily 4:00–7:30pm",detail:"Italian restaurant at 60 Robertson Quay. Happy hour every day 4:00–7:30pm: selected drinks S$9++ including Aperol Spritz, house red, Menabrea draught beer and gin & tonic."},
+ {id:"hh-octapas",name:"Octapas — Clarke Quay",lat:1.29047,lng:103.84615,category:"Happy Hour",price:"Weekend until 9:00pm",detail:"Clarke Quay tapas/bar. Weekend happy-hour offers run until 9:00pm; useful before or after the river cruise."},
+ {id:"hh-southbridge",name:"Southbridge Rooftop",lat:1.28725,lng:103.84933,category:"Drinks",price:"Fri/Sat bottle promo",detail:"Rooftop at 80 Boat Quay. No standard Saturday happy hour listed; Friday/Saturday promo focuses on discounted champagne bottles. Better for the view than for the cheapest drinks."}
+];
+
+const samSuggestedPOIs=[
+ {id:"sam-maxwell",name:"Maxwell Food Centre",lat:1.28033,lng:103.84475,category:"Hawker",rating:4.4,price:"S$1–10",detail:"Sam's Chinatown suggestion. Classic hawker centre at 1 Kadayanallur Street."},
+ {id:"sam-pagoda",name:"Pagoda Street",lat:1.28272,lng:103.84546,category:"Attraction",rating:4.5,detail:"Pedestrian Chinatown street with shophouses and souvenirs."},
+ {id:"sam-keongsaik",name:"Keong Saik Road",lat:1.28098,lng:103.84174,category:"Attraction",detail:"Historic shophouse street; especially good for evening drinks / dinner."},
+ {id:"sam-robertson",name:"Robertson Quay",lat:1.29129,lng:103.83706,category:"Attraction",detail:"Relaxed upstream Singapore River promenade with restaurants and bars."},
+ {id:"sam-koksen",name:"Kok Sen Restaurant",lat:1.28098,lng:103.84174,category:"Cheap Eats",rating:4.1,price:"$$",detail:"Long-running Singaporean zi char on Keong Saik Road. Optional dinner."},
+ {id:"sam-sinhoisai",name:"Sin Hoi Sai Seafood — Tiong Bahru",lat:1.28485,lng:103.83399,category:"Cheap Eats",rating:4.0,price:"$$",detail:"Chinese seafood / zi char at 55 Tiong Bahru Road. Optional dinner detour."},
+ {id:"sam-simlim",name:"Sim Lim Square",lat:1.30303,lng:103.85303,category:"Shopping",rating:4.0,detail:"Electronics / IT mall. Useful for comparing second-hand and refurbished phones."}
+];
+
 const hawkerMapPOIs=[
  {id:"hawker-laupasat",name:"Lau Pa Sat",lat:1.28061,lng:103.85048,category:"Hawker",rating:4.4,detail:"Historic CBD hawker centre and Satay Street. Free to enter; food extra."},
  {id:"hawker-tekka",name:"Tekka Centre",lat:1.30666,lng:103.85082,category:"Hawker",rating:4.2,detail:"Little India hawker centre and market. Good-value Indian and local food."},
@@ -644,7 +760,13 @@ const poiCategoryColors={
  MRT:"#E32017",
  Toilet:"#4f6b7a",
  Smoking:"#8b6b4a",
- Hawker:"#f59e0b"
+ SIM:"#0f766e",
+ "MRT Change":"#ff7a00",
+ Hawker:"#f59e0b",
+ "Cheap Eats":"#16a34a",
+ "Cheap Drinks":"#db2777",
+ "Happy Hour":"#7c3aed",
+ "Drinks":"#9333ea"
 };
 
 const stopCosts={
@@ -676,6 +798,7 @@ const stopCosts={
  bugisplus:{label:"FREE",detail:"Mall entry is free; shopping, food and cinema extra."},
  marinasquare:{label:"FREE",detail:"Mall entry is free; shopping and food extra."},
  suntec:{label:"FREE",detail:"Mall entry is free; shopping and food extra."},
+ simlim:{label:"FREE",detail:"Mall entry is free; electronics / phone purchases extra."},
  littleindia:{label:"FREE",detail:"Free to browse; purchases extra."},
  tekka:{label:"FREE",detail:"Free to enter; food and shopping extra."},
  somerset313:{label:"FREE",detail:"Mall entry is free; shopping and food extra."},
@@ -683,9 +806,16 @@ const stopCosts={
  hillstreet:{label:"FREE",detail:"Exterior/photo stop from public area."},
  cavenagh:{label:"FREE",detail:"Public bridge."},
  anderson:{label:"FREE",detail:"Public bridge."},
+ pagoda:{label:"FREE",detail:"Public pedestrian street; shopping extra."},
+ maxwell:{label:"FREE entry",detail:"Hawker centre entry is free; most meals are inexpensive and paid per stall."},
+ keongsaik:{label:"FREE",detail:"Public street; food and drinks extra."},
+ robertson:{label:"FREE",detail:"Public riverside promenade; restaurants and drinks extra."},
+ koksen:{label:"Meal cost",detail:"Optional sit-down Singaporean zi char dinner; more expensive than a hawker meal."},
+ sinhoisai:{label:"Meal cost",detail:"Optional Chinese seafood / zi char dinner in Tiong Bahru."},
  annsiang:{label:"FREE",detail:"Public street / hill area."},
  telokayer:{label:"FREE",detail:"Public street."},
  clarke:{label:"FREE",detail:"Public riverside area; food/drinks extra."},
+ clarkejetty:{label:"Ticket counter",detail:"Buy or redeem Singapore River Cruise tickets here. Standard walk-in adult fare is S$28; arrive around 15 minutes before departure."},
  rivercruise:{label:"S$28 adult",detail:"Singapore River Experience is currently S$28 adult / S$18 child and lasts about 40 minutes."},
  southbridge:{label:"FREE entry",detail:"No admission fee. Allow roughly S$10–18+ for a drink depending on choice / happy hour."},
  boat:{label:"FREE",detail:"Public riverside promenade."},
@@ -706,18 +836,50 @@ function costForStop(stop){
 }
 
 
+
+const stopTimingRules={
+ botanic:{period:"day",label:"DAYTIME ONLY",latestHour:18,reason:"Best seen in daylight; do not schedule after dark."},
+ fort:{period:"day",label:"DAYTIME",latestHour:18,reason:"Park paths and views are better in daylight."},
+ tan:{period:"day",label:"DAYTIME",latestHour:18,reason:"Exterior colour/photo stop is much better in daylight."},
+ hillstreet:{period:"day",label:"DAYTIME",latestHour:18,reason:"Best for exterior photos before dark."},
+ annsiang:{period:"day",label:"DAYTIME",latestHour:18,reason:"Best as a daytime street/hill walk."},
+ pagoda:{period:"day",label:"DAYTIME",latestHour:18,reason:"Best seen while the Chinatown shops and street activity are visible."},
+ maxwell:{period:"day",label:"LUNCH / DAY",latestHour:17,reason:"Best used as the main Chinatown lunch / food stop."},
+ simlim:{period:"day",label:"BEFORE 8PM",latestHour:19,reason:"Shopping mall; allow time before shops close."},
+ keongsaik:{period:"night-ok",label:"EVENING OK",reason:"Best for evening atmosphere, drinks or dinner."},
+ robertson:{period:"night-ok",label:"EVENING OK",reason:"Excellent riverside evening walk / dinner area."},
+ koksen:{period:"night-ok",label:"DINNER",reason:"Optional evening dinner stop."},
+ sinhoisai:{period:"night-ok",label:"DINNER",reason:"Optional evening dinner detour."},
+ flowerdome:{period:"day-evening",label:"BEFORE CLOSING",latestHour:19,reason:"Allow enough time before last admission/closing."},
+ f1:{period:"night-ok",label:"EVENING OK",reason:"Good as an evening/night walk."},
+ southbridge:{period:"night-ok",label:"EVENING OK",reason:"Best around sunset / evening."},
+ spectra:{period:"night-ok",label:"EVENING",reason:"Night light-and-water show."},
+ gardens:{period:"night-ok",label:"EVENING OK",reason:"Supertree area works well after dark."}
+};
+function timingRuleFor(id){ return stopTimingRules[id]||null; }
+function timingBadgeHtml(id){
+ const r=timingRuleFor(id);
+ if(!r)return "";
+ return `<span class="timing-badge ${r.period==="day"?"daytime":r.period==="night-ok"?"evening":"closing"}">${r.label}</span>`;
+}
+
 const dayAddOns={
  0:[
    {id:"marinasquare",name:"Marina Square",type:"Indoor",desc:"Indoor mall near Esplanade. Good wet-weather stop.",activity:"Shopping / rain shelter"},
    {id:"suntec",name:"Suntec City",type:"Indoor",desc:"Large indoor mall near Marina Bay.",activity:"Shopping / food"}
  ],
  1:[
-   {id:"botanic",name:"Singapore Botanic Gardens",type:"Outdoor",desc:"FREE gardens. Best if weather is dry.",activity:"Gardens / sightseeing"},
+   {id:"botanic",name:"Singapore Botanic Gardens",type:"Outdoor",desc:"FREE gardens. DAYTIME ONLY in this app — add it before the evening so you can actually see the gardens.",activity:"Gardens / sightseeing"},
    {id:"bugisplus",name:"Bugis+ extra shopping",type:"Indoor",desc:"Extra shopping and food around Bugis.",activity:"Shopping"},
-   {id:"arab",name:"Evening Kampong Glam",type:"Outdoor",desc:"Return to Arab Street / Haji Lane area for dinner or drinks.",activity:"Dinner / evening walk"}
+   {id:"arab",name:"Evening Kampong Glam",type:"Outdoor",desc:"Return to Arab Street / Haji Lane area for dinner or drinks.",activity:"Dinner / evening walk"},
+   {id:"f1",name:"F1 Track Walk",type:"Outdoor",desc:"Optional evening walk along public-road sections of the Marina Bay Street Circuit if you miss Thursday. Some post-race teardown may still affect access.",activity:"F1 circuit walk / night photos"}
  ],
  2:[
-   {id:"southbridge",name:"Southbridge Rooftop",type:"Mixed",desc:"Rooftop river/city view near Boat Quay.",activity:"Rooftop drink / skyline"}
+   {id:"keongsaik",name:"Keong Saik Road — evening drinks",type:"Mixed",desc:"Sam's suggestion. Add this if you want shophouse bars / drinks in the evening.",activity:"Evening drinks / shophouses"},
+   {id:"koksen",name:"Kok Sen — local Chinese dinner",type:"Indoor",desc:"Sam's restaurant suggestion on Keong Saik Road. Optional proper dinner; expect it to cost more than hawker food.",activity:"Local Chinese dinner"},
+   {id:"sinhoisai",name:"Sin Hoi Sai — Tiong Bahru dinner",type:"Mixed",desc:"Sam's recommendation in Tiong Bahru. This is a detour, so keep it optional rather than forcing it into the route.",activity:"Chinese seafood dinner"},
+   {id:"southbridge",name:"Southbridge Rooftop",type:"Mixed",desc:"Rooftop river/city view near Boat Quay. Keep as an optional alternative even though Robertson Quay is now the main riverside evening.",activity:"Rooftop drink / skyline"},
+   {id:"f1",name:"F1 Track Walk",type:"Outdoor",desc:"Optional evening F1 street-circuit walk after the river area if you missed Thursday. Public roads only; some post-race teardown may affect access.",activity:"F1 circuit walk / night photos"}
  ],
  3:[]
 };
@@ -733,8 +895,8 @@ Object.values(addonVirtualStops).forEach(s=>{
 
 const masterPlans=[
  ["airport","t4shuttle","changimrt","hotel","fullerton","merlion","jubilee","esplanade","helix","mbs","spectra","gardens","flowerdome","f1","hotel"],
- ["hotel","sultan","bussorah","muscat","baghdad","arab","haji","bugis","misterbugis","littleindia","tan","clive","serangoon","tekka","hotel"],
- ["hotel","fort","hillstreet","chinatown","misterchinatown","annsiang","telokayer","laupasat","cavenagh","anderson","boat","clarke","rivercruise","hotel"],
+ ["hotel","sultan","bussorah","muscat","baghdad","arab","haji","bugis","misterbugis","simlim","littleindia","tan","clive","serangoon","tekka","hotel"],
+ ["hotel","fort","hillstreet","chinatown","pagoda","misterchinatown","maxwell","annsiang","telokayer","laupasat","cavenagh","anderson","clarke","clarkejetty","rivercruise","robertson","hotel"],
  ["hotel","jewel","t4"]
 ];
 const mrt=[
@@ -837,7 +999,7 @@ const mrtNetworks={
  ]
 };
 
-let state=JSON.parse(localStorage.getItem("sgTripV69")||"null")||{day:0,routes:masterPlans.map(x=>[...x]),skipped:[[],[],[],[]],modeOverrides:{},weatherMode:"normal"};
+let state=JSON.parse(localStorage.getItem("sgTripV75")||"null")||{day:0,routes:masterPlans.map(x=>[...x]),skipped:[[],[],[],[]],modeOverrides:{},weatherMode:"normal"};
 if(!Array.isArray(state.routes)||state.routes.length<4)state.routes=masterPlans.map(x=>[...x]);
 if(!Array.isArray(state.skipped))state.skipped=[[],[],[],[]];
 while(state.skipped.length<4)state.skipped.push([]);
@@ -936,7 +1098,7 @@ let drawerDragActive=false;
 let gpsFollow=false;
 let lastTouchY=null,routeScrollFloat=0;
 
-function save(){localStorage.setItem("sgTripV69",JSON.stringify(state))}
+function save(){localStorage.setItem("sgTripV75",JSON.stringify(state))}
 function byId(id){return stops.find(s=>s.id===id)}
 function routeStops(){return state.routes[state.day].map(byId).filter(Boolean)}
 function hav(a,b){const R=6371,p=Math.PI/180,dLat=(b.lat-a.lat)*p,dLon=(b.lng-a.lng)*p,la1=a.lat*p,la2=b.lat*p,x=Math.sin(dLat/2)**2+Math.cos(la1)*Math.cos(la2)*Math.sin(dLon/2)**2;return 2*R*Math.asin(Math.sqrt(x))}
@@ -1209,7 +1371,7 @@ function poiPopupContent(p){
  wrap.appendChild(h);
 
  const meta=document.createElement("p");
- meta.innerHTML=`<b>${p.category}</b>${Number.isFinite(p.rating)?` · <span class="poi-rating">★ ${p.rating.toFixed(1)}</span>`:""}<br>${p.detail||""}`;
+ meta.innerHTML=`<b>${p.category}</b>${Number.isFinite(p.rating)?` · <span class="poi-rating">★ ${p.rating.toFixed(1)}</span>`:""}${p.price?` · <b>${p.price}</b>`:""}<br>${p.detail||""}`;
  wrap.appendChild(meta);
 
  const btn=document.createElement("button");
@@ -1243,9 +1405,11 @@ function renderExtraPOIs(){
     detail:`${s.type} · ${costForStop(s).label}. ${s.desc||""}`
   }));
 
- [...tripPlaces,...extraMapPOIs,...hawkerMapPOIs].forEach(p=>{
+ [...tripPlaces,...extraMapPOIs,...mrtChangePOIs,...hawkerMapPOIs,...cheapFoodDrinkPOIs,...happyHourPOIs,...samSuggestedPOIs].forEach(p=>{
   const el=document.createElement("div");
   el.className="zoom-poi-dot";
+  if(p.category==="MRT Change")el.classList.add("mrt-change-dot");
+  if(p.category==="SIM")el.classList.add("sim-dot");
   el.style.background=poiCategoryColors[p.category]||"#1677FF";
   el.title=p.name;
 
@@ -1769,15 +1933,33 @@ function addSkippedBack(id){
 function availableAddOns(){
  return (dayAddOns[state.day]||[]).filter(a=>!(state.routes[state.day]||[]).includes(a.id));
 }
-function addonInsertIndex(route){
+function addonInsertIndex(route,id){
  if(state.day===3)return Math.max(0,route.length-1);
+
+ const rule=timingRuleFor(id);
  const lastHotel=route.lastIndexOf("hotel");
- return lastHotel>=0 ? lastHotel : route.length;
+ const endIndex=lastHotel>=0 ? lastHotel : route.length;
+
+ if(rule?.period==="day"){
+  // Put daylight attractions before known evening/night stops.
+  const eveningIds=new Set(["southbridge","clarke","clarkejetty","rivercruise","f1","spectra"]);
+  for(let i=1;i<endIndex;i++){
+   if(eveningIds.has(route[i]))return i;
+  }
+
+  // Friday: place Botanic Gardens after Tekka if present, which keeps it in daylight.
+  if(id==="botanic"){
+   const tekka=route.indexOf("tekka");
+   if(tekka>=0 && tekka<endIndex)return tekka+1;
+  }
+ }
+
+ return endIndex;
 }
 function addAddonToToday(id){
  const route=[...(state.routes[state.day]||[])];
  if(route.includes(id))return;
- route.splice(addonInsertIndex(route),0,id);
+ route.splice(addonInsertIndex(route,id),0,id);
  state.routes[state.day]=route;
  state.skipped[state.day]=(state.skipped[state.day]||[]).filter(x=>x!==id);
  ensureHotelReturn(state.day);
@@ -1809,7 +1991,9 @@ function renderAddOns(){
     <div class="stop-meta">
       <span class="place-type">${type}</span>
       <span class="place-cost ${cost.label==="FREE"?"free":""}">${cost.label}</span>
+      ${timingBadgeHtml(a.id)}
     </div>
+    ${timingRuleFor(a.id)?.reason?`<p class="timing-note">${timingRuleFor(a.id).reason}</p>`:""}
     <p>${a.activity||""}</p>
     <p>${a.desc||""}</p>
     <button class="pill addon-add-btn" data-addon-id="${a.id}" style="width:100%">Add to today's route</button>
@@ -1872,12 +2056,20 @@ function activityLabel(stop){
  if(id==="hotel")return "Hotel";
  if((stop.priority||"").includes("Phone"))return "Phone shopping";
  if(["bugis","bugisplus","misterbugis","misterchinatown","chinatown","laupasat","tekka","mbs","flowerdome","southbridge"].includes(id)){
-  if(id==="southbridge")return "Rooftop drinks / view";
+  if(id==="simlim")return "Electronics / used phones";
+ if(id==="pagoda")return "Chinatown street walk";
+ if(id==="maxwell")return "Hawker lunch";
+ if(id==="keongsaik")return "Shophouses / drinks";
+ if(id==="robertson")return "Riverside walk / dinner";
+ if(id==="koksen")return "Local Chinese dinner";
+ if(id==="sinhoisai")return "Chinese seafood dinner";
+ if(id==="southbridge")return "Rooftop drinks / view";
   if(id==="flowerdome")return "Indoor attraction";
   if(["bugis","bugisplus","misterbugis","misterchinatown"].includes(id))return "Shopping";
   if(id==="laupasat"||id==="tekka")return "Food / explore";
   if(id==="mbs")return "Mall / Marina Bay";
  }
+ if(id==="clarkejetty")return "Buy / redeem cruise tickets";
  if(id==="rivercruise")return "River cruise";
  return stop.type==="Indoor"?"Indoor visit":"Sightseeing";
 }
@@ -1925,6 +2117,13 @@ const locationImageTitles={
  haji:"Haji Lane",
  bugis:"Bugis Singapore",
  misterbugis:"Bugis Singapore",
+ simlim:"Sim Lim Square",
+ pagoda:"Pagoda Street Singapore",
+ maxwell:"Maxwell Food Centre",
+ keongsaik:"Keong Saik Road",
+ robertson:"Robertson Quay",
+ koksen:"Keong Saik Road",
+ sinhoisai:"Tiong Bahru Singapore",
  littleindia:"Little India Singapore",
  tan:"House of Tan Teng Niah",
  clive:"Little India Singapore",
@@ -2011,6 +2210,17 @@ function moveRouteStop(stopIndex,direction){
  if(stopIndex<0 || stopIndex>=route.length || target<0 || target>=route.length)return;
  if(isLockedRouteIndex(route,stopIndex) || isLockedRouteIndex(route,target))return;
 
+ const movingId=route[stopIndex];
+ const targetId=route[target];
+ const rule=timingRuleFor(movingId);
+ const eveningIds=new Set(["southbridge","clarke","clarkejetty","rivercruise","f1","spectra"]);
+
+ // Prevent daylight-only attractions being pushed after an evening/night section.
+ if(direction>0 && rule?.period==="day" && eveningIds.has(targetId)){
+  alert(`${byId(movingId)?.name||"This stop"} is kept in daylight so you can actually see it.`);
+  return;
+ }
+
  [route[stopIndex],route[target]]=[route[target],route[stopIndex]];
  state.routes[state.day]=route;
  ensureHotelReturn(state.day);
@@ -2018,6 +2228,54 @@ function moveRouteStop(stopIndex,direction){
  renderDrawer();
  renderAddOns();
  buildRoute();
+}
+
+
+const cheapNearbyByStop={
+ sultan:["Kampong Glam Cafe — S$1–10","Singapore Zam Zam — S$10–20"],
+ bussorah:["Kampong Glam Cafe — S$1–10","Singapore Zam Zam — S$10–20"],
+ arab:["Kampong Glam Cafe — S$1–10","Singapore Zam Zam — S$10–20"],
+ haji:["Kampong Glam Cafe — S$1–10","Singapore Zam Zam — S$10–20"],
+ bugis:["A Hot Hideout @ Bugis Junction — S$10–20"],
+ misterbugis:["A Hot Hideout @ Bugis Junction — S$10–20"],
+ simlim:["Sim Lim Square — compare several shops before buying; check warranty / condition on used phones"],
+ littleindia:["Madras New Woodlands — budget vegetarian Indian"],
+ tekka:["Tekka Centre hawker stalls — cheap local food"],
+ pagoda:["Maxwell Food Centre nearby — usually S$4–10 for many hawker dishes"],
+ maxwell:["Maxwell hawker stalls — usually S$4–10 for many meals"],
+ keongsaik:["Kok Sen nearby — sit-down zi char, not hawker-cheap"],
+ robertson:[
+ "The Best Brew — DAILY happy hour 5:00–8:30pm",
+ "Privé Robertson Quay — DAILY happy hour 4:00–8:00pm; up to 40% off selected drinks",
+ "D.O.P Mozzarella Bar — DAILY 4:00–7:30pm; selected drinks S$9++"
+],
+ chinatown:["Zhong Guo La Mian Xiao Long Bao — S$1–10"],
+ misterchinatown:["Zhong Guo La Mian Xiao Long Bao — S$1–10"],
+ laupasat:["Lau Pa Sat hawker stalls — budget to mid-range"],
+ boat:["BK Eating House — S$1–10"],
+ clarke:[
+ "BK Eating House — S$1–10",
+ "Octapas — weekend happy-hour offers until 9:00pm",
+ "Helen's Bar — bottled beer ~S$5.99",
+ "Chupitos — selected happy-hour drinks ~S$8"
+],
+ clarkejetty:[
+ "BK Eating House — S$1–10",
+ "Octapas — weekend happy-hour offers until 9:00pm",
+ "Helen's Bar — bottled beer ~S$5.99",
+ "Chupitos — selected happy-hour drinks ~S$8"
+],
+ rivercruise:[
+ "Octapas — weekend happy-hour offers until 9:00pm",
+ "The Best Brew — DAILY 5:00–8:30pm at Robertson Quay",
+ "Privé Robertson Quay — DAILY 4:00–8:00pm",
+ "D.O.P Mozzarella Bar — DAILY 4:00–7:30pm; selected drinks S$9++"
+]
+};
+function cheapNearbyHtml(stop){
+ const rows=cheapNearbyByStop[stop?.id];
+ if(!rows?.length)return "";
+ return `<div class="cheap-nearby"><b>Cheap / happy hour nearby:</b><br>${rows.map(x=>`• ${x}`).join("<br>")}</div>`;
 }
 
 function openStepInGoogleMaps(stepIndex){
@@ -2059,9 +2317,11 @@ function renderDrawer(){
       <div class="stop-meta">
        <span class="place-type ${a.type.toLowerCase()}">${a.type}</span>
        <span class="place-cost ${costForStop(a).label==="FREE"?"free":""}">${costForStop(a).label}</span>
+       ${timingBadgeHtml(a.id)}
       </div>
       <p class="step-estimate"><b>${mode==="shuttle"?"Shuttle":mode==="walk"?"Walk":mode==="river"?"River cruise":"MRT"}:</b> ${estimateTextForStep(a,b)} ${stepWeatherHtml(i,rs.length-1)}</p>
       <p>${a.desc||""}</p>
+      ${cheapNearbyHtml(b)}
 
       <div class="step-actions">
        <button type="button" class="google-maps-btn" data-gmaps-step="${i}">See in Google Maps</button>
