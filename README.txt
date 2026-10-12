@@ -1,15 +1,7 @@
-Singapore Trip App V76
+Singapore Trip App V77
 
-Map popup improvements
-- Dot/marker popups are now fixed in the centre of the screen.
-- Close X is much larger, dark, and easy to tap.
-- As you zoom in further, place names appear beside map dots.
-
-Phone shopping
-- Second-hand / refurbished phone wording is now kept to Sim Lim Square only.
-- Mister Mobile Bugis is described simply as a phone retailer.
-
-Friday evening
-- Latest return to Hotel Boss changed from 10pm to 11pm.
-- Friday weather/route timing now allows the route to extend to 23:00.
-- Friday add-on wording updated accordingly.
+Fix:
+- Corrected the zoomed-map-dot drift introduced in V76.
+- The cause was the dot CSS changing MapLibre markers from absolute positioning to relative positioning.
+- Dots now remain pinned to their true latitude/longitude while zooming.
+- Location labels still appear when zoomed in, but no longer disturb marker anchoring.
