@@ -518,6 +518,76 @@ button{font:inherit}
  font-size:11px!important;
  font-weight:700;
 }
+
+/* V76 centered map popups + larger close X + zoom labels */
+.centered-map-popup{
+ position:fixed!important;
+ left:50%!important;
+ top:50%!important;
+ transform:translate(-50%,-50%)!important;
+ z-index:40!important;
+ width:min(300px,calc(100vw - 28px))!important;
+}
+.centered-map-popup .maplibregl-popup-tip{
+ display:none!important;
+}
+.centered-map-popup .maplibregl-popup-content{
+ width:100%!important;
+ max-width:none!important;
+ padding:14px 14px 12px!important;
+ padding-right:46px!important;
+}
+.maplibregl-popup-close-button{
+ width:40px!important;
+ height:40px!important;
+ min-width:40px!important;
+ min-height:40px!important;
+ border-radius:50%!important;
+ background:#111!important;
+ color:#fff!important;
+ font-size:28px!important;
+ line-height:36px!important;
+ font-weight:900!important;
+ right:6px!important;
+ top:6px!important;
+ display:flex!important;
+ align-items:center!important;
+ justify-content:center!important;
+ box-shadow:0 2px 6px rgba(0,0,0,.25)!important;
+}
+.maplibregl-popup-close-button:hover{
+ background:#333!important;
+}
+.zoom-poi-dot{
+ position:relative;
+}
+.zoom-poi-label{
+ position:absolute;
+ left:50%;
+ top:calc(100% + 6px);
+ transform:translateX(-50%);
+ white-space:nowrap;
+ pointer-events:none;
+ background:rgba(255,255,255,.96);
+ color:#111;
+ border:1px solid rgba(0,0,0,.14);
+ border-radius:7px;
+ padding:3px 6px;
+ font-size:10px;
+ font-weight:800;
+ line-height:1.15;
+ box-shadow:0 1px 4px rgba(0,0,0,.14);
+ z-index:2;
+}
+.late-return-note{
+ margin:6px 0 10px;
+ padding:7px 9px;
+ border-radius:10px;
+ background:#fff5e6;
+ border:1px solid #f0d3a7;
+ font-size:11px;
+ font-weight:800;
+}
 </style>
 </head>
 <body>
@@ -654,7 +724,7 @@ const stops=[
 {id:"beachstation",name:"Beach Station",lat:1.2517,lng:103.8179,day:2,type:"Mixed",priority:"Optional",desc:"Main Sentosa beach transport hub, useful as a base for the beach area.",photo:"Useful waypoint"},
 {id:"palawan",name:"Palawan Beach",lat:1.2494,lng:103.8200,day:2,type:"Outdoor",priority:"Optional",desc:"Relaxed Sentosa beach with tropical waterfront views.",photo:"Late afternoon / sunset"},
 
-{id:"misterbugis",name:"Mister Mobile — Bugis Junction",lat:1.299605,lng:103.855485,day:1,type:"Indoor",priority:"Phone Shop",desc:"Used/refurbished phone retailer inside Bugis Junction, 200 Victoria St, #03-26A. Very close to the existing Bugis route, so this is included as a convenient phone-shopping stop.",photo:"Indoor shopping stop; compare condition, battery health and warranty"},
+{id:"misterbugis",name:"Mister Mobile — Bugis Junction",lat:1.299605,lng:103.855485,day:1,type:"Indoor",priority:"Phone Shop",desc:"Phone retailer inside Bugis Junction, 200 Victoria St, #03-26A. Very close to the existing Bugis route, so this is included as a convenient phone-shopping stop.",photo:"Indoor shopping stop; compare condition, battery health and warranty"},
 {id:"misterchinatown",name:"Mister Mobile — Chinatown",lat:1.284056,lng:103.842167,day:2,type:"Indoor",priority:"Phone Shop",desc:"Mister Mobile at People's Park Complex, 1 Park Road #01-14. It sits beside the Chinatown route and is included as a convenient used-phone stop.",photo:"Indoor shopping stop; useful for price comparison"},
 {id:"botanic",name:"Singapore Botanic Gardens",lat:1.3138,lng:103.8159,day:1,type:"Outdoor",priority:"Optional",desc:"UNESCO-listed tropical garden with lakes, rainforest paths and landscaped gardens. The main gardens are free. Optional National Orchid Garden is inside and ticketed.",photo:"Best in the morning or later afternoon; shaded but mainly outdoors"},
 {id:"koksen",name:"Kok Sen Restaurant",lat:1.28098,lng:103.84174,day:2,type:"Indoor",priority:"Optional",desc:"Long-running Singaporean zi char restaurant on Keong Saik Road. Good optional dinner if you want a proper local Chinese meal rather than hawker food.",photo:"Dinner stop"},
@@ -871,7 +941,7 @@ const dayAddOns={
  1:[
    {id:"botanic",name:"Singapore Botanic Gardens",type:"Outdoor",desc:"FREE gardens. DAYTIME ONLY in this app — add it before the evening so you can actually see the gardens.",activity:"Gardens / sightseeing"},
    {id:"bugisplus",name:"Bugis+ extra shopping",type:"Indoor",desc:"Extra shopping and food around Bugis.",activity:"Shopping"},
-   {id:"arab",name:"Evening Kampong Glam",type:"Outdoor",desc:"Return to Arab Street / Haji Lane area for dinner or drinks.",activity:"Dinner / evening walk"},
+   {id:"arab",name:"Evening Kampong Glam",type:"Outdoor",desc:"Return to Arab Street / Haji Lane area for dinner or drinks. Friday can now run later, but aim to be back at Hotel Boss by 11pm latest.",activity:"Dinner / evening walk"},
    {id:"f1",name:"F1 Track Walk",type:"Outdoor",desc:"Optional evening walk along public-road sections of the Marina Bay Street Circuit if you miss Thursday. Some post-race teardown may still affect access.",activity:"F1 circuit walk / night photos"}
  ],
  2:[
@@ -999,7 +1069,7 @@ const mrtNetworks={
  ]
 };
 
-let state=JSON.parse(localStorage.getItem("sgTripV75")||"null")||{day:0,routes:masterPlans.map(x=>[...x]),skipped:[[],[],[],[]],modeOverrides:{},weatherMode:"normal"};
+let state=JSON.parse(localStorage.getItem("sgTripV76")||"null")||{day:0,routes:masterPlans.map(x=>[...x]),skipped:[[],[],[],[]],modeOverrides:{},weatherMode:"normal"};
 if(!Array.isArray(state.routes)||state.routes.length<4)state.routes=masterPlans.map(x=>[...x]);
 if(!Array.isArray(state.skipped))state.skipped=[[],[],[],[]];
 while(state.skipped.length<4)state.skipped.push([]);
@@ -1098,7 +1168,7 @@ let drawerDragActive=false;
 let gpsFollow=false;
 let lastTouchY=null,routeScrollFloat=0;
 
-function save(){localStorage.setItem("sgTripV75",JSON.stringify(state))}
+function save(){localStorage.setItem("sgTripV76",JSON.stringify(state))}
 function byId(id){return stops.find(s=>s.id===id)}
 function routeStops(){return state.routes[state.day].map(byId).filter(Boolean)}
 function hav(a,b){const R=6371,p=Math.PI/180,dLat=(b.lat-a.lat)*p,dLon=(b.lng-a.lng)*p,la1=a.lat*p,la2=b.lat*p,x=Math.sin(dLat/2)**2+Math.cos(la1)*Math.cos(la2)*Math.sin(dLon/2)**2;return 2*R*Math.asin(Math.sqrt(x))}
@@ -1413,15 +1483,23 @@ function renderExtraPOIs(){
   el.style.background=poiCategoryColors[p.category]||"#1677FF";
   el.title=p.name;
 
+  if(map.getZoom()>=16.15){
+   const label=document.createElement("span");
+   label.className="zoom-poi-label";
+   label.textContent=p.name;
+   el.appendChild(label);
+  }
+
   el.addEventListener("click",e=>{
    e.stopPropagation();
    if(stepPopup){stepPopup.remove();stepPopup=null}
 
    stepPopup=new maplibregl.Popup({
-    closeButton:false,
+    closeButton:true,
     closeOnClick:false,
     offset:14,
-    maxWidth:"280px"
+    maxWidth:"280px",
+    className:"centered-map-popup"
    })
    .setLngLat([p.lng,p.lat])
    .setDOMContent(poiPopupContent(p))
@@ -1483,7 +1561,8 @@ function showMapStepPopup(stopIndex){
    closeButton:true,
    closeOnClick:false,
    offset:20,
-   maxWidth:"270px"
+   maxWidth:"270px",
+   className:"centered-map-popup"
  })
  .setLngLat([stop.lng,stop.lat])
  .setDOMContent(wrap)
@@ -1568,7 +1647,7 @@ function weatherInfo(code){
 }
 function tripHourForStep(stepIndex,totalSteps){
  const startHours=[17,10,10,7];
- const endHours=[22,19,19,10];
+ const endHours=[22,23,21,10];
  const start=startHours[state.day]??10,end=endHours[state.day]??18;
  if(totalSteps<=1)return start;
  return start + (end-start)*(stepIndex/Math.max(1,totalSteps-1));

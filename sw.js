@@ -1,4 +1,4 @@
-const C="sg-trip-v75";
+const C="sg-trip-v76";
 self.addEventListener("install",e=>{self.skipWaiting()});
 self.addEventListener("activate",e=>{e.waitUntil(Promise.all([
  self.clients.claim(),

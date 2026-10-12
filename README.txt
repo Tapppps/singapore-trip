@@ -1,18 +1,15 @@
-Singapore Trip App V75
+Singapore Trip App V76
 
-Happy-hour details added.
+Map popup improvements
+- Dot/marker popups are now fixed in the centre of the screen.
+- Close X is much larger, dark, and easy to tap.
+- As you zoom in further, place names appear beside map dots.
 
-ROBERTSON QUAY
-- The Best Brew: DAILY 5:00pm–8:30pm
-- Privé Robertson Quay: DAILY 4:00pm–8:00pm, up to 40% off selected draught beer, wine, spirits & cocktails; 20% off small bites
-- D.O.P Mozzarella Bar: DAILY 4:00pm–7:30pm, selected drinks S$9++
+Phone shopping
+- Second-hand / refurbished phone wording is now kept to Sim Lim Square only.
+- Mister Mobile Bugis is described simply as a phone retailer.
 
-CLARKE QUAY
-- Octapas: weekend happy-hour offers until 9:00pm
-- Helen's / Chupitos cheap-drink notes remain in the route cards
-
-SOUTHBRIDGE
-- No standard Saturday happy hour is listed.
-- Friday/Saturday promo is mainly discounted champagne bottles, so it remains a view-first rooftop option rather than the cheapest-drink choice.
-
-All these appear as zoomed-in map dots and in the relevant route-card cheap/happy-hour box.
+Friday evening
+- Latest return to Hotel Boss changed from 10pm to 11pm.
+- Friday weather/route timing now allows the route to extend to 23:00.
+- Friday add-on wording updated accordingly.
