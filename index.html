@@ -620,6 +620,22 @@ button{font:inherit}
 .live-schedule-status.on{background:#eef4ff;color:#2450a6;border:1px solid #cbdaf8}
 .live-schedule-status.gps{background:#fff8e8;color:#755400;border:1px solid #ead8a5}
 .live-schedule-status.future,.live-schedule-status.past{background:#f2f4f7;color:#505966;border:1px solid #dfe3e8}
+/* V79 booking / rooftop buttons */
+.external-book-btn{
+ padding:8px 10px;
+ border-radius:10px;
+ border:1px solid #111;
+ background:#111;
+ color:#fff;
+ font-size:11px;
+ font-weight:900;
+ cursor:pointer;
+}
+/* V80 easy Thursday evening */
+.easy-evening-box{
+ background:#fff8ee;
+ border:1px solid #efd9b9;
+}
 </style>
 </head>
 <body>
@@ -718,6 +734,8 @@ const stops=[
 {id:"flowerdome",name:"Flower Dome",lat:1.2841,lng:103.8642,day:0,type:"Indoor",priority:"Optional",desc:"Large cooled conservatory at Gardens by the Bay with themed floral displays and a useful indoor break from heat or rain.",photo:"Good any time; especially useful in hot or wet weather"},
 {id:"flyer",name:"Singapore Flyer",lat:1.2893,lng:103.8631,day:0,type:"Mixed",priority:"Optional",desc:"Large observation wheel with elevated views over Marina Bay and the city skyline.",photo:"Best near sunset / blue hour"},
 {id:"f1",name:"Singapore F1 street-circuit walk",lat:1.2892,lng:103.8632,day:0,type:"Outdoor",priority:"Optional",desc:"Walkable public-road sections around the Marina Bay street circuit area.",photo:"Evening city lights"},
+{id:"easyzamzam",name:"Singapore Zam Zam — Easy Dinner",lat:1.30297,lng:103.85883,day:0,type:"Indoor",priority:"Optional",desc:"Easy first-night dinner near Hotel Boss and Sultan Mosque. Indian-Muslim favourite for murtabak, biryani and simple local food. Open late enough for an arrival evening.",photo:"Easy local dinner"},
+{id:"easykampong",name:"Kampong Glam — Easy Evening Walk",lat:1.30238,lng:103.85900,day:0,type:"Outdoor",priority:"Optional",desc:"Low-effort local evening around Sultan Mosque, Bussorah Street, Arab Street and Haji Lane, all close to Hotel Boss. Good if you are too tired for Marina Bay.",photo:"Local evening walk"},
 {id:"sultan",name:"Sultan Mosque",lat:1.3023,lng:103.8590,day:1,type:"Outdoor",priority:"Must See",desc:"Landmark mosque in Kampong Glam with a striking golden dome.",photo:"Morning / late afternoon"},
 {id:"bussorah",name:"Bussorah Street",lat:1.3018,lng:103.8592,day:1,type:"Outdoor",priority:"Must See",desc:"Palm-lined pedestrian street giving the classic straight-on view of Sultan Mosque.",photo:"One of the best mosque photos; morning or 4–6:30pm"},
 {id:"muscat",name:"Muscat Street Arch",lat:1.3024,lng:103.8596,day:1,type:"Outdoor",priority:"Would Like",desc:"Decorative arch near Sultan Mosque that frames the golden dome.",photo:"Great framing shot in softer late-afternoon light"},
@@ -761,6 +779,8 @@ const stops=[
 {id:"botanic",name:"Singapore Botanic Gardens",lat:1.3138,lng:103.8159,day:1,type:"Outdoor",priority:"Optional",desc:"UNESCO-listed tropical garden with lakes, rainforest paths and landscaped gardens. The main gardens are free. Optional National Orchid Garden is inside and ticketed.",photo:"Best in the morning or later afternoon; shaded but mainly outdoors"},
 {id:"koksen",name:"Kok Sen Restaurant",lat:1.28098,lng:103.84174,day:2,type:"Indoor",priority:"Optional",desc:"Long-running Singaporean zi char restaurant on Keong Saik Road. Good optional dinner if you want a proper local Chinese meal rather than hawker food.",photo:"Dinner stop"},
 {id:"sinhoisai",name:"Sin Hoi Sai Seafood — Tiong Bahru",lat:1.28485,lng:103.83399,day:2,type:"Mixed",priority:"Optional",desc:"Chinese seafood / zi char restaurant at 55 Tiong Bahru Road. Sam's recommendation; useful as an optional dinner detour rather than a compulsory route stop.",photo:"Dinner stop"},
+{id:"lumina",name:"Lumina by White Shades — Rooftop",lat:1.28094,lng:103.84787,day:1,type:"Outdoor",priority:"Would Like",desc:"Budget-friendly rooftop in Telok Ayer. Friday happy hour 5:00–7:00pm: draught beer S$10, whisky highball S$11, cocktails on tap S$13. Good Friday rooftop choice.",photo:"Rooftop drinks / sunset"},
+{id:"abode",name:"Abode Rooftop Bar",lat:1.28730,lng:103.84855,day:1,type:"Mixed",priority:"Optional",desc:"Affordable rooftop option at 50 South Bridge Road, Level 6. Daily happy hour 6:30–8:30pm with cocktails around S$14.",photo:"Rooftop drinks / city view"},
 {id:"jewel",name:"Jewel Changi Airport",lat:1.3603,lng:103.9898,day:3,type:"Indoor",priority:"Must See",desc:"Indoor airport complex centred on the Rain Vortex and tropical garden.",photo:"Morning / indoor light"},
 {id:"t4",name:"Changi Terminal 4",lat:1.3384,lng:103.9832,day:3,type:"Indoor",priority:"Must See",desc:"Your departure terminal for the flight home.",photo:"Travel/documentary shots"}
 ];
@@ -806,6 +826,12 @@ const extraMapPOIs=[
 
 
 
+const easyThursdayPOIs=[
+ {id:"easy-zamzam-poi",name:"Singapore Zam Zam",lat:1.30297,lng:103.85883,category:"Cheap Eats",rating:4.2,price:"S$10–20",detail:"697–699 North Bridge Road. Very easy first-night dinner near Hotel Boss and Sultan Mosque."},
+ {id:"easy-sultan-poi",name:"Sultan Mosque",lat:1.30230,lng:103.85914,category:"Attraction",detail:"About a short walk from Hotel Boss. Good local evening landmark."},
+ {id:"easy-haji-poi",name:"Haji Lane",lat:1.30094,lng:103.85983,category:"Attraction",detail:"Colourful lane with street art, cafés and bars. Good short evening wander if you still have energy."}
+];
+
 const cheapFoodDrinkPOIs=[
  {id:"cheap-kampongglam",name:"Kampong Glam Cafe",lat:1.30257,lng:103.85902,category:"Cheap Eats",rating:4.2,price:"S$1–10",detail:"Good-value breakfast / local food on Bussorah Street. Handy first stop on Friday."},
  {id:"cheap-zamzam",name:"Singapore Zam Zam",lat:1.30295,lng:103.85886,category:"Cheap Eats",rating:4.2,price:"S$10–20",detail:"Classic Indian-Muslim food near Sultan Mosque."},
@@ -839,6 +865,11 @@ const happyHourPOIs=[
  {id:"hh-southbridge",name:"Southbridge Rooftop",lat:1.28725,lng:103.84933,category:"Drinks",price:"Fri/Sat bottle promo",detail:"Rooftop at 80 Boat Quay. No standard Saturday happy hour listed; Friday/Saturday promo focuses on discounted champagne bottles. Better for the view than for the cheapest drinks."}
 ];
 
+
+const cheapRooftopPOIs=[
+ {id:"rooftop-lumina",name:"Lumina by White Shades",lat:1.28094,lng:103.84787,category:"Happy Hour",price:"Fri 5–7pm",detail:"Cheap Friday rooftop: draught beer S$10, whisky highball S$11, cocktails on tap S$13."},
+ {id:"rooftop-abode",name:"Abode Rooftop Bar",lat:1.28730,lng:103.84855,category:"Happy Hour",price:"Daily 6:30–8:30pm",detail:"Affordable rooftop cocktails around S$14 during happy hour."}
+];
 
 const cameraBatteryPOIs=[
  {id:"camera-alanphoto",name:"Alan Photo — Panasonic DMW-BLG10E",lat:1.30303,lng:103.85303,category:"Camera Shop",price:"S$89 listed",detail:"Sim Lim Square #01-38. Alan Photo currently lists the genuine Panasonic DMW-BLG10E battery for S$89. This is directly on Friday's Sim Lim Square stop."}
@@ -961,6 +992,10 @@ const stopTimingRules={
  flowerdome:{period:"day-evening",label:"BEFORE CLOSING",latestHour:19,reason:"Allow enough time before last admission/closing."},
  f1:{period:"night-ok",label:"EVENING OK",reason:"Good as an evening/night walk."},
  southbridge:{period:"night-ok",label:"EVENING OK",reason:"Best around sunset / evening."},
+ lumina:{period:"night-ok",label:"FRI 5–7PM HH",reason:"Best Friday 5–7pm for the cheapest rooftop drinks."},
+ abode:{period:"night-ok",label:"6:30–8:30PM HH",reason:"Daily rooftop happy hour."},
+ easyzamzam:{period:"night-ok",label:"EASY EVENING",reason:"Designed for the arrival night if you are tired."},
+ easykampong:{period:"night-ok",label:"EASY EVENING",reason:"Close to Hotel Boss and suitable for a short local stroll after dinner."},
  spectra:{period:"night-ok",label:"EVENING",reason:"Night light-and-water show."},
  gardens:{period:"night-ok",label:"EVENING OK",reason:"Supertree area works well after dark."}
 };
@@ -974,20 +1009,26 @@ function timingBadgeHtml(id){
 const dayAddOns={
  0:[
    {id:"marinasquare",name:"Marina Square",type:"Indoor",desc:"Indoor mall near Esplanade. Good wet-weather stop.",activity:"Shopping / rain shelter"},
-   {id:"suntec",name:"Suntec City",type:"Indoor",desc:"Large indoor mall near Marina Bay.",activity:"Shopping / food"}
+   {id:"suntec",name:"Suntec City",type:"Indoor",desc:"Large indoor mall near Marina Bay.",activity:"Shopping / food"},
+   {id:"easyzamzam",name:"Easy night — Singapore Zam Zam dinner",type:"Indoor",desc:"If you are too tired for Marina Bay, have an easy local dinner near the hotel instead.",activity:"Easy dinner"},
+   {id:"easykampong",name:"Easy night — Kampong Glam stroll",type:"Outdoor",desc:"Short local walk around Sultan Mosque, Bussorah Street, Arab Street and Haji Lane, all close to Hotel Boss.",activity:"Easy local sightseeing"}
  ],
  1:[
    {id:"botanic",name:"Singapore Botanic Gardens",type:"Outdoor",desc:"FREE gardens. DAYTIME ONLY in this app — add it before the evening so you can actually see the gardens.",activity:"Gardens / sightseeing"},
    {id:"bugisplus",name:"Bugis+ extra shopping",type:"Indoor",desc:"Extra shopping and food around Bugis.",activity:"Shopping"},
    {id:"arab",name:"Evening Kampong Glam",type:"Outdoor",desc:"Return to Arab Street / Haji Lane area for dinner or drinks. Friday can now run later, but aim to be back at Hotel Boss by 11pm latest.",activity:"Dinner / evening walk"},
-   {id:"f1",name:"F1 Track Walk",type:"Outdoor",desc:"Optional evening walk along public-road sections of the Marina Bay Street Circuit if you miss Thursday. Some post-race teardown may still affect access.",activity:"F1 circuit walk / night photos"}
+   {id:"f1",name:"F1 Track Walk",type:"Outdoor",desc:"Optional evening walk along public-road sections of the Marina Bay Street Circuit if you miss Thursday. Some post-race teardown may still affect access.",activity:"F1 circuit walk / night photos"},
+   {id:"lumina",name:"Lumina rooftop — cheap Friday drinks",type:"Outdoor",desc:"Best cheap rooftop option for Friday. Happy hour 5:00–7:00pm: beer S$10, whisky highball S$11, cocktails on tap S$13.",activity:"Rooftop happy hour"},
+   {id:"abode",name:"Abode rooftop — backup",type:"Mixed",desc:"Alternative affordable rooftop. Daily 6:30–8:30pm happy hour, cocktails around S$14.",activity:"Rooftop happy hour"},
+   {id:"rivercruise",name:"Singapore River Cruise — Friday option",type:"Outdoor",desc:"Keep the river cruise flexible. Walk-ins welcome; Friday-Sunday Clarke Quay counter is open 10am–10:30pm. Add this if Friday evening suits better than Saturday.",activity:"Night river cruise"}
  ],
  2:[
    {id:"keongsaik",name:"Keong Saik Road — evening drinks",type:"Mixed",desc:"Sam's suggestion. Add this if you want shophouse bars / drinks in the evening.",activity:"Evening drinks / shophouses"},
    {id:"koksen",name:"Kok Sen — local Chinese dinner",type:"Indoor",desc:"Sam's restaurant suggestion on Keong Saik Road. Optional proper dinner; expect it to cost more than hawker food.",activity:"Local Chinese dinner"},
    {id:"sinhoisai",name:"Sin Hoi Sai — Tiong Bahru dinner",type:"Mixed",desc:"Sam's recommendation in Tiong Bahru. This is a detour, so keep it optional rather than forcing it into the route.",activity:"Chinese seafood dinner"},
    {id:"southbridge",name:"Southbridge Rooftop",type:"Mixed",desc:"Rooftop river/city view near Boat Quay. Keep as an optional alternative even though Robertson Quay is now the main riverside evening.",activity:"Rooftop drink / skyline"},
-   {id:"f1",name:"F1 Track Walk",type:"Outdoor",desc:"Optional evening F1 street-circuit walk after the river area if you missed Thursday. Public roads only; some post-race teardown may affect access.",activity:"F1 circuit walk / night photos"}
+   {id:"f1",name:"F1 Track Walk",type:"Outdoor",desc:"Optional evening F1 street-circuit walk after the river area if you missed Thursday. Public roads only; some post-race teardown may affect access.",activity:"F1 circuit walk / night photos"},
+   {id:"rivercruise",name:"Singapore River Cruise — Saturday option",type:"Outdoor",desc:"Keep Saturday open for the cruise too. Walk-ins welcome; buy tickets at Clarke Quay Jetty before departure.",activity:"Night river cruise"}
  ],
  3:[]
 };
@@ -1004,7 +1045,7 @@ Object.values(addonVirtualStops).forEach(s=>{
 const masterPlans=[
  ["airport","t4shuttle","changimrt","hotel","fullerton","merlion","jubilee","esplanade","helix","mbs","spectra","gardens","flowerdome","f1","hotel"],
  ["hotel","sultan","bussorah","muscat","baghdad","arab","haji","bugis","misterbugis","simlim","littleindia","tan","clive","serangoon","tekka","hotel"],
- ["hotel","fort","hillstreet","chinatown","pagoda","misterchinatown","maxwell","annsiang","telokayer","laupasat","cavenagh","anderson","clarke","clarkejetty","rivercruise","robertson","hotel"],
+ ["hotel","fort","hillstreet","chinatown","pagoda","misterchinatown","maxwell","annsiang","telokayer","laupasat","cavenagh","anderson","clarke","robertson","hotel"],
  ["hotel","jewel","t4"]
 ];
 const mrt=[
@@ -1107,7 +1148,7 @@ const mrtNetworks={
  ]
 };
 
-let state=JSON.parse(localStorage.getItem("sgTripV78")||"null")||{day:0,routes:masterPlans.map(x=>[...x]),skipped:[[],[],[],[]],modeOverrides:{},weatherMode:"normal"};
+let state=JSON.parse(localStorage.getItem("sgTripV80")||"null")||{day:0,routes:masterPlans.map(x=>[...x]),skipped:[[],[],[],[]],modeOverrides:{},weatherMode:"normal"};
 if(!Array.isArray(state.routes)||state.routes.length<4)state.routes=masterPlans.map(x=>[...x]);
 if(!Array.isArray(state.skipped))state.skipped=[[],[],[],[]];
 while(state.skipped.length<4)state.skipped.push([]);
@@ -1206,7 +1247,7 @@ let drawerDragActive=false;
 let gpsFollow=false;
 let lastTouchY=null,routeScrollFloat=0;
 
-function save(){localStorage.setItem("sgTripV78",JSON.stringify(state))}
+function save(){localStorage.setItem("sgTripV80",JSON.stringify(state))}
 function byId(id){return stops.find(s=>s.id===id)}
 function routeStops(){return state.routes[state.day].map(byId).filter(Boolean)}
 function hav(a,b){const R=6371,p=Math.PI/180,dLat=(b.lat-a.lat)*p,dLon=(b.lng-a.lng)*p,la1=a.lat*p,la2=b.lat*p,x=Math.sin(dLat/2)**2+Math.cos(la1)*Math.cos(la2)*Math.sin(dLon/2)**2;return 2*R*Math.asin(Math.sqrt(x))}
@@ -1513,7 +1554,7 @@ function renderExtraPOIs(){
     detail:`${s.type} · ${costForStop(s).label}. ${s.desc||""}`
   }));
 
- [...tripPlaces,...extraMapPOIs,...mrtChangePOIs,...hawkerMapPOIs,...cheapFoodDrinkPOIs,...happyHourPOIs,...cameraBatteryPOIs,...samSuggestedPOIs].forEach(p=>{
+ [...tripPlaces,...extraMapPOIs,...mrtChangePOIs,...hawkerMapPOIs,...easyThursdayPOIs,...cheapFoodDrinkPOIs,...happyHourPOIs,...cheapRooftopPOIs,...cameraBatteryPOIs,...samSuggestedPOIs].forEach(p=>{
   const el=document.createElement("div");
   el.className="zoom-poi-dot";
   if(p.category==="MRT Change")el.classList.add("mrt-change-dot");
@@ -2048,6 +2089,30 @@ function addSkippedBack(id){
  buildRoute();
 }
 
+function useThursdayEasyEvening(){
+ if(state.day!==0)return;
+ const route=["airport","t4shuttle","changimrt","hotel","easyzamzam","easykampong","hotel"];
+ state.routes[0]=route;
+ state.skipped[0]=(state.skipped[0]||[]).filter(x=>!["easyzamzam","easykampong"].includes(x));
+ save();
+ renderHeader();
+ renderAddOns();
+ renderOtherThings();
+ renderDrawer();
+ buildRoute();
+}
+function useThursdayMainEvening(){
+ if(state.day!==0)return;
+ state.routes[0]=[...masterPlans[0]];
+ ensureHotelReturn(0);
+ save();
+ renderHeader();
+ renderAddOns();
+ renderOtherThings();
+ renderDrawer();
+ buildRoute();
+}
+
 function availableAddOns(){
  return (dayAddOns[state.day]||[]).filter(a=>!(state.routes[state.day]||[]).includes(a.id));
 }
@@ -2077,9 +2142,20 @@ function addonInsertIndex(route,id){
 function addAddonToToday(id){
  const route=[...(state.routes[state.day]||[])];
  if(route.includes(id))return;
- route.splice(addonInsertIndex(route,id),0,id);
+
+ if(id==="rivercruise"){
+  let idx=addonInsertIndex(route,id);
+  if(state.day===2){
+   const robertson=route.indexOf("robertson");
+   if(robertson>0)idx=robertson;
+  }
+  route.splice(idx,0,"clarkejetty","rivercruise");
+ }else{
+  route.splice(addonInsertIndex(route,id),0,id);
+ }
+
  state.routes[state.day]=route;
- state.skipped[state.day]=(state.skipped[state.day]||[]).filter(x=>x!==id);
+ state.skipped[state.day]=(state.skipped[state.day]||[]).filter(x=>x!==id && x!=="clarkejetty");
  ensureHotelReturn(state.day);
  save();
  renderHeader();
@@ -2095,12 +2171,17 @@ function renderAddOns(){
  const count=document.getElementById("addonCount");
  if(count)count.textContent=items.length;
 
- if(!items.length){
-  box.innerHTML='<div class="other-item"><p>No unused add-ons for this day.</p></div>';
-  return;
- }
+ const thursdaySwitch=state.day===0?`<div class="other-item easy-evening-box">
+   <h3>Thursday arrival — choose the evening</h3>
+   <p>If you are tired after the flight, use the easy local plan instead of Marina Bay.</p>
+   <button class="pill" id="btnEasyThursday" style="width:100%;margin-bottom:6px">Use easy local evening</button>
+   <button class="pill" id="btnMainThursday" style="width:100%">Use Marina Bay evening</button>
+  </div>`:"";
 
- box.innerHTML=items.map(a=>{
+ if(!items.length){
+  box.innerHTML=thursdaySwitch+'<div class="other-item"><p>No unused add-ons for this day.</p></div>';
+ }else{
+  box.innerHTML=thursdaySwitch+items.map(a=>{
   const s=byId(a.id);
   const type=s?.type||a.type||"Mixed";
   const cost=s?costForStop(s):{label:"FREE"};
@@ -2115,11 +2196,19 @@ function renderAddOns(){
     <p>${a.activity||""}</p>
     <p>${a.desc||""}</p>
     <button class="pill addon-add-btn" data-addon-id="${a.id}" style="width:100%">Add to today's route</button>
+    ${a.id==="southbridge"?`<button class="pill external-book-btn" data-external-url="https://www.southbridge.sg/bookings" style="width:100%;margin-top:6px">Reserve Southbridge</button>`:""}
    </div>`;
- }).join("");
+  }).join("");
+ }
+
+ document.getElementById("btnEasyThursday")?.addEventListener("click",useThursdayEasyEvening);
+ document.getElementById("btnMainThursday")?.addEventListener("click",useThursdayMainEvening);
 
  box.querySelectorAll("[data-addon-id]").forEach(btn=>btn.addEventListener("click",()=>{
    addAddonToToday(btn.dataset.addonId);
+ }));
+ box.querySelectorAll("[data-external-url]").forEach(btn=>btn.addEventListener("click",()=>{
+   window.open(btn.dataset.externalUrl,"_blank","noopener");
  }));
 }
 
@@ -2174,7 +2263,9 @@ function activityLabel(stop){
  if(id==="hotel")return "Hotel";
  if((stop.priority||"").includes("Phone"))return "Phone shopping";
  if(["bugis","bugisplus","misterbugis","misterchinatown","chinatown","laupasat","tekka","mbs","flowerdome","southbridge"].includes(id)){
-  if(id==="simlim")return "Electronics / used phones";
+  if(id==="easyzamzam")return "Easy local dinner";
+ if(id==="easykampong")return "Short local sightseeing";
+ if(id==="simlim")return "Electronics / used phones";
  if(id==="pagoda")return "Chinatown street walk";
  if(id==="maxwell")return "Hawker lunch";
  if(id==="keongsaik")return "Shophouses / drinks";
@@ -2410,6 +2501,8 @@ function moveRouteStop(stopIndex,direction){
 
 
 const cheapNearbyByStop={
+ easyzamzam:["Singapore Zam Zam — S$10–20; murtabak / biryani near the hotel"],
+ easykampong:["Kampong Glam / Sultan Mosque / Haji Lane — all close to Hotel Boss"],
  sultan:["Kampong Glam Cafe — S$1–10","Singapore Zam Zam — S$10–20"],
  bussorah:["Kampong Glam Cafe — S$1–10","Singapore Zam Zam — S$10–20"],
  arab:["Kampong Glam Cafe — S$1–10","Singapore Zam Zam — S$10–20"],
@@ -2422,6 +2515,8 @@ const cheapNearbyByStop={
 ],
  littleindia:["Madras New Woodlands — budget vegetarian Indian"],
  tekka:["Tekka Centre hawker stalls — cheap local food"],
+ lumina:["Friday 5–7pm: beer S$10, whisky highball S$11, cocktails on tap S$13"],
+ abode:["Daily 6:30–8:30pm: cocktails around S$14"],
  pagoda:["Maxwell Food Centre nearby — usually S$4–10 for many hawker dishes"],
  maxwell:["Maxwell hawker stalls — usually S$4–10 for many meals"],
  keongsaik:["Kok Sen nearby — sit-down zi char, not hawker-cheap"],
@@ -2457,6 +2552,16 @@ function cheapNearbyHtml(stop){
  const rows=cheapNearbyByStop[stop?.id];
  if(!rows?.length)return "";
  return `<div class="cheap-nearby"><b>Cheap / happy hour nearby:</b><br>${rows.map(x=>`• ${x}`).join("<br>")}</div>`;
+}
+
+const externalLinks={
+ southbridge:{label:"Reserve Southbridge",url:"https://www.southbridge.sg/bookings"},
+ rivercruise:{label:"River Cruise tickets",url:"https://rivercruise.com.sg/river-cruise/"}
+};
+function externalLinkHtml(stop){
+ const x=externalLinks[stop?.id];
+ if(!x)return "";
+ return `<button type="button" class="external-book-btn" data-external-url="${x.url}">${x.label}</button>`;
 }
 
 function openStepInGoogleMaps(stepIndex){
@@ -2506,6 +2611,7 @@ function renderDrawer(){
 
       <div class="step-actions">
        <button type="button" class="google-maps-btn" data-gmaps-step="${i}">See in Google Maps</button>
+       ${externalLinkHtml(b)}
        ${!isLockedRouteIndex(rs,i+1) && i>0?`<button type="button" class="move-step-btn" data-move-step="${i+1}" data-move-dir="-1">Move earlier</button>`:""}
        ${!isLockedRouteIndex(rs,i+1) && i<rs.length-2?`<button type="button" class="move-step-btn" data-move-step="${i+1}" data-move-dir="1">Move later</button>`:""}
        <button type="button" data-stepbtn="${i}">Show this step</button>
@@ -2534,6 +2640,9 @@ function renderDrawer(){
 
  body.querySelectorAll("[data-gmaps-step]").forEach(btn=>btn.addEventListener("click",()=>{
    openStepInGoogleMaps(Number(btn.dataset.gmapsStep));
+ }));
+ body.querySelectorAll("[data-external-url]").forEach(btn=>btn.addEventListener("click",()=>{
+   window.open(btn.dataset.externalUrl,"_blank","noopener");
  }));
  body.querySelectorAll("[data-move-step]").forEach(btn=>btn.addEventListener("click",()=>{
    moveRouteStop(Number(btn.dataset.moveStep),Number(btn.dataset.moveDir));
