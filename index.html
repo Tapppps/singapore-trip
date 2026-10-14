@@ -51,7 +51,7 @@ button{font:inherit}
 .num{width:31px;height:31px;border-radius:50%;background:#111;color:#fff;display:grid;place-items:center;font-weight:700;flex:none}
 .stepcard.active .num{background:var(--blue)}
 .stepcard h3{font-size:15px;margin:1px 0 2px;line-height:1.2}
-.stepcard p{font-size:12px;color:#505966;line-height:1.45;margin:5px 0 0}
+.stepcard p{font-size:14px;color:#505966;line-height:1.5;margin:6px 0 0}
 .stepcard button{margin-top:8px;border:1px solid var(--line);background:#fff;border-radius:999px;padding:7px 10px;font-size:12px}
 #daySheet{position:fixed;inset:0;z-index:80;background:rgba(0,0,0,.35);display:none;align-items:flex-end}
 #daySheet.open{display:flex}
@@ -88,7 +88,7 @@ button{font:inherit}
  display:none;margin-top:10px;padding-top:10px;border-top:1px solid var(--line)
 }
 .step-more.open{display:block}
-.step-more p{margin:5px 0;font-size:12px;line-height:1.5;color:#454e58}
+.step-more p{margin:6px 0;font-size:14px;line-height:1.55;color:#454e58}
 .skip-btn{border-color:#efc7c7!important;color:#9c2525}
 #otherSheet{
  position:fixed;inset:0;z-index:3000;background:rgba(0,0,0,.35);
@@ -597,6 +597,29 @@ button{font:inherit}
 .zoom-poi-label{
  display:block;
 }
+
+/* V78 larger route text + live schedule */
+.day-schedule-row{
+ grid-template-columns:48px minmax(0,1.2fr) minmax(0,1fr) auto!important;
+}
+.day-schedule-time{
+ font-size:11px;
+ font-weight:900;
+ color:#111;
+}
+.live-schedule-status{
+ margin:7px 0 10px;
+ padding:8px 10px;
+ border-radius:10px;
+ font-size:12px;
+ font-weight:900;
+ line-height:1.3;
+}
+.live-schedule-status.ahead{background:#eaf8ee;color:#176a32;border:1px solid #bfe5ca}
+.live-schedule-status.behind{background:#fff0ec;color:#a33a24;border:1px solid #f1c2b7}
+.live-schedule-status.on{background:#eef4ff;color:#2450a6;border:1px solid #cbdaf8}
+.live-schedule-status.gps{background:#fff8e8;color:#755400;border:1px solid #ead8a5}
+.live-schedule-status.future,.live-schedule-status.past{background:#f2f4f7;color:#505966;border:1px solid #dfe3e8}
 </style>
 </head>
 <body>
@@ -816,6 +839,11 @@ const happyHourPOIs=[
  {id:"hh-southbridge",name:"Southbridge Rooftop",lat:1.28725,lng:103.84933,category:"Drinks",price:"Fri/Sat bottle promo",detail:"Rooftop at 80 Boat Quay. No standard Saturday happy hour listed; Friday/Saturday promo focuses on discounted champagne bottles. Better for the view than for the cheapest drinks."}
 ];
 
+
+const cameraBatteryPOIs=[
+ {id:"camera-alanphoto",name:"Alan Photo — Panasonic DMW-BLG10E",lat:1.30303,lng:103.85303,category:"Camera Shop",price:"S$89 listed",detail:"Sim Lim Square #01-38. Alan Photo currently lists the genuine Panasonic DMW-BLG10E battery for S$89. This is directly on Friday's Sim Lim Square stop."}
+];
+
 const samSuggestedPOIs=[
  {id:"sam-maxwell",name:"Maxwell Food Centre",lat:1.28033,lng:103.84475,category:"Hawker",rating:4.4,price:"S$1–10",detail:"Sam's Chinatown suggestion. Classic hawker centre at 1 Kadayanallur Street."},
  {id:"sam-pagoda",name:"Pagoda Street",lat:1.28272,lng:103.84546,category:"Attraction",rating:4.5,detail:"Pedestrian Chinatown street with shophouses and souvenirs."},
@@ -845,6 +873,7 @@ const poiCategoryColors={
  "Cheap Eats":"#16a34a",
  "Cheap Drinks":"#db2777",
  "Happy Hour":"#7c3aed",
+ "Camera Shop":"#2563eb",
  "Drinks":"#9333ea"
 };
 
@@ -1078,7 +1107,7 @@ const mrtNetworks={
  ]
 };
 
-let state=JSON.parse(localStorage.getItem("sgTripV77")||"null")||{day:0,routes:masterPlans.map(x=>[...x]),skipped:[[],[],[],[]],modeOverrides:{},weatherMode:"normal"};
+let state=JSON.parse(localStorage.getItem("sgTripV78")||"null")||{day:0,routes:masterPlans.map(x=>[...x]),skipped:[[],[],[],[]],modeOverrides:{},weatherMode:"normal"};
 if(!Array.isArray(state.routes)||state.routes.length<4)state.routes=masterPlans.map(x=>[...x]);
 if(!Array.isArray(state.skipped))state.skipped=[[],[],[],[]];
 while(state.skipped.length<4)state.skipped.push([]);
@@ -1177,7 +1206,7 @@ let drawerDragActive=false;
 let gpsFollow=false;
 let lastTouchY=null,routeScrollFloat=0;
 
-function save(){localStorage.setItem("sgTripV77",JSON.stringify(state))}
+function save(){localStorage.setItem("sgTripV78",JSON.stringify(state))}
 function byId(id){return stops.find(s=>s.id===id)}
 function routeStops(){return state.routes[state.day].map(byId).filter(Boolean)}
 function hav(a,b){const R=6371,p=Math.PI/180,dLat=(b.lat-a.lat)*p,dLon=(b.lng-a.lng)*p,la1=a.lat*p,la2=b.lat*p,x=Math.sin(dLat/2)**2+Math.cos(la1)*Math.cos(la2)*Math.sin(dLon/2)**2;return 2*R*Math.asin(Math.sqrt(x))}
@@ -1484,7 +1513,7 @@ function renderExtraPOIs(){
     detail:`${s.type} · ${costForStop(s).label}. ${s.desc||""}`
   }));
 
- [...tripPlaces,...extraMapPOIs,...mrtChangePOIs,...hawkerMapPOIs,...cheapFoodDrinkPOIs,...happyHourPOIs,...samSuggestedPOIs].forEach(p=>{
+ [...tripPlaces,...extraMapPOIs,...mrtChangePOIs,...hawkerMapPOIs,...cheapFoodDrinkPOIs,...happyHourPOIs,...cameraBatteryPOIs,...samSuggestedPOIs].forEach(p=>{
   const el=document.createElement("div");
   el.className="zoom-poi-dot";
   if(p.category==="MRT Change")el.classList.add("mrt-change-dot");
@@ -1879,6 +1908,7 @@ function advanceRoute(delta){
  if(!routeCoords.length)return;
  routeScrollFloat=Math.max(0,Math.min(routeCoords.length-1,routeScrollFloat+delta));
  currentIndex=Math.round(routeScrollFloat);cameraToIndex(currentIndex,false);updateStepFromCoord();
+ updateLiveScheduleStatus();
 }
 function cameraToIndex(i,animate=true){
  if(!routeCoords.length)return;
@@ -2165,17 +2195,77 @@ function simpleTravelLabel(a,b){
  const m=legMode(a,b);
  return m==="shuttle"?"Shuttle":m==="mrt"?"MRT":m==="river"?"River":"Walk";
 }
+
+function singaporeClockParts(){
+ const parts=new Intl.DateTimeFormat("en-CA",{
+  timeZone:"Asia/Singapore",
+  year:"numeric",month:"2-digit",day:"2-digit",
+  hour:"2-digit",minute:"2-digit",hour12:false
+ }).formatToParts(new Date());
+ const out={};
+ parts.forEach(p=>{if(p.type!=="literal")out[p.type]=p.value});
+ return {
+  date:`${out.year}-${out.month}-${out.day}`,
+  minutes:Number(out.hour)*60+Number(out.minute)
+ };
+}
+function plannedMinutesForStep(stepIndex,totalSteps){
+ return Math.round(tripHourForStep(stepIndex,totalSteps)*60);
+}
+function fmtClock(totalMinutes){
+ const m=((Math.round(totalMinutes)%1440)+1440)%1440;
+ const h=Math.floor(m/60),mm=m%60;
+ return `${String(h).padStart(2,"0")}:${String(mm).padStart(2,"0")}`;
+}
+function liveRouteStepIndex(rs){
+ if(!userPos || !routeCoords.length)return null;
+ let step=0;
+ for(let i=0;i<stopCoordIndex.length-1;i++){
+  if(currentIndex>=stopCoordIndex[i])step=i;
+ }
+ return Math.max(0,Math.min(step,rs.length-2));
+}
+function scheduleStatusInfo(rs){
+ const now=singaporeClockParts();
+ const selectedDate=days[state.day]?.date;
+ if(now.date<selectedDate)return {cls:"future",text:"This day has not started yet."};
+ if(now.date>selectedDate)return {cls:"past",text:"This trip day is complete."};
+ if(!userPos)return {cls:"gps",text:"Turn on GPS to show live ahead / behind schedule."};
+
+ const step=liveRouteStepIndex(rs);
+ if(step===null)return {cls:"gps",text:"Waiting for GPS route position…"};
+ const planned=plannedMinutesForStep(step,Math.max(1,rs.length-1));
+ const diff=now.minutes-planned;
+ const abs=Math.abs(diff);
+
+ if(abs<=5)return {cls:"on",text:`On schedule · planned around ${fmtClock(planned)}`};
+ if(diff>0)return {cls:"behind",text:`${abs} min behind schedule · this point planned around ${fmtClock(planned)}`};
+ return {cls:"ahead",text:`${abs} min ahead of schedule · this point planned around ${fmtClock(planned)}`};
+}
+function updateLiveScheduleStatus(){
+ const el=document.getElementById("liveScheduleStatus");
+ if(!el)return;
+ const info=scheduleStatusInfo(routeStops());
+ el.className=`live-schedule-status ${info.cls}`;
+ el.textContent=info.text;
+}
+
 function dayScheduleHtml(rs){
+ const total=Math.max(1,rs.length-1);
  const rows=rs.slice(0,-1).map((a,i)=>{
   const b=rs[i+1];
+  const planned=fmtClock(plannedMinutesForStep(i+1,total));
   return `<div class="day-schedule-row">
+    <div class="day-schedule-time">${planned}</div>
     <div class="day-schedule-name">${b.name}</div>
     <div class="day-schedule-activity">${activityLabel(b)}</div>
     <div class="day-schedule-travel">${simpleTravelLabel(a,b)}</div>
    </div>`;
  }).join("");
+ const live=scheduleStatusInfo(rs);
  return `<div class="day-schedule">
    <div class="day-schedule-title">Today at a glance</div>
+   <div id="liveScheduleStatus" class="live-schedule-status ${live.cls}">${live.text}</div>
    ${rows}
   </div>`;
 }
@@ -2326,7 +2416,10 @@ const cheapNearbyByStop={
  haji:["Kampong Glam Cafe — S$1–10","Singapore Zam Zam — S$10–20"],
  bugis:["A Hot Hideout @ Bugis Junction — S$10–20"],
  misterbugis:["A Hot Hideout @ Bugis Junction — S$10–20"],
- simlim:["Sim Lim Square — compare several shops before buying; check warranty / condition on used phones"],
+ simlim:[
+ "Alan Photo #01-38 — genuine Panasonic DMW-BLG10E battery listed at S$89",
+ "For second-hand / refurbished phones, compare several Sim Lim shops and check warranty / battery health"
+],
  littleindia:["Madras New Woodlands — budget vegetarian Indian"],
  tekka:["Tekka Centre hawker stalls — cheap local food"],
  pagoda:["Maxwell Food Centre nearby — usually S$4–10 for many hawker dishes"],
@@ -2646,6 +2739,7 @@ renderOtherThings();
 renderAddOns();
 updateWeatherModeButtons();
 fetchTripWeather();
+setInterval(updateLiveScheduleStatus,30000);
 init();
 
 </script>
